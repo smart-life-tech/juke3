@@ -57,7 +57,7 @@ bool playList = false;
 static bool lastBusyPinState = 0;
 byte currentDisplayLine = 1;
 bool keypadLong = false;
-#define MAX_SEQUENCE_LENGTH 10 // Maximum length of the sequence list
+#define MAX_SEQUENCE_LENGTH 100 // Maximum length of the sequence list
 bool numAlpha = false;
 
 int sequenceList[MAX_SEQUENCE_LENGTH]; // Array to store the sequence list
@@ -139,6 +139,7 @@ void generateRandomList()
                                        // Serial.println(randomNumber);
     }
 }
+
 void startBuzzPopSequence()
 {
     buzzLedOn = true;
@@ -253,6 +254,7 @@ void lightUpLEDs(int trackNumber)
     Serial.print(trackString.substring(2, 3).toInt());
     Serial.println(" done");
 }
+
 void addToSequenceList(int trackNumber)
 {
     if (sequenceLength < MAX_SEQUENCE_LENGTH)
@@ -409,6 +411,17 @@ void playTheList()
                     playList = false;
                     cancel = false;
                 }
+                else
+                {
+                    sequenceLength--;
+                    if (sequenceLength <= 0)
+                    {
+                        sequenceLength = 0;
+                        digitalWrite(ledPins[2], LOW);
+                        digitalWrite(ledPins[1], LOW);
+                        digitalWrite(ledPins[0], LOW);
+                    }
+                }
                 if (playIndex == 3)
                 {
                     done_playing = true;
@@ -485,13 +498,7 @@ void getEntry(char key)
         }
         // pause_play = !pause_play;
     }
-    // Increment current selection or wrap back to 1
-    if (key == 'A')
-    {
-        currentSelection++;
-
-        row = 16;
-    }
+     
     if (key == 'D')
     { // Delete last key entry
         if (keyBufferIndex > 0)
@@ -557,48 +564,15 @@ void getEntry(char key)
     { // Continue entry
         if (keyBufferIndex < 9 && isDigit(key))
         {
-            // Serial.println("entry1");
-            if (row <= 18) // max length to go
-            {
-                // Serial.println("entry2");
-                keyBuffer[keyBufferIndex] = key;
-                keyBufferIndex++;
-                 
-                if (!buttonEntry)
-                {
-                    handleDigitPress();
-                    
-                }
-                else
-                {
-                    if (row == 16)
-                    {
-                         
-                    }
-                    if (row == 17)
-                    {
-                        
-                        displayNum[numCounter] = String(collect1) + String(collect2);
-                        Serial.print("saved to mem: ");
-                        Serial.println(String(collect1) + String(collect2));
-                        Serial.print("saved to memss: ");
-                        Serial.println(displayNum[numCounter]);
-                        Serial.print("1st alpha: ");
-                        Serial.println(collect1);
-                        Serial.print("2nd alpha: ");
-                        Serial.println(collect2);
-                        Serial.print("counts: ");
-                        Serial.println(numCounter);
-                        numCounter++;
-                        if (numCounter >= 3)
-                            numCounter = 0;
-                    }
-                }
-
-                row++;
-            }
+            keyBuffer[keyBufferIndex] = key;
+            keyBufferIndex++;
+            Serial.print("counts: ");
+            Serial.println(numCounter);
+            numCounter++;
         }
     }
+
+    row++;
 }
 
 float entryToFloat(char *entry)
@@ -773,30 +747,13 @@ void loop()
         isPressing = false; // Reset if another key is pressed
         Serial.print(F(" key code = "));
         Serial.print(key);
-        if (key == 'Z')
-        {
-            handleLongPress();
-            keypadLong = true;
-            Serial.print(F("keypad long pressed"));
-        }
         getEntry(key);
+        if (numCounter >= 2)
+        {
+            numCounter = 0;
+            getEntry('A');
+        }
     }
-
-    if (playList && pause_play)
-    {
-        playTheList();
-    }
-    if (pause_play)
-    {
-        continuePlaying();
-    }
-
-    else
-    {
-        digitalWrite(ledPins[2], LOW);
-        digitalWrite(ledPins[1], LOW);
-        digitalWrite(ledPins[0], LOW);
-    }
-    continuePlayingLong();
+    playTheList();
     updateBuzzPopLeds();
 }
