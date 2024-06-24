@@ -18,7 +18,6 @@
             "includePath": [
                 "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.6\\cores\\arduino",
                 "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.6\\variants\\mega",
-                "C:\\Users\\USER\\Documents\\Arduino\\libraries\\Keypad",
                 "C:\\Users\\USER\\Documents\\Arduino\\libraries\\SoftwareSerial\\src",
                 "C:\\Users\\USER\\Documents\\Arduino\\libraries\\DFRobotDFPlayerMini-master",
                 "C:\\Users\\USER\\AppData\\Local\\Arduino15\\packages\\arduino\\hardware\\avr\\1.8.6\\libraries\\Wire\\src",

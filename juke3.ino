@@ -1,14 +1,13 @@
-#include <Keypad.h>
+
 #include "SoftwareSerial.h"
 #include "DFRobotDFPlayerMini.h"
 #include <Wire.h>
 
+const int buzzLedPin = 13; // LED pin for buzz
+const int popLedPin = 14;  // LED pin for pop
 #define NUM_LEDS_GROUP1 2
 #define NUM_LEDS_GROUP2 8
 #define NUM_LEDS_GROUP3 10
-const int buzzLedPin = 13; // LED pin for buzz
-const int popLedPin = 14;  // LED pin for pop
-
 #define LED_PIN_GROUP1 22
 #define LED_PIN_GROUP2 24
 #define LED_PIN_GROUP3 32
@@ -17,7 +16,8 @@ unsigned long buttonPressStartTime = 0;
 unsigned long pressStartTime = 0;
 const unsigned long longPressDuration = 5000; // 5 seconds
 bool isPressing = false;
-
+unsigned long keyPressStartTime = 0;
+bool isKeyPressed = false;
 int oldSequence = 10;
 bool done_playing = false;
 int row = 16;
@@ -39,11 +39,10 @@ const byte ssTXPin = 12;
 byte playIndex = 0;
 const int ledPins[] = {A13, A14, A15}; // LED pins
 int keyPressCount = 0;
-byte rowPins[ROWS] = {9, 8, 7, 6}; // connect to the row pinouts of the
 byte keyBufferIndex = 0;
-byte colPins[COLS] = {5, 4, 3, 2}; // connect to the column pinouts of the
+
 bool cancel = false;
-Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+
 SoftwareSerial mp3ss(ssRXPin, ssTXPin); // RX, TX
 DFRobotDFPlayerMini myDFPlayer;
 char key;
@@ -72,9 +71,6 @@ unsigned long lastTrackBlinkTime = 0;
 unsigned long trackBlinkInterval = 500; // Blink interval in milliseconds
 char collect1 = ' ';
 char collect2 = ' ';
-// Define the pin numbers for buttons
-const int letterButtonPins[] = {15, 16, 17, 18, 19, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, A0, A1, A2}; // Pins for characters 'a' to 'v'
-const int digitButtonPins[] = {A3, A4, A5, A6, A7, A8, A9, A10, A11, A12};                                       // Pins for digits '0' to '9'
 int combine = 0;
 bool checking = true;
 bool buttonEntry = false;
@@ -91,98 +87,9 @@ unsigned long buzzStartTime = 0;
 unsigned long popStartTime = 0;
 bool buzzLedOn = false;
 bool popLedOn = false;
-char readKeypad()
-{
-    static bool dIsPressed = false;
-    char key = NO_KEY;
-
-    if (keypad.getKeys())
-    { // true if some activity
-        for (int i = 0; key == NO_KEY && i < LIST_MAX; i++)
-        {
-            if (keypad.key[i].stateChanged)
-            {
-                switch (keypad.key[i].kstate)
-                {
-                case PRESSED:
-                    if (keypad.key[i].kchar == '0')
-                    {
-                        dIsPressed = true;
-                    }
-                    else
-                        key = keypad.key[i].kchar;
-                    break;
-                case HOLD:
-                    if (keypad.key[i].kchar == '0')
-                    {
-                        key = longD;
-                        dIsPressed = false;
-                    }
-                    break;
-                case RELEASED:
-                    if (dIsPressed && keypad.key[i].kchar == '0')
-                    {
-                        key = '0';
-                        dIsPressed = false;
-                    }
-                    break;
-                default:
-                    break;
-                } // end switch
-            } // end state changed
-        } // end for
-    }
-    return key;
-}
-
-void buttonPressed()
-{
-    for (int i = 0; i < sizeof(digitButtonPins) / sizeof(digitButtonPins[0]); i++)
-    {
-        if (digitalRead(digitButtonPins[i]) == LOW && lastState[i])
-        {
-            lastState[i] = false;
-
-            Serial.println(" ");
-            Serial.print(("button pressed :"));
-            Serial.println(i);
-            buttonPressStartTime = millis(); // Record button press start time
-            delay((200));
-            while (1)
-            {
-                if (digitalRead(digitButtonPins[i]))
-                {
-                    Serial.println("Short press detected");
-                    handleShortPress(i);
-                    delay(400);
-                    break;
-                }
-                // Wait for button release or timeout
-                else if (millis() - buttonPressStartTime >= LONG_PRESS_DURATION)
-                {
-                    buttonPressStartTime = millis();
-                    Serial.println("Long press detected");
-                    handleLongPress();
-                    delay(800);
-                    break;
-                }
-            }
-        }
-        if (digitalRead(digitButtonPins[i]))
-        {
-            lastState[i] = true;
-        }
-    }
-}
-
-void handleShortPress(int buttonIndex)
-{
-    delay(600); // Debounce delay
-    char pressedChar = mapPinToDigit(digitButtonPins[buttonIndex]);
-    Serial.print("Entered num: ");
-    Serial.println(pressedChar);
-    getEntry(pressedChar);
-}
+const int digitPins[10] = {15, 16, 17, 18, 19, 42, 43, 44, 45, 46}; // Pins for digits 0-9
+const int resetPin = 51;                                            // Pin for reset (* and #)
+const int abcdPins[4] = {47, 48, 49, 50};                           // Pins for A, B, C, D
 
 void splitInteger(int number, char &hundreds, char &tens, char &units)
 {
@@ -199,37 +106,39 @@ void handleLongPress()
     longPressed = true;
     generateRandomList();
     /*int number = (random(201)); // Generates a random number between 0 and 200
-    char hundreds, tens, units;
-    splitInteger(number, hundreds, tens, units);
+      char hundreds, tens, units;
+      splitInteger(number, hundreds, tens, units);
 
-    // Print the results
-    Serial.print("Hundreds: ");
-    Serial.println(hundreds);
-    Serial.print("Tens: ");
-    Serial.println(tens);
-    Serial.print("Units: ");
-    Serial.println(units);
-    getEntry(hundreds);
-    getEntry(tens);
-    getEntry(units);
-    getEntry('*');*/
+      // Print the results
+      Serial.print("Hundreds: ");
+      Serial.println(hundreds);
+      Serial.print("Tens: ");
+      Serial.println(tens);
+      Serial.print("Units: ");
+      Serial.println(units);
+      getEntry(hundreds);
+      getEntry(tens);
+      getEntry(units);
+      getEntry('*');*/
     // Add your code to handle the long press here
 }
 
 void generateRandomList()
 {
     Serial.println("Generating random list of 200 songs...");
-
+    digitalWrite(ledPins[2], LOW);
+    digitalWrite(ledPins[1], LOW);
+    digitalWrite(ledPins[0], LOW);
     // Generate and print 200 random numbers
     for (int i = 0; i < 200; i++)
     {
-        randomSeed(analogRead(A15));
+        randomSeed(random(analogRead(A0)));
+
         delay(15);
         randomNumber[i] = random(201); // Generates a random number between 0 and 100
                                        // Serial.println(randomNumber);
     }
 }
-
 void startBuzzPopSequence()
 {
     buzzLedOn = true;
@@ -276,78 +185,6 @@ bool isAlpha(char c)
 {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
-
-void checkButtons()
-{
-    // Check for letter button presses
-    for (int i = 0; i < sizeof(letterButtonPins) / sizeof(letterButtonPins[0]); i++)
-    {
-        if (digitalRead(letterButtonPins[i]) == LOW)
-        {
-
-            delay(600); // Delay to debounce the button press
-            char pressedChar = mapPinToLetter(letterButtonPins[i]);
-            Serial.print("entered charv2 :");
-            Serial.println(pressedChar);
-            collect1 = pressedChar;
-            getEntry(pressedChar);
-            combine = int(pressedChar) - 97;
-            // Serial.println(pressedChar);
-            if (int(pressedChar) > 104 && int(pressedChar) < 111)
-                combine = int(pressedChar) - 97 - 1;
-            if (int(pressedChar) > 111)
-                combine = int(pressedChar) - 97 - 2;
-            Serial.print("entered char int :");
-            Serial.println(collect1);
-            collect1 = pressedChar;
-            buttonEntry = true;
-            numAlpha = true;
-            while (checking)
-            {
-                // Check for digit button presses
-                for (int i = 0; i < sizeof(digitButtonPins) / sizeof(digitButtonPins[0]); i++)
-                {
-                    if (digitalRead(digitButtonPins[i]) == LOW)
-                    {
-                        delay(600); // Delay to debounce the button press
-                        char pressedChars = mapPinToDigit(digitButtonPins[i]);
-                        collect2 = pressedChars;
-                        Serial.print("entered num :");
-                        Serial.println(collect2);
-                        collect2 = pressedChars;
-
-                        int combines = (combine * 10) + (int(pressedChars) - 48);
-                        char buf[10];
-                        String(combines).toCharArray(buf, 10, 0);
-                        if (combines < 9)
-                            getEntry('0');
-                        if (combines > 0)
-                            getEntry(buf[0]);
-                        if (combines > 9)
-                            getEntry(buf[1]);
-                        if (combines > 99)
-                            getEntry(buf[2]);
-                        Serial.print("the entered track is : ");
-                        Serial.println(combines);
-
-                        Serial.println("the entered track individual : ");
-                        if (combines > 0)
-                            Serial.println(buf[0]);
-                        if (combines > 9)
-                            Serial.println(buf[1]);
-                        if (combines > 99)
-                            Serial.println(buf[2]);
-                        Serial.println("done ");
-                        delay(100); // Delay to debounce the button press
-                        checking = false;
-                        break;
-                    }
-                }
-            }
-        }
-    }
-}
-
 void testled()
 {
     for (int i = 0; i < NUM_LEDS_GROUP1; i++)
@@ -416,7 +253,6 @@ void lightUpLEDs(int trackNumber)
     Serial.print(trackString.substring(2, 3).toInt());
     Serial.println(" done");
 }
-
 void addToSequenceList(int trackNumber)
 {
     if (sequenceLength < MAX_SEQUENCE_LENGTH)
@@ -474,22 +310,49 @@ void skipSequence()
 void continuePlaying()
 {
     bool busyPinState = digitalRead(busyPin); // read the busy pin
-    for (int i = 0; i < sequenceLength; i++)
-    {
-        if (busyPinState == 1 && playIndex == i && cancel) // has it gone from low to high?, meaning the track finished
-        {
 
-            Serial.print("play number continue 1  = ");
-            Serial.println(sequenceList[playIndex]);
-            Serial.print("play index continue = ");
-            Serial.println(playIndex);
-            lightUpLEDs(sequenceList[playIndex]);
-            myDFPlayer.play(sequenceList[playIndex]);
-            startBuzzPopSequence();
-            playIndex++;
-        }
+    if (busyPinState == 1 && playIndex == 1 && cancel) // has it gone from low to high?, meaning the track finished
+    {
+
+        Serial.print("play number continue 1  = ");
+        Serial.println(sequenceList[playIndex]);
+        Serial.print("play index continue = ");
+        Serial.println(playIndex);
+        lightUpLEDs(sequenceList[playIndex]);
+        myDFPlayer.play(sequenceList[playIndex]);
+        startBuzzPopSequence();
+        playIndex++;
+    }
+    if (busyPinState == 1 && playIndex == 2 && cancel) // has it gone from low to high?, meaning the track finished
+    {
+
+        Serial.print("play number continue 2 = ");
+        Serial.println(sequenceList[playIndex]);
+        Serial.print("play index continue = ");
+        Serial.println(playIndex);
+        lightUpLEDs(sequenceList[playIndex]);
+        myDFPlayer.play(sequenceList[playIndex]);
+        startBuzzPopSequence();
+        playIndex++;
+    }
+    if (busyPinState == 1 && playIndex == 3 && cancel) // has it gone from low to high?, meaning the track finished
+    {
+
+        Serial.print("play number continue 3  = ");
+        Serial.println(sequenceList[playIndex]);
+        Serial.print("play index continue = ");
+        Serial.println(playIndex);
+        lightUpLEDs(sequenceList[playIndex]);
+        myDFPlayer.play(sequenceList[playIndex]);
+        startBuzzPopSequence();
+        playIndex++;
+    }
+    if (busyPinState == 1 && playIndex == 4 && cancel) // has it gone from low to high?, meaning the track finished
+    {
+        playSequence();
     }
 }
+
 void continuePlayingLong()
 {
     if (longPressed)
@@ -506,6 +369,7 @@ void continuePlayingLong()
             lightUpLEDs(randomNumber[playingIndex]);
             myDFPlayer.play(randomNumber[playingIndex]);
             startBuzzPopSequence();
+
             playingIndex++;
         }
     }
@@ -535,8 +399,7 @@ void playTheList()
                 lightUpLEDs(sequenceList[playIndex]);
                 myDFPlayer.play(sequenceList[playIndex]);
                 startBuzzPopSequence();
-                playIndex++; // next track
-                sequenceLength--;
+                playIndex++;                    // next track
                 if (playIndex > sequenceLength) // last track?
                 {
                     sequenceLength = 0;
@@ -546,6 +409,11 @@ void playTheList()
                     playList = false;
                     cancel = false;
                 }
+                if (playIndex == 3)
+                {
+                    done_playing = true;
+                    delay(1000);
+                }
                 Serial.print("still playing next: ");
                 Serial.println(playIndex);
             }
@@ -553,45 +421,8 @@ void playTheList()
 
             // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         }
-        // playSequence();
+        playSequence();
     }
-}
-
-char mapPinToLetter(int pin)
-{
-    // Map letter button pin to corresponding character ('a' to 'v' excluding 'i' and 'o')
-    const char letters[] = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'u', 'v'};
-    int index = pin - 42; // Calculate index based on pin number
-    switch (pin)
-    {
-    case 15:
-        index = 0;
-        break;
-    case 16:
-        index = 1;
-        break;
-    case 17:
-        index = 2;
-        break;
-    case 18:
-        index = 3;
-        break;
-    case 19:
-        index = 4;
-        break;
-    default:
-        index = pin - 42 + 5; // Calculate index based on pin number
-        break;
-    }
-    return letters[index];
-}
-
-char mapPinToDigit(int pin)
-{
-    // Map digit button pin to corresponding character ('0' to '9')
-    const char digits[] = {'1', '2', '3', '4', '5', '6', '7', '8', '9', '0'};
-    int index = pin - A3; // Calculate index based on pin number (A3 corresponds to '0')
-    return digits[index];
 }
 
 String intToAlphanumeric(int number)
@@ -660,13 +491,6 @@ void getEntry(char key)
         currentSelection++;
 
         row = 16;
-        if (currentSelection > 3)
-        {
-            currentSelection = 1;
-
-            apressed = true;
-            delay(1000);
-        }
     }
     if (key == 'D')
     { // Delete last key entry
@@ -679,6 +503,9 @@ void getEntry(char key)
             Serial.print(sequenceList[sequenceLength]);
             Serial.println(F(" deleted track"));
 
+            // Reset display
+            // sequenceList[sequenceLength] = trackNumber;
+            // sequenceLength--;
             // return;
         }
     }
@@ -698,8 +525,6 @@ void getEntry(char key)
                 delay(1000);
                 playIndex = 4;
                 cancel = true;
-
-                // Clear the buffer
                 memset(keyBuffer, 0, sizeof(keyBuffer));
                 break;
             case 'A': // Add to sequence list
@@ -713,6 +538,7 @@ void getEntry(char key)
             case 'B': // Play sequence
                 Serial.println(F(" playing the sequence"));
                 playList = true;
+
                 keyBufferIndex = 0;
                 // playSequence();
                 break;
@@ -737,19 +563,21 @@ void getEntry(char key)
                 // Serial.println("entry2");
                 keyBuffer[keyBufferIndex] = key;
                 keyBufferIndex++;
-
+                 
                 if (!buttonEntry)
                 {
                     handleDigitPress();
+                    
                 }
                 else
                 {
                     if (row == 16)
                     {
+                         
                     }
                     if (row == 17)
                     {
-
+                        
                         displayNum[numCounter] = String(collect1) + String(collect2);
                         Serial.print("saved to mem: ");
                         Serial.println(String(collect1) + String(collect2));
@@ -800,7 +628,6 @@ void handleDigitPress()
         digitalWrite(ledPins[0], LOW);  // Turn off the first LED
         digitalWrite(ledPins[1], LOW);  // Turn off the second LED
         digitalWrite(ledPins[2], HIGH); // Turn on the third LED
-        getEntry('A');
     }
 }
 
@@ -813,6 +640,73 @@ void confirmSelection()
     }
 }
 
+char getKeypadInput()
+{
+    for (int i = 0; i < 10; i++)
+    {
+        if (digitalRead(digitPins[i]) == LOW)
+        {
+            delay(10); // Debounce delay
+            if (digitalRead(digitPins[i]) == LOW)
+            { // Confirm button press
+
+                Serial.println("button pressed");
+                // Handle long press for '0'
+                if (!isKeyPressed)
+                {
+                    Serial.println("do once");
+                    keyPressStartTime = millis();
+                    isKeyPressed = true;
+                }
+
+                while (digitalRead(digitPins[i]) == LOW)
+                {
+                    if (millis() - keyPressStartTime >= 5000)
+                    {
+                        // generateRandomList();
+                        handleLongPress();
+                        keypadLong = true;
+                        Serial.print(F("keypad long pressed"));
+                        isKeyPressed = false;
+                        return '\0';
+                        break;
+                    }
+                }
+
+                // Wait until button is released
+                isKeyPressed = false;
+                return '0' + i;
+            }
+        }
+    }
+
+    if (digitalRead(resetPin) == LOW)
+    {
+        delay(50); // Debounce delay
+        if (digitalRead(resetPin) == LOW)
+        { // Confirm button press
+            while (digitalRead(resetPin) == LOW)
+                ;       // Wait until button is released
+            return '#'; // Use # as reset key
+        }
+    }
+
+    for (int i = 0; i < 4; i++)
+    {
+        if (digitalRead(abcdPins[i]) == LOW)
+        {
+            delay(50); // Debounce delay
+            if (digitalRead(abcdPins[i]) == LOW)
+            { // Confirm button press
+                while (digitalRead(abcdPins[i]) == LOW)
+                    ; // Wait until button is released
+                return 'A' + i;
+            }
+        }
+    }
+
+    return '\0'; // No key pressed
+}
 void setup()
 {
     Serial.begin(115200);
@@ -828,6 +722,7 @@ void setup()
     mp3ss.begin(9600);
     myDFPlayer.begin(mp3ss);
     myDFPlayer.volume(20);
+    // myDFPlayer.play(3);
     pinMode(busyPin, INPUT);
     // Serial.begin(115200);
     //  Set LED pins as OUTPUT
@@ -849,19 +744,19 @@ void setup()
         digitalWrite(ledPins[i], LOW); // Ensure all LEDs are off initially
     }
     testled();
-    // Set button pins as inputs with internal pull-up resistors
-    for (int i = 0; i < sizeof(letterButtonPins) / sizeof(letterButtonPins[0]); i++)
+    for (int i = 0; i < 10; i++)
     {
-        pinMode(letterButtonPins[i], INPUT_PULLUP);
+        pinMode(digitPins[i], INPUT_PULLUP);
     }
-    for (int i = 0; i < sizeof(digitButtonPins) / sizeof(digitButtonPins[0]); i++)
+    pinMode(resetPin, INPUT_PULLUP);
+
+    for (int i = 0; i < 4; i++)
     {
-        pinMode(digitButtonPins[i], INPUT_PULLUP);
+        pinMode(abcdPins[i], INPUT_PULLUP);
     }
     Serial.println(F(" C = STOP sequence"));
     // Initialize random number generator
     //  randomSeed(analogRead(0));
-    keypad.setHoldTime(longPressDuration);
     pinMode(buzzLedPin, OUTPUT);
     digitalWrite(buzzLedPin, LOW); // Ensure buzz LED is off initially
     pinMode(popLedPin, OUTPUT);
@@ -872,7 +767,7 @@ void loop()
 {
     checking = true;
     // key = keypad.getKey();
-    key = readKeypad();
+    key = getKeypadInput();
     if (key)
     {
         isPressing = false; // Reset if another key is pressed
@@ -887,17 +782,21 @@ void loop()
         getEntry(key);
     }
 
-    // if (playList && pause_play)
-    //{
-    playTheList();
-    // }
-    // if (pause_play)
-    // {
-    //     continuePlaying();
-    // }
+    if (playList && pause_play)
+    {
+        playTheList();
+    }
+    if (pause_play)
+    {
+        continuePlaying();
+    }
 
-    checkButtons();
-    buttonPressed();
+    else
+    {
+        digitalWrite(ledPins[2], LOW);
+        digitalWrite(ledPins[1], LOW);
+        digitalWrite(ledPins[0], LOW);
+    }
     continuePlayingLong();
     updateBuzzPopLeds();
 }
