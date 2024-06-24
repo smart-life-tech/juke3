@@ -58,7 +58,7 @@ bool playList = false;
 static bool lastBusyPinState = 0;
 byte currentDisplayLine = 1;
 bool keypadLong = false;
-#define MAX_SEQUENCE_LENGTH 200 // Maximum length of the sequence list
+#define MAX_SEQUENCE_LENGTH 10 // Maximum length of the sequence list
 bool numAlpha = false;
 
 int sequenceList[MAX_SEQUENCE_LENGTH]; // Array to store the sequence list
