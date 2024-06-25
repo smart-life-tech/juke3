@@ -186,6 +186,7 @@ bool isAlpha(char c)
 {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
+
 void testled()
 {
     for (int i = 0; i < NUM_LEDS_GROUP1; i++)
@@ -569,6 +570,7 @@ void getEntry(char key)
             Serial.print("counts: ");
             Serial.println(numCounter);
             numCounter++;
+            handleDigitPress();
         }
     }
 
@@ -748,10 +750,11 @@ void loop()
         Serial.print(F(" key code = "));
         Serial.print(key);
         getEntry(key);
-        if (numCounter >= 2)
+        if (numCounter >= 3)
         {
             numCounter = 0;
             getEntry('A');
+            delay(2000);
         }
     }
     playTheList();
