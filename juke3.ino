@@ -499,7 +499,7 @@ void getEntry(char key)
         }
         // pause_play = !pause_play;
     }
-     
+
     if (key == 'D')
     { // Delete last key entry
         if (keyBufferIndex > 0)
@@ -749,14 +749,21 @@ void loop()
         isPressing = false; // Reset if another key is pressed
         Serial.print(F(" key code = "));
         Serial.print(key);
+        if (key == 'Z')
+        {
+            handleLongPress();
+            keypadLong = true;
+            Serial.print(F("keypad long pressed"));
+        }
         getEntry(key);
         if (numCounter >= 3)
         {
             numCounter = 0;
-            getEntry('A');
             delay(2000);
+            getEntry('A');
         }
     }
     playTheList();
     updateBuzzPopLeds();
+    continuePlayingLong();
 }
