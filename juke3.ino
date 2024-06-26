@@ -754,6 +754,9 @@ void loop()
             handleLongPress();
             keypadLong = true;
             Serial.print(F("keypad long pressed"));
+            digitalWrite(ledPins[0], LOW); // Turn off the first LED
+            digitalWrite(ledPins[1], LOW); // Turn off the second LED
+            digitalWrite(ledPins[2], LOW); // Turn OFF the third LED
         }
         getEntry(key);
         if (numCounter >= 3)
