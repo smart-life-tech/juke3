@@ -433,19 +433,6 @@ void playTheList()
                         digitalWrite(ledPins[2], LOW);
                         digitalWrite(ledPins[1], LOW);
                         digitalWrite(ledPins[0], LOW);
-
-                        for (int i = 0; i < NUM_LEDS_GROUP1; i++)
-    {
-        digitalWrite(LED_PIN_GROUP1 + i, LOW);
-    }
-    for (int i = 0; i < NUM_LEDS_GROUP2; i++)
-    {
-        digitalWrite(LED_PIN_GROUP2 + i, LOW);
-    }
-    for (int i = 0; i < NUM_LEDS_GROUP3; i++)
-    {
-        digitalWrite(LED_PIN_GROUP3 + i, LOW);
-    }
                     }
                 }
                 if (playIndex == 3)
