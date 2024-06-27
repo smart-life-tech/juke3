@@ -756,7 +756,7 @@ void loop()
     checking = true;
     // key = keypad.getKey();
     key = getKeypadInput();
-    if (key == 'C' && sequenceLength > 1 && !keypadLong)
+    if (key == 'C' && sequenceLength > 1 && keypadLong)
     {
         cancel = true;
         Serial.println(F(" stop the playing"));
