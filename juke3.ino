@@ -286,6 +286,7 @@ void stopSequence()
     // playList = true;
     keyBufferIndex = 0;
     myDFPlayer.pause();
+    Serial.println("paused");
 }
 
 void skipSequence()
@@ -294,10 +295,11 @@ void skipSequence()
     // playIndex++;
     Serial.print("play index number: ");
     Serial.println(playIndex);
-    Serial.print("sequence total number : ");
-    Serial.println(sequenceLength);
+
     if (playIndex != sequenceLength + 1) // last track?
     {
+        Serial.print("sequence total number : ");
+        Serial.println(sequenceLength);
         lightUpLEDs(sequenceList[playIndex]);
         myDFPlayer.play(sequenceList[playIndex]);
         startBuzzPopSequence();
