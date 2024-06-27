@@ -296,7 +296,7 @@ void skipSequence()
     Serial.println(playIndex);
     Serial.print("sequence total number : ");
     Serial.println(sequenceLength);
-    if (playIndex != sequenceLength) // last track?
+    if (playIndex != sequenceLength + 1) // last track?
     {
         lightUpLEDs(sequenceList[playIndex]);
         myDFPlayer.play(sequenceList[playIndex]);
