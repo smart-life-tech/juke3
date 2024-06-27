@@ -756,6 +756,16 @@ void loop()
     checking = true;
     // key = keypad.getKey();
     key = getKeypadInput();
+    if (key == 'C' && sequenceLength > 1 && !keypadLong)
+    {
+        cancel = true;
+        Serial.println(F(" stop the playing"));
+        keyBufferIndex = 0;
+        Serial.println(F(" skipping the track"));
+        skipSequence();
+
+        // playList = false;
+    }
     if (key && !keypadLong)
     {
         isPressing = false; // Reset if another key is pressed
