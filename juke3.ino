@@ -303,7 +303,7 @@ void skipSequence()
         lightUpLEDs(sequenceList[playIndex]);
         myDFPlayer.play(sequenceList[playIndex]);
         startBuzzPopSequence();
-        playIndex++;
+       // playIndex++;
         playList = false;
     }
     else
