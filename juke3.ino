@@ -295,6 +295,12 @@ void skipSequence()
     // playIndex++;
     Serial.print("play index number: ");
     Serial.println(playIndex);
+    Serial.print(" number 1: ");
+    Serial.println(sequenceList[0]);
+    Serial.print(" number 1: ");
+    Serial.println(sequenceList[1]);
+    Serial.print(" number 1: ");
+    Serial.println(sequenceList[2]);
 
     if (playIndex != sequenceLength) // last track?
     {
@@ -326,6 +332,43 @@ void continuePlaying(int play)
         myDFPlayer.play(sequenceList[playIndex]);
         startBuzzPopSequence();
         playIndex++;
+        if (playIndex > sequenceLength) // last track?
+        {
+            sequenceLength = 0;
+            playIndex = 0;      // reset list
+            keyBuffer[0] = 'C'; // set up for stop mode
+            mode = 6;           // call stop mode
+            playList = false;
+            cancel = false;
+            for (int i = 0; i < NUM_LEDS_GROUP1; i++)
+            {
+                digitalWrite(LED_PIN_GROUP1 + i, LOW);
+            }
+            for (int i = 0; i < NUM_LEDS_GROUP2; i++)
+            {
+                digitalWrite(LED_PIN_GROUP2 + i, LOW);
+            }
+            for (int i = 0; i < NUM_LEDS_GROUP3; i++)
+            {
+                digitalWrite(LED_PIN_GROUP3 + i, LOW);
+            }
+        }
+        else
+        {
+            sequenceLength--;
+            if (sequenceLength <= 0)
+            {
+                sequenceLength = 0;
+                digitalWrite(ledPins[2], LOW);
+                digitalWrite(ledPins[1], LOW);
+                digitalWrite(ledPins[0], LOW);
+            }
+        }
+        if (sequenceLength == 0)
+        {
+            done_playing = true;
+            delay(1000);
+        }
     }
 }
 
@@ -448,7 +491,7 @@ void getEntry(char key)
     if (key == 'C' && sequenceLength > 1)
     {
         cancel = true;
-        playList=false;
+        playList = false;
         Serial.println(F(" stop the playing"));
         keyBufferIndex = 0;
         Serial.println(F(" skipping the track"));
@@ -768,7 +811,8 @@ void loop()
     }
     else
     {
-        continuePlaying(playIndex);
+        if (sequenceLength > 0)
+            continuePlaying(playIndex);
     }
     updateBuzzPopLeds();
     continuePlayingLong();
