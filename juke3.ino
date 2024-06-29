@@ -296,14 +296,14 @@ void skipSequence()
     Serial.print("play index number: ");
     Serial.println(playIndex);
 
-    if (playIndex != sequenceLength + 1) // last track?
+    if (playIndex != sequenceLength) // last track?
     {
         Serial.print("sequence total number : ");
         Serial.println(sequenceLength);
         lightUpLEDs(sequenceList[playIndex]);
         myDFPlayer.play(sequenceList[playIndex]);
         startBuzzPopSequence();
-       // playIndex++;
+        playIndex++;
         playList = false;
     }
     else
@@ -487,7 +487,7 @@ void getEntry(char key)
     if (key == 'C' && playImmediate)
     {
         cancel = true;
-        Serial.println(F(" stop the playing"));
+        Serial.println(F(" stop the playings"));
         asm volatile("jmp 0x0000");
 
         // playList = false;
@@ -772,7 +772,7 @@ void loop()
     {
         isPressing = false; // Reset if another key is pressed
         Serial.print(F(" key code = "));
-        Serial.print(key);
+        Serial.println(key);
         if (key == 'Z')
         {
             handleLongPress();
