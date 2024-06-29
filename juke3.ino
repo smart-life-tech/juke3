@@ -1,7 +1,7 @@
 #include "SoftwareSerial.h"
 #include "DFRobotDFPlayerMini.h"
 #include <Wire.h>
-int musicCount=0;
+int musicCount = 0;
 const int buzzLedPin = 13; // LED pin for buzz
 const int popLedPin = 14;  // LED pin for pop
 #define NUM_LEDS_GROUP1 2
@@ -294,7 +294,7 @@ void skipSequence()
 {
     myDFPlayer.stop();
     delay(1000);
-    // playIndex++;
+    playIndex--;
     Serial.print("play index number: ");
     Serial.println(playIndex);
     Serial.print(" number 1: ");
@@ -336,7 +336,7 @@ void continuePlaying(int play)
         playIndex++;
         if (playIndex > sequenceLength) // last track?
         {
-           //sequenceLength = 0;
+            // sequenceLength = 0;
             playIndex = 0;      // reset list
             keyBuffer[0] = 'C'; // set up for stop mode
             mode = 6;           // call stop mode
@@ -444,7 +444,7 @@ void playTheList()
                 }
                 else
                 {
-                   musicCount--;
+                    musicCount--;
                     if (musicCount < 0)
                     {
                         musicCount = 0;
