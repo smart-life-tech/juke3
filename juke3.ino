@@ -1,7 +1,7 @@
 #include "SoftwareSerial.h"
 #include "DFRobotDFPlayerMini.h"
 #include <Wire.h>
-
+int musicCount=0;
 const int buzzLedPin = 13; // LED pin for buzz
 const int popLedPin = 14;  // LED pin for pop
 #define NUM_LEDS_GROUP1 2
@@ -261,7 +261,9 @@ void addToSequenceList(int trackNumber)
     {
         sequenceList[sequenceLength] = trackNumber;
         sequenceLength++;
-        Serial.print("Track ");
+        musicCount++;
+        Serial.print(sequenceLength);
+        Serial.print("  Track ");
         Serial.print(trackNumber);
         Serial.println(" added to sequence list");
     }
@@ -297,9 +299,9 @@ void skipSequence()
     Serial.println(playIndex);
     Serial.print(" number 1: ");
     Serial.println(sequenceList[0]);
-    Serial.print(" number 1: ");
+    Serial.print(" number 2: ");
     Serial.println(sequenceList[1]);
-    Serial.print(" number 1: ");
+    Serial.print(" number 3: ");
     Serial.println(sequenceList[2]);
 
     if (playIndex != sequenceLength) // last track?
@@ -355,8 +357,8 @@ void continuePlaying(int play)
         }
         else
         {
-            sequenceLength--;
-            if (sequenceLength <= 0)
+            musicCount--;
+            if (musicCount <= 0)
             {
                 sequenceLength = 0;
                 digitalWrite(ledPins[2], LOW);
@@ -442,8 +444,8 @@ void playTheList()
                 }
                 else
                 {
-                    sequenceLength--;
-                    if (sequenceLength <= 0)
+                   musicCount--;
+                    if (musicCount <= 0)
                     {
                         sequenceLength = 0;
                         digitalWrite(ledPins[2], LOW);
