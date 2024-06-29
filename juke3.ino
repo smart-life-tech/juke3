@@ -336,7 +336,7 @@ void continuePlaying(int play)
         playIndex++;
         if (playIndex > sequenceLength) // last track?
         {
-            sequenceLength = 0;
+           //sequenceLength = 0;
             playIndex = 0;      // reset list
             keyBuffer[0] = 'C'; // set up for stop mode
             mode = 6;           // call stop mode
@@ -358,9 +358,9 @@ void continuePlaying(int play)
         else
         {
             musicCount--;
-            if (musicCount <= 0)
+            if (musicCount < 0)
             {
-                sequenceLength = 0;
+                musicCount = 0;
                 digitalWrite(ledPins[2], LOW);
                 digitalWrite(ledPins[1], LOW);
                 digitalWrite(ledPins[0], LOW);
@@ -445,9 +445,9 @@ void playTheList()
                 else
                 {
                    musicCount--;
-                    if (musicCount <= 0)
+                    if (musicCount < 0)
                     {
-                        sequenceLength = 0;
+                        musicCount = 0;
                         digitalWrite(ledPins[2], LOW);
                         digitalWrite(ledPins[1], LOW);
                         digitalWrite(ledPins[0], LOW);
