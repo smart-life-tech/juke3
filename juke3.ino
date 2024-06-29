@@ -1,4 +1,3 @@
-
 #include "SoftwareSerial.h"
 #include "DFRobotDFPlayerMini.h"
 #include <Wire.h>
@@ -53,7 +52,7 @@ byte trackList[3] = {0, 0, 0};
 byte trackIndex = 0;
 byte numTracks = 0;
 byte mode = 0;
-bool playList = false;
+bool playList = true;
 static bool lastBusyPinState = 0;
 byte currentDisplayLine = 1;
 bool keypadLong = false;
@@ -291,6 +290,7 @@ void stopSequence()
 
 void skipSequence()
 {
+    myDFPlayer.stop();
     delay(1000);
     // playIndex++;
     Serial.print("play index number: ");
@@ -298,7 +298,7 @@ void skipSequence()
 
     if (playIndex != sequenceLength) // last track?
     {
-        Serial.print("sequence total number : ");
+        Serial.print("sequence skipping total number : ");
         Serial.println(sequenceLength);
         lightUpLEDs(sequenceList[playIndex]);
         myDFPlayer.play(sequenceList[playIndex]);
@@ -312,14 +312,13 @@ void skipSequence()
     }
 }
 
-void continuePlaying()
+void continuePlaying(int play)
 {
-    bool busyPinState = digitalRead(busyPin); // read the busy pin
-
-    if (busyPinState == 1 && playIndex == 1 && cancel) // has it gone from low to high?, meaning the track finished
+    bool busyPinState = digitalRead(busyPin);             // read the busy pin
+    if (busyPinState == 1 && playIndex == play && cancel) // has it gone from low to high?, meaning the track finished
     {
 
-        Serial.print("play number continue 1  = ");
+        Serial.print("play number after skip  = ");
         Serial.println(sequenceList[playIndex]);
         Serial.print("play index continue = ");
         Serial.println(playIndex);
@@ -327,34 +326,6 @@ void continuePlaying()
         myDFPlayer.play(sequenceList[playIndex]);
         startBuzzPopSequence();
         playIndex++;
-    }
-    if (busyPinState == 1 && playIndex == 2 && cancel) // has it gone from low to high?, meaning the track finished
-    {
-
-        Serial.print("play number continue 2 = ");
-        Serial.println(sequenceList[playIndex]);
-        Serial.print("play index continue = ");
-        Serial.println(playIndex);
-        lightUpLEDs(sequenceList[playIndex]);
-        myDFPlayer.play(sequenceList[playIndex]);
-        startBuzzPopSequence();
-        playIndex++;
-    }
-    if (busyPinState == 1 && playIndex == 3 && cancel) // has it gone from low to high?, meaning the track finished
-    {
-
-        Serial.print("play number continue 3  = ");
-        Serial.println(sequenceList[playIndex]);
-        Serial.print("play index continue = ");
-        Serial.println(playIndex);
-        lightUpLEDs(sequenceList[playIndex]);
-        myDFPlayer.play(sequenceList[playIndex]);
-        startBuzzPopSequence();
-        playIndex++;
-    }
-    if (busyPinState == 1 && playIndex == 4 && cancel) // has it gone from low to high?, meaning the track finished
-    {
-        playSequence();
     }
 }
 
@@ -442,7 +413,7 @@ void playTheList()
                     done_playing = true;
                     delay(1000);
                 }
-                Serial.print("still playing next: ");
+                Serial.print("song playing next: ");
                 Serial.println(playIndex);
             }
             lastBusyPinState = busyPinState; // remember the last busy state
@@ -477,6 +448,7 @@ void getEntry(char key)
     if (key == 'C' && sequenceLength > 1)
     {
         cancel = true;
+        playList=false;
         Serial.println(F(" stop the playing"));
         keyBufferIndex = 0;
         Serial.println(F(" skipping the track"));
@@ -790,7 +762,14 @@ void loop()
             getEntry('A');
         }
     }
-    playTheList();
+    if (playList)
+    {
+        playTheList();
+    }
+    else
+    {
+        continuePlaying(playIndex);
+    }
     updateBuzzPopLeds();
     continuePlayingLong();
 }
