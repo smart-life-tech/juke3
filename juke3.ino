@@ -309,6 +309,8 @@ void skipSequence()
         Serial.print("sequence skipping total number : ");
         Serial.println(sequenceLength);
         lightUpLEDs(sequenceList[playIndex]);
+        Serial.print("sequence skipping, playing : ");
+        Serial.println(sequenceList[playIndex]);
         myDFPlayer.play(sequenceList[playIndex]);
         startBuzzPopSequence();
         playIndex++;
@@ -331,6 +333,8 @@ void continuePlaying(int play)
         Serial.print("play index continue = ");
         Serial.println(playIndex);
         lightUpLEDs(sequenceList[playIndex]);
+        Serial.print("sequence skipping, playing : ");
+        Serial.println(sequenceList[playIndex]);
         myDFPlayer.play(sequenceList[playIndex]);
         startBuzzPopSequence();
         playIndex++;
@@ -388,6 +392,8 @@ void continuePlayingLong()
             Serial.print("play index continue = ");
             Serial.println(playingIndex);
             lightUpLEDs(randomNumber[playingIndex]);
+            Serial.print("sequence skipping, playing random: ");
+            Serial.println(sequenceList[playIndex]);
             myDFPlayer.play(randomNumber[playingIndex]);
             startBuzzPopSequence();
 
@@ -418,6 +424,8 @@ void playTheList()
                 myDFPlayer.stop();
                 delay(500);
                 lightUpLEDs(sequenceList[playIndex]);
+                Serial.print(" playing the list: ");
+                Serial.println(sequenceList[playIndex]);
                 myDFPlayer.play(sequenceList[playIndex]);
                 startBuzzPopSequence();
                 playIndex++;                    // next track
