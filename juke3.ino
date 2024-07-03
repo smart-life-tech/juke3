@@ -294,7 +294,7 @@ void skipSequence()
 {
     myDFPlayer.stop();
     delay(1000);
-    //playIndex--;
+    // playIndex--;
     Serial.print("play index number: ");
     Serial.println(playIndex);
     Serial.print(" number 1: ");
@@ -790,7 +790,7 @@ void loop()
         keyBufferIndex = 0;
         Serial.println(F(" skipping the track"));
         skipSequence();
-
+        delay(2000);
         // playList = false;
     }
     if (key && !keypadLong)
