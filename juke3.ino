@@ -322,6 +322,11 @@ void skipSequence()
     }
 }
 
+void skipSeq()
+{
+    myDFPlayer.stop();
+    delay(1000);
+}
 void continuePlaying(int play)
 {
     bool busyPinState = digitalRead(busyPin);             // read the busy pin
@@ -505,7 +510,7 @@ void getEntry(char key)
         Serial.println(F(" stop the playing"));
         keyBufferIndex = 0;
         Serial.println(F(" skipping the track"));
-        skipSequence();
+        skipSeq();
 
         // playList = false;
     }
@@ -789,9 +794,9 @@ void loop()
         Serial.println(F(" stop the playing"));
         keyBufferIndex = 0;
         Serial.println(F(" skipping the track"));
-        skipSequence();
-        delay(2000);
-        // playList = false;
+        skipSeq();
+        // delay(2000);
+        //  playList = false;
     }
     if (key && !keypadLong)
     {
@@ -815,6 +820,7 @@ void loop()
             getEntry('A');
         }
     }
+    playList = true;
     if (playList)
     {
         playTheList();
