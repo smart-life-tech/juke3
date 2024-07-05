@@ -411,7 +411,7 @@ void playTheList()
 {
 
     static unsigned long timer = 0;
-    unsigned long interval = 5000;
+    unsigned long interval = 500;
     if (millis() - timer >= interval)
     {
         timer = millis();
