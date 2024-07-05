@@ -816,7 +816,7 @@ void loop()
         if (numCounter >= 3)
         {
             numCounter = 0;
-            delay(2000);
+            //delay(2000);
             getEntry('A');
         }
     }
