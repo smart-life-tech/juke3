@@ -128,14 +128,24 @@ void generateRandomList()
     digitalWrite(ledPins[2], LOW);
     digitalWrite(ledPins[1], LOW);
     digitalWrite(ledPins[0], LOW);
-    // Generate and print 200 random numbers
     for (int i = 0; i < 200; i++)
     {
-        randomSeed(random(analogRead(A0)));
+        randomSeed(analogRead(A0) + millis()); // Reseed the random number generator
 
-        delay(15);
-        randomNumber[i] = random(201); // Generates a random number between 0 and 100
-                                       // Serial.println(randomNumber);
+        int randomIndex = random(160);
+        int randomNum;
+
+        if (randomIndex < 80)
+        {
+            randomNum = 100 + randomIndex; // Generate number between 100 and 179
+        }
+        else
+        {
+            randomNum = 200 + (randomIndex - 80); // Generate number between 200 and 279
+        }
+
+        randomNumber[i] = randomNum;
+        Serial.println(randomNum);
     }
 }
 
@@ -798,6 +808,10 @@ void loop()
         // delay(2000);
         //  playList = false;
     }
+    if (key == 'C' && longPressed)
+    {
+        skipSeq();
+    }
     if (key && !keypadLong)
     {
         isPressing = false; // Reset if another key is pressed
@@ -820,16 +834,7 @@ void loop()
             getEntry('A');
         }
     }
-    playList = true;
-    if (playList)
-    {
-        playTheList();
-    }
-    else
-    {
-        if (sequenceLength > 0)
-            continuePlaying(playIndex);
-    }
+    playTheList();
     updateBuzzPopLeds();
     continuePlayingLong();
 }
