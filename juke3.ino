@@ -128,24 +128,23 @@ void generateRandomList()
     digitalWrite(ledPins[2], LOW);
     digitalWrite(ledPins[1], LOW);
     digitalWrite(ledPins[0], LOW);
-    for (int i = 0; i < 200; i++)
+
+    int i = 0;
+    while (i < 200)
     {
         randomSeed(analogRead(A0) + millis()); // Reseed the random number generator
 
-        int randomIndex = random(160);
-        int randomNum;
+        int randomIndex = random(279); // Generate a random number between 0 and 279
 
-        if (randomIndex < 80)
+        if ((randomIndex > 100 && randomIndex < 180) || (randomIndex > 200 && randomIndex < 279))
         {
-            randomNum = 100 + randomIndex; // Generate number between 100 and 179
-        }
-        else
-        {
-            randomNum = 200 + (randomIndex - 80); // Generate number between 200 and 279
+            i++;
+            randomNumber[i] = randomIndex; // Generate number between 100 and 179
+            if (i > 200)
+                break;
         }
 
-        randomNumber[i] = randomNum;
-        Serial.println(randomNum);
+        // Serial.println(randomNum);
     }
 }
 
