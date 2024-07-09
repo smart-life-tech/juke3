@@ -394,6 +394,8 @@ void continuePlaying(int play)
 
 void continuePlayingLong()
 {
+    digitalWrite(27, LOW);
+    digitalWrite(28, LOW);
     if (longPressed)
     {
         bool busyPinState = digitalRead(busyPin); // read the busy pin
