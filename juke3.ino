@@ -138,13 +138,17 @@ void generateRandomList()
 
         if ((randomIndex > 100 && randomIndex < 180) || (randomIndex > 200 && randomIndex < 279))
         {
-            i++;
+            
             randomNumber[i] = randomIndex; // Generate number between 100 and 179
+            i++;
             if (i > 200)
                 break;
         }
-
-        // Serial.println(randomNum);
+        for (int i = 0; i < 200; i++)
+        {
+            Serial.print(randomNumber[i]);
+            Serial.print('\t');
+        }
     }
 }
 
@@ -394,7 +398,7 @@ void continuePlaying(int play)
 
 void continuePlayingLong()
 {
-  
+
     if (longPressed)
     {
         bool busyPinState = digitalRead(busyPin); // read the busy pin
