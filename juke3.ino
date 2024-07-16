@@ -132,7 +132,7 @@ void generateRandomList()
     int i = 0;
     while (i < 200)
     {
-        randomSeed(analogRead(A0) + millis()); // Reseed the random number generator
+        randomSeed(analogRead(A0)); // Reseed the random number generator
 
         int randomIndex = random(279); // Generate a random number between 0 and 279
 
