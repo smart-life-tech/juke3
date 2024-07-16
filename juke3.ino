@@ -138,17 +138,17 @@ void generateRandomList()
 
         if ((randomIndex > 100 && randomIndex < 180) || (randomIndex > 200 && randomIndex < 279))
         {
-            
+
             randomNumber[i] = randomIndex; // Generate number between 100 and 179
             i++;
             if (i > 200)
                 break;
         }
-        for (int i = 0; i < 200; i++)
-        {
-            Serial.print(randomNumber[i]);
-            Serial.print('\t');
-        }
+    }
+    for (int i = 0; i < 200; i++)
+    {
+        Serial.print(randomNumber[i]);
+        Serial.print('\t');
     }
 }
 
