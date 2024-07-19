@@ -403,6 +403,7 @@ void continuePlayingLong()
 
     if (longPressed)
     {
+        digitalWrite(A15, HIGH);
         bool busyPinState = digitalRead(busyPin); // read the busy pin
 
         if (busyPinState == 1) // has it gone from low to high?, meaning the track finished
