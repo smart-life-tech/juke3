@@ -104,8 +104,8 @@ void handleLongPress()
     // Perform actions for long press
     Serial.println("Long press detected!");
     longPressed = true;
-    //lastPlayed = sequenceList[playIndex];
-    // generateRandomList();
+    // lastPlayed = sequenceList[playIndex];
+    //  generateRandomList();
     /*int number = (random(201)); // Generates a random number between 0 and 200
       char hundreds, tens, units;
       splitInteger(number, hundreds, tens, units);
@@ -407,7 +407,7 @@ void continuePlayingLong()
 
         if (busyPinState == 1) // has it gone from low to high?, meaning the track finished
         {
-
+            lastPlayed++;
             Serial.print("playing number in contious mode = ");
             Serial.println(lastPlayed);
             myDFPlayer.stop();
@@ -415,7 +415,7 @@ void continuePlayingLong()
             lightUpLEDs(lastPlayed);
             myDFPlayer.play(lastPlayed);
             startBuzzPopSequence();
-            lastPlayed++;
+
             delay(5000);
         }
     }
