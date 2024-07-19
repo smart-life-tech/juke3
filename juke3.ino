@@ -416,6 +416,7 @@ void continuePlayingLong()
             myDFPlayer.play(lastPlayed);
             startBuzzPopSequence();
             lastPlayed++;
+            delay(5000);
         }
     }
 }
