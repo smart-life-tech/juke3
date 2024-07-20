@@ -340,6 +340,7 @@ void skipSequence()
 void skipSeq()
 {
     myDFPlayer.stop();
+    Serial.println("skipped");
     delay(1000);
 }
 void continuePlaying(int play)
@@ -405,13 +406,14 @@ void continuePlayingLong()
     {
 
         bool busyPinState = digitalRead(busyPin); // read the busy pin
-
+        digitalWrite(A15, HIGH);
         if (busyPinState == 1) // has it gone from low to high?, meaning the track finished
         {
-
+            if (lastPlayed == 180)
+                lastPlayed = 200;
             if ((lastPlayed >= 100 && lastPlayed < 180) || (lastPlayed >= 200 && lastPlayed < 280))
             {
-                digitalWrite(A15, HIGH);
+
                 lastPlayed++;
                 Serial.print("playing number in contious mode = ");
                 Serial.println(lastPlayed);
