@@ -409,12 +409,13 @@ void continuePlayingLong()
         digitalWrite(A15, HIGH);
         if (busyPinState == 1) // has it gone from low to high?, meaning the track finished
         {
-            if (lastPlayed == 180)
-                lastPlayed = 200;
+
             if ((lastPlayed >= 100 && lastPlayed < 180) || (lastPlayed >= 200 && lastPlayed < 280))
             {
 
                 lastPlayed++;
+                if (lastPlayed == 180)
+                    lastPlayed = 200;
                 Serial.print("playing number in contious mode = ");
                 Serial.println(lastPlayed);
                 myDFPlayer.stop();
