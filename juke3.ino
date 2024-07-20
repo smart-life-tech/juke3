@@ -403,21 +403,30 @@ void continuePlayingLong()
 
     if (longPressed)
     {
-        digitalWrite(A15, HIGH);
+
         bool busyPinState = digitalRead(busyPin); // read the busy pin
 
         if (busyPinState == 1) // has it gone from low to high?, meaning the track finished
         {
-            lastPlayed++;
-            Serial.print("playing number in contious mode = ");
-            Serial.println(lastPlayed);
-            myDFPlayer.stop();
-            delay(500);
-            lightUpLEDs(lastPlayed);
-            myDFPlayer.play(lastPlayed);
-            startBuzzPopSequence();
 
-            delay(5000);
+            if ((lastPlayed >= 100 && lastPlayed < 180) || (lastPlayed >= 200 && lastPlayed < 280))
+            {
+                digitalWrite(A15, HIGH);
+                lastPlayed++;
+                Serial.print("playing number in contious mode = ");
+                Serial.println(lastPlayed);
+                myDFPlayer.stop();
+                delay(500);
+                lightUpLEDs(lastPlayed);
+                myDFPlayer.play(lastPlayed);
+                startBuzzPopSequence();
+                delay(5000);
+            }
+            else
+            {
+                Serial.print("un recongized number = ");
+                Serial.println(lastPlayed);
+            }
         }
     }
 }
@@ -437,65 +446,73 @@ void playTheList()
         {
             if (busyPinState == 1 && !keypadLong) // has it gone from low to high?, meaning the track finished
             {
-
-                Serial.print("playing number  = ");
-                Serial.println(sequenceList[playIndex]);
-                Serial.print("song index = ");
-                Serial.println(playIndex);
-                myDFPlayer.stop();
-                delay(500);
-                lightUpLEDs(sequenceList[playIndex]);
-                Serial.print(" playing the list: ");
-                Serial.println(sequenceList[playIndex]);
-                myDFPlayer.play(sequenceList[playIndex]);
-                startBuzzPopSequence();
                 lastPlayed = sequenceList[playIndex];
-                playIndex++;                    // next track
-                if (playIndex > sequenceLength) // last track?
+                if ((lastPlayed >= 100 && lastPlayed < 180) || (lastPlayed >= 200 && lastPlayed < 280))
                 {
-                    sequenceLength = 0;
-                    playIndex = 0;      // reset list
-                    keyBuffer[0] = 'C'; // set up for stop mode
-                    mode = 6;           // call stop mode
-                    playList = false;
-                    cancel = false;
-                    for (int i = 0; i < NUM_LEDS_GROUP1; i++)
+                    Serial.print("playing number  = ");
+                    Serial.println(sequenceList[playIndex]);
+                    Serial.print("song index = ");
+                    Serial.println(playIndex);
+                    myDFPlayer.stop();
+                    delay(500);
+                    lightUpLEDs(sequenceList[playIndex]);
+                    Serial.print(" playing the list: ");
+                    Serial.println(sequenceList[playIndex]);
+                    myDFPlayer.play(sequenceList[playIndex]);
+                    startBuzzPopSequence();
+                    lastPlayed = sequenceList[playIndex];
+                    playIndex++;                    // next track
+                    if (playIndex > sequenceLength) // last track?
                     {
-                        digitalWrite(LED_PIN_GROUP1 + i, LOW);
+                        sequenceLength = 0;
+                        playIndex = 0;      // reset list
+                        keyBuffer[0] = 'C'; // set up for stop mode
+                        mode = 6;           // call stop mode
+                        playList = false;
+                        cancel = false;
+                        for (int i = 0; i < NUM_LEDS_GROUP1; i++)
+                        {
+                            digitalWrite(LED_PIN_GROUP1 + i, LOW);
+                        }
+                        for (int i = 0; i < NUM_LEDS_GROUP2; i++)
+                        {
+                            digitalWrite(LED_PIN_GROUP2 + i, LOW);
+                        }
+                        for (int i = 0; i < NUM_LEDS_GROUP3; i++)
+                        {
+                            digitalWrite(LED_PIN_GROUP3 + i, LOW);
+                        }
                     }
-                    for (int i = 0; i < NUM_LEDS_GROUP2; i++)
+                    else
                     {
-                        digitalWrite(LED_PIN_GROUP2 + i, LOW);
+                        musicCount--;
+                        if (musicCount < 0)
+                        {
+                            musicCount = 0;
+                            digitalWrite(ledPins[2], LOW);
+                            digitalWrite(ledPins[1], LOW);
+                            digitalWrite(ledPins[0], LOW);
+                        }
                     }
-                    for (int i = 0; i < NUM_LEDS_GROUP3; i++)
+                    if (playIndex == 3)
                     {
-                        digitalWrite(LED_PIN_GROUP3 + i, LOW);
+                        done_playing = true;
+                        delay(1000);
                     }
-                }
+                    Serial.print("song playing next: ");
+                    Serial.println(playIndex);
+                } // here
                 else
                 {
-                    musicCount--;
-                    if (musicCount < 0)
-                    {
-                        musicCount = 0;
-                        digitalWrite(ledPins[2], LOW);
-                        digitalWrite(ledPins[1], LOW);
-                        digitalWrite(ledPins[0], LOW);
-                    }
+                    Serial.print("un recongized number = ");
+                    Serial.println(lastPlayed);
                 }
-                if (playIndex == 3)
-                {
-                    done_playing = true;
-                    delay(1000);
-                }
-                Serial.print("song playing next: ");
-                Serial.println(playIndex);
             }
-
             lastBusyPinState = busyPinState; // remember the last busy state
 
             // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         }
+
         playSequence();
     }
 }
