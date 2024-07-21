@@ -417,7 +417,7 @@ void continuePlayingLong()
                 if (lastPlayed == 180)
                     lastPlayed = 200;
                 if (lastPlayed == 280)
-                    lastPlayed = 100;
+                    lastPlayed = 99;
                 Serial.print("playing number in contious mode = ");
                 Serial.println(lastPlayed);
                 myDFPlayer.stop();
