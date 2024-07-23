@@ -826,6 +826,7 @@ void setup()
     digitalWrite(buzzLedPin, LOW); // Ensure buzz LED is off initially
     pinMode(popLedPin, OUTPUT);
     digitalWrite(popLedPin, LOW); // Ensure pop LED is off initially
+    myDFPlayer.play(100);// play the 100 track at start to check
 }
 
 void loop()
