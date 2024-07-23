@@ -421,7 +421,8 @@ void continuePlayingLong()
                     lastPlayed = 100;
                     myDFPlayer.stop();
                     Serial.println("last played reset to 100");
-                    delay(3000);
+                    delay(500);
+                    myDFPlayer.play(lastPlayed);
                 }
                 Serial.print("playing number in contious mode = ");
                 Serial.println(lastPlayed);
@@ -429,8 +430,8 @@ void continuePlayingLong()
                 delay(500);
                 lightUpLEDs(lastPlayed);
                 myDFPlayer.play(lastPlayed);
-                startBuzzPopSequence();
                 delay(5000);
+                startBuzzPopSequence();
             }
             else
             {
@@ -826,7 +827,7 @@ void setup()
     digitalWrite(buzzLedPin, LOW); // Ensure buzz LED is off initially
     pinMode(popLedPin, OUTPUT);
     digitalWrite(popLedPin, LOW); // Ensure pop LED is off initially
-    myDFPlayer.play(100);// play the 100 track at start to check
+    //myDFPlayer.play(100);         // play the 100 track at start to check
 }
 
 void loop()
