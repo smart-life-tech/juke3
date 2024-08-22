@@ -1,5 +1,5 @@
 {
     "configuration": "cpu=atmega2560",
     "board": "arduino:avr:mega",
-    "sketch": "juke3.ino"
+    "sketch": "jukev4\\jukev4.ino"
 }
