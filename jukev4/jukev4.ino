@@ -606,6 +606,9 @@ void getEntry(char key)
 
     else if (key != '*' && key != 'D')
     { // Continue entry
+        // Check if the buffer is not full
+        Serial.println(F(" continue entry"));
+
         if (keyBufferIndex < 9 && isDigit(key))
         {
             keyBuffer[keyBufferIndex] = key;
@@ -787,6 +790,8 @@ void loop()
     checking = true;
     // key = keypad.getKey();
     key = getKeypadInput();
+    Serial.print(F(" key = "));
+    Serial.println(key);
     if (key == 'C' && sequenceLength > 1 && keypadLong)
     {
         cancel = true;
