@@ -2,6 +2,9 @@
 #include "SoftwareSerial.h"
 #include "DFRobotDFPlayerMini.h"
 #include <Wire.h>
+#include <hd44780.h> // main hd44780 header enter 777
+#include <hd44780ioClass/hd44780_I2Cexp.h>
+hd44780_I2Cexp lcd;
 int musicCount = 0;
 const int buzzLedPin = 13; // LED pin for buzz
 const int popLedPin = 14;  // LED pin for pop
@@ -699,6 +702,8 @@ char getKeypadInput()
                 isKeyPressed = false;
                 return '0' + i;
             }
+            Serial.print(F(" key = "));
+            Serial.println('0' + i);
         }
     }
 
@@ -783,6 +788,15 @@ void setup()
     pinMode(popLedPin, OUTPUT);
     digitalWrite(popLedPin, LOW); // Ensure pop LED is off initially
     // myDFPlayer.play(100);         // play the 100 track at start to check
+    lcd.begin(20, 4);
+    lcd.clear(); // the only time that you should use clear
+    lcd.print(" Halloween Sounds ");
+    lcd.setCursor(0, 1);
+    lcd.print(" 1st Selection <___> ");
+    lcd.setCursor(0, 2);
+    lcd.print(" 2nd Selection <___>");
+    lcd.setCursor(0, 3);
+    lcd.print(" 3rd Selection <___>");
 }
 
 void loop()
@@ -790,8 +804,7 @@ void loop()
     checking = true;
     // key = keypad.getKey();
     key = getKeypadInput();
-    Serial.print(F(" key = "));
-    Serial.println(key);
+
     if (key == 'C' && sequenceLength > 1 && keypadLong)
     {
         cancel = true;
