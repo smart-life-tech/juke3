@@ -410,16 +410,24 @@ void playTheList()
         bool busyPinState = digitalRead(busyPin);                           // read the busy pin
         if (busyPinState != lastBusyPinState && playIndex < sequenceLength) // has it changed?
         {
-            if (busyPinState == 1 && !keypadLong) // has it gone from low to high?, meaning the track finished
+            if (busyPinState == 1 && keypadLong) // has it gone from low to high?, meaning the track finished
             {
                 lastPlayed = sequenceList[playIndex];
                 //  if ((lastPlayed >= 100 && lastPlayed < 180) || (lastPlayed >= 200 && lastPlayed < 280))
                 if (1)
                 {
+                    lcd.clear();
                     Serial.print("playing number  = ");
                     Serial.println(sequenceList[playIndex]);
                     Serial.print("song index = ");
                     Serial.println(playIndex);
+
+                    lcd.setCursor(0, 0);
+                    lcd.print("playing num  = ");
+                    lcd.print(sequenceList[playIndex]);
+                    lcd.setCursor(0, 1);
+                    lcd.print("song index = ");
+                    lcd.print(playIndex);
                     myDFPlayer.stop();
                     delay(500);
                     lightUpLEDs(sequenceList[playIndex]);
@@ -691,7 +699,7 @@ char getKeypadInput()
 
                         handleLongPress();
                         keypadLong = true;
-                        Serial.print(F("keypad long pressed"));
+                        Serial.print(F("keypad long pressed here first"));
                         isKeyPressed = false;
                         return '\0';
                         break;
@@ -829,6 +837,7 @@ void loop()
             handleLongPress();
             keypadLong = true;
             Serial.print(F("keypad long pressed"));
+            Serial.println("");
             digitalWrite(ledPins[0], LOW); // Turn off the first LED
             digitalWrite(ledPins[1], LOW); // Turn off the second LED
             digitalWrite(ledPins[2], LOW); // Turn OFF the third LED
