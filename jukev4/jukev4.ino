@@ -628,6 +628,20 @@ void getEntry(char key)
             Serial.println(numCounter);
             numCounter++;
             handleDigitPress();
+            lcd.clear();
+            lcd.setCursor(0, 0);
+            lcd.print("Pause=# Reject=C");
+            lcd.setCursor(0, 1);
+            lcd.print("                  ");
+            lcd.setCursor(0, 2);
+            lcd.print("Your selection");
+            lcd.setCursor(15, 2);
+            lcd.print("<");
+            lcd.print(keyBuffer);
+            lcd.setCursor(19, 2);
+            lcd.print(">");
+            lcd.setCursor(0, 3);
+            lcd.print("                  ");
         }
     }
 
@@ -679,7 +693,7 @@ char getKeypadInput()
     {
         if (digitalRead(digitPins[i]) == LOW)
         {
-            delay(10); // Debounce delay
+            delay(100); // Debounce delay
             if (digitalRead(digitPins[i]) == LOW)
             { // Confirm button press
 
