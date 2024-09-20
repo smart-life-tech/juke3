@@ -61,7 +61,7 @@ bool playList = true;
 static bool lastBusyPinState = 0;
 byte currentDisplayLine = 1;
 bool keypadLong = false;
-#define MAX_SEQUENCE_LENGTH 10000 // Maximum length of the sequence list
+#define MAX_SEQUENCE_LENGTH 5000 // Maximum length of the sequence list
 bool numAlpha = false;
 
 int sequenceList[MAX_SEQUENCE_LENGTH]; // Array to store the sequence list
@@ -238,7 +238,7 @@ void addToSequenceList(int trackNumber)
             sequenceLength++;
         }
         Serial.print(sequenceLength);
-        Serial.print("  Track generated for next 100 songs");
+        Serial.print("  Track generated for next  songs");
         Serial.print(trackNumber);
         Serial.println(" added to sequence list");
     }
