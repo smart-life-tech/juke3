@@ -234,9 +234,11 @@ void addToSequenceList(int trackNumber)
         musicCount++;
         for (int i = trackNumber; i < (trackNumber + 490); i++)
         {
-            sequenceList[sequenceLength] = i;
-            sequenceLength++;
-            musicCount++;
+            if(i > 99 && i<300) {
+                sequenceList[sequenceLength] = i;
+                sequenceLength++;
+                musicCount++;
+        }
         }
         Serial.print(sequenceLength);
         Serial.print("  Track generated for next  songs");
