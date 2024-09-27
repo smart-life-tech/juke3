@@ -15,6 +15,7 @@ const int popLedPin = 14;  // LED pin for pop
 #define LED_PIN_GROUP2 24
 #define LED_PIN_GROUP3 32
 int lastPlayed = 0;
+int enteredPlay = 0;
 const int LONG_PRESS_DURATION = 5000; // 5 seconds (in milliseconds)
 unsigned long buttonPressStartTime = 0;
 unsigned long pressStartTime = 0;
@@ -61,7 +62,7 @@ bool playList = true;
 static bool lastBusyPinState = 0;
 byte currentDisplayLine = 1;
 bool keypadLong = false;
-#define MAX_SEQUENCE_LENGTH 500 // Maximum length of the sequence list
+#define MAX_SEQUENCE_LENGTH 700 // Maximum length of the sequence list
 bool numAlpha = false;
 
 int sequenceList[MAX_SEQUENCE_LENGTH]; // Array to store the sequence list
@@ -227,18 +228,24 @@ void lightUpLEDs(int trackNumber)
 
 void addToSequenceList(int trackNumber)
 {
-    if (sequenceLength < MAX_SEQUENCE_LENGTH)
+    if (sequenceLength < MAX_SEQUENCE_LENGTH && trackNumber > 100 && trackNumber < 300)
     {
-        sequenceList[sequenceLength] = trackNumber;
-        sequenceLength++;
-        musicCount++;
-        for (int i = trackNumber; i < (trackNumber + 490); i++)
+        // sequenceList[sequenceLength] = trackNumber;
+        sequenceLength = 0;
+        musicCount = 0;
+        enteredPlay = trackNumber;
+        for (int i = trackNumber; i < (trackNumber + 590); i++)
         {
-            if(i > 99 && i<300) {
+            if (i > 99 && i < 300)
+            {
                 sequenceList[sequenceLength] = i;
                 sequenceLength++;
                 musicCount++;
-        }
+            }
+            else
+            {
+                break;
+            }
         }
         Serial.print(sequenceLength);
         Serial.print("  Track generated for next  songs");
@@ -247,7 +254,7 @@ void addToSequenceList(int trackNumber)
     }
     else
     {
-        Serial.println("Sequence list is full");
+        Serial.println("Sequence list is full or outside scope enter 100 to 299");
     }
 }
 
@@ -444,7 +451,11 @@ void playTheList()
                     myDFPlayer.play(sequenceList[playIndex]);
                     startBuzzPopSequence();
                     lastPlayed = sequenceList[playIndex];
-                    playIndex++;                    // next track
+                    playIndex++; // next track
+                    if (sequenceList[playIndex] > 299)
+                    { // last track?
+                        playIndex = enteredPlay;
+                    }
                     if (playIndex > sequenceLength) // last track?
                     {
                         sequenceLength = 0;
@@ -496,7 +507,7 @@ void playTheList()
             // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         }
 
-       // playSequence();
+        // playSequence();
     }
 }
 
