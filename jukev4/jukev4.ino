@@ -229,9 +229,9 @@ void addToSequenceList(int trackNumber)
 {
     if (sequenceLength < MAX_SEQUENCE_LENGTH && trackNumber > 99 && trackNumber < 300)
     {
-       // sequenceList[sequenceLength] = trackNumber;
-       // sequenceLength++;
-       // musicCount++;
+        // sequenceList[sequenceLength] = trackNumber;
+        // sequenceLength++;
+        // musicCount++;
         for (int i = trackNumber; i < (trackNumber + 490); i++)
         {
             sequenceList[sequenceLength] = i;
@@ -377,19 +377,14 @@ void playTheList()
                             digitalWrite(ledPins[0], LOW);
                         }
                     }
-                    if (playIndex == 3)
-                    {
-                        done_playing = true;
-                        delay(1000);
-                    }
+                    // if (playIndex == 3)
+                    // {
+                    //     done_playing = true;
+                    //     delay(1000);
+                    // }
                     Serial.print("song playing next: ");
                     Serial.println(playIndex);
                 } // here
-                else
-                {
-                    Serial.print("un recongized number = ");
-                    Serial.println(lastPlayed);
-                }
             }
             lastBusyPinState = busyPinState; // remember the last busy state
 
@@ -777,5 +772,4 @@ void loop()
         playTheList();
     }
     updateBuzzPopLeds();
-    
 }
