@@ -15,7 +15,6 @@ const int popLedPin = 14;  // LED pin for pop
 #define LED_PIN_GROUP2 24
 #define LED_PIN_GROUP3 32
 int lastPlayed = 0;
-int enteredPlay = 0;
 const int LONG_PRESS_DURATION = 5000; // 5 seconds (in milliseconds)
 unsigned long buttonPressStartTime = 0;
 unsigned long pressStartTime = 0;
@@ -62,7 +61,7 @@ bool playList = true;
 static bool lastBusyPinState = 0;
 byte currentDisplayLine = 1;
 bool keypadLong = false;
-#define MAX_SEQUENCE_LENGTH 700 // Maximum length of the sequence list
+#define MAX_SEQUENCE_LENGTH 500 // Maximum length of the sequence list
 bool numAlpha = false;
 
 int sequenceList[MAX_SEQUENCE_LENGTH]; // Array to store the sequence list
@@ -228,24 +227,16 @@ void lightUpLEDs(int trackNumber)
 
 void addToSequenceList(int trackNumber)
 {
-    if (sequenceLength < MAX_SEQUENCE_LENGTH && trackNumber > 100 && trackNumber < 300)
+    if (sequenceLength < MAX_SEQUENCE_LENGTH && trackNumber > 99 && trackNumber < 300)
     {
-        // sequenceList[sequenceLength] = trackNumber;
-        sequenceLength = 0;
-        musicCount = 0;
-        enteredPlay = trackNumber;
-        for (int i = trackNumber; i < (trackNumber + 590); i++)
+       // sequenceList[sequenceLength] = trackNumber;
+       // sequenceLength++;
+       // musicCount++;
+        for (int i = trackNumber; i < (trackNumber + 490); i++)
         {
-            if (i > 99 && i < 300)
-            {
-                sequenceList[sequenceLength] = i;
-                sequenceLength++;
-                musicCount++;
-            }
-            else
-            {
-                break;
-            }
+            sequenceList[sequenceLength] = i;
+            sequenceLength++;
+            musicCount++;
         }
         Serial.print(sequenceLength);
         Serial.print("  Track generated for next  songs");
@@ -254,7 +245,7 @@ void addToSequenceList(int trackNumber)
     }
     else
     {
-        Serial.println("Sequence list is full or outside scope enter 100 to 299");
+        Serial.println("Sequence list is full, not in range");
     }
 }
 
@@ -313,104 +304,6 @@ void skipSeq()
     Serial.println("skipped");
     delay(1000);
 }
-void continuePlaying(int play)
-{
-    bool busyPinState = digitalRead(busyPin);             // read the busy pin
-    if (busyPinState == 1 && playIndex == play && cancel) // has it gone from low to high?, meaning the track finished
-    {
-
-        Serial.print("play number after skip  = ");
-        Serial.println(sequenceList[playIndex]);
-        Serial.print("play index continue = ");
-        Serial.println(playIndex);
-        lightUpLEDs(sequenceList[playIndex]);
-        Serial.print("sequence skipping, playing : ");
-        Serial.println(sequenceList[playIndex]);
-        myDFPlayer.play(sequenceList[playIndex]);
-        startBuzzPopSequence();
-        playIndex++;
-        if (playIndex > sequenceLength) // last track?
-        {
-            // sequenceLength = 0;
-            playIndex = 0;      // reset list
-            keyBuffer[0] = 'C'; // set up for stop mode
-            mode = 6;           // call stop mode
-            playList = false;
-            cancel = false;
-            for (int i = 0; i < NUM_LEDS_GROUP1; i++)
-            {
-                digitalWrite(LED_PIN_GROUP1 + i, LOW);
-            }
-            for (int i = 0; i < NUM_LEDS_GROUP2; i++)
-            {
-                digitalWrite(LED_PIN_GROUP2 + i, LOW);
-            }
-            for (int i = 0; i < NUM_LEDS_GROUP3; i++)
-            {
-                digitalWrite(LED_PIN_GROUP3 + i, LOW);
-            }
-        }
-        else
-        {
-            musicCount--;
-            if (musicCount < 0)
-            {
-                musicCount = 0;
-                digitalWrite(ledPins[2], LOW);
-                digitalWrite(ledPins[1], LOW);
-                digitalWrite(ledPins[0], LOW);
-            }
-        }
-        if (sequenceLength == 0)
-        {
-            done_playing = true;
-            delay(1000);
-        }
-    }
-}
-
-void continuePlayingLong()
-{
-
-    if (longPressed)
-    {
-
-        bool busyPinState = digitalRead(busyPin); // read the busy pin
-        digitalWrite(A15, HIGH);
-        if (busyPinState == 1) // has it gone from low to high?, meaning the track finished
-        {
-
-            if ((lastPlayed >= 100 && lastPlayed < 180) || (lastPlayed >= 200 && lastPlayed < 280))
-            {
-
-                lastPlayed++;
-                if (lastPlayed == 180)
-                    lastPlayed = 200;
-                if (lastPlayed >= 279)
-                {
-                    lastPlayed = 100;
-                    myDFPlayer.stop();
-                    Serial.println("last played reset to 100");
-                    delay(500);
-                    myDFPlayer.play(lastPlayed);
-                }
-                Serial.print("playing number in contious mode = ");
-                Serial.println(lastPlayed);
-                myDFPlayer.stop();
-                delay(500);
-                lightUpLEDs(lastPlayed);
-                myDFPlayer.play(lastPlayed);
-                delay(5000);
-                startBuzzPopSequence();
-            }
-            else
-            {
-                Serial.print("un recongized number = ");
-                Serial.println(lastPlayed);
-            }
-        }
-    }
-}
 
 void playTheList()
 {
@@ -451,11 +344,7 @@ void playTheList()
                     myDFPlayer.play(sequenceList[playIndex]);
                     startBuzzPopSequence();
                     lastPlayed = sequenceList[playIndex];
-                    playIndex++; // next track
-                    if (sequenceList[playIndex] > 299)
-                    { // last track?
-                        playIndex = enteredPlay;
-                    }
+                    playIndex++;                    // next track
                     if (playIndex > sequenceLength) // last track?
                     {
                         sequenceLength = 0;
@@ -888,5 +777,5 @@ void loop()
         playTheList();
     }
     updateBuzzPopLeds();
-    // continuePlayingLong();
+    
 }
