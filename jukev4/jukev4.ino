@@ -230,8 +230,8 @@ void addToSequenceList(int trackNumber)
     if (sequenceLength < MAX_SEQUENCE_LENGTH && trackNumber > 99 && trackNumber < 300)
     {
         // sequenceList[sequenceLength] = trackNumber;
-        // sequenceLength++;
-        // musicCount++;
+        sequenceLength = 0;
+        musicCount = 0;
         for (int i = trackNumber; i < (trackNumber + 490); i++)
         {
             sequenceList[sequenceLength] = i;
@@ -344,9 +344,17 @@ void playTheList()
                     myDFPlayer.play(sequenceList[playIndex]);
                     startBuzzPopSequence();
                     lastPlayed = sequenceList[playIndex];
-                    playIndex++;                    // next track
-                    if (playIndex > sequenceLength) // last track?
+                    playIndex++;         // next track
+                    if (playIndex > 299) // last track?
                     {
+                        sequenceLength = 0;
+                        musicCount = 0;
+                        for (int i = 100; i < 299; i++)
+                        {
+                            sequenceList[sequenceLength] = i;
+                            sequenceLength++;
+                            musicCount++;
+                        }
                         sequenceLength = 0;
                         playIndex = 0;      // reset list
                         keyBuffer[0] = 'C'; // set up for stop mode
