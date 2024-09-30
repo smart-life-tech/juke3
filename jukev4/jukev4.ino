@@ -356,11 +356,11 @@ void playTheList()
                             musicCount++;
                         }
                         sequenceLength = 0;
-                        playIndex = 0;      // reset list
-                        keyBuffer[0] = 'C'; // set up for stop mode
-                        mode = 6;           // call stop mode
-                        playList = false;
-                        cancel = false;
+                        playIndex = 0; // reset list
+                        // keyBuffer[0] = 'C'; // set up for stop mode
+                        // mode = 6;           // call stop mode
+                        // playList = false;
+                        // cancel = false;
                         for (int i = 0; i < NUM_LEDS_GROUP1; i++)
                         {
                             digitalWrite(LED_PIN_GROUP1 + i, LOW);
