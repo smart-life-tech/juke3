@@ -345,7 +345,7 @@ void playTheList()
                     startBuzzPopSequence();
                     lastPlayed = sequenceList[playIndex];
                     playIndex++;         // next track
-                    if (playIndex > 299) // last track?
+                    if (sequenceList[playIndex] > 299) // last track?
                     {
                         sequenceLength = 0;
                         musicCount = 0;
@@ -355,7 +355,7 @@ void playTheList()
                             sequenceLength++;
                             musicCount++;
                         }
-                        sequenceLength = 0;
+                        //sequenceLength = 0;
                         playIndex = 0; // reset list
                         // keyBuffer[0] = 'C'; // set up for stop mode
                         // mode = 6;           // call stop mode
