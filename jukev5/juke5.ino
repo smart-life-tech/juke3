@@ -107,18 +107,22 @@ void handleLongPress()
     // Perform actions for long press
     Serial.println("Long press detected!");
     Serial.println(atoi(keyBuffer));
-    delay(1000);
+    //delay(1000);
     if (atoi(keyBuffer) > 299 || atoi(keyBuffer) < 100)
         addLongToSequenceList(100);
     else
-        addLongToSequenceList(atoi(keyBuffer));
-
+    {
+        int tracknum = int(atoi(keyBuffer));
+        addLongToSequenceList(tracknum);
+    }
     longPressed = true;
 }
 
 void addLongToSequenceList(int trackNumber)
 {
     Serial.println("adding sequence to list of songs!");
+    Serial.println(trackNumber);
+    delay(1000);
     if (sequenceLength < MAX_SEQUENCE_LENGTH && trackNumber > 99 && trackNumber < 300)
     {
         Serial.println("Long press detected!");
@@ -593,6 +597,7 @@ void playTheList()
                 delay(500);
                 lightUpLEDs(sequenceList[playIndex]);
                 myDFPlayer.play(sequenceList[playIndex]);
+                delay(1000);
                 startBuzzPopSequence();
                 playIndex++;                    // next track
                 if (playIndex > sequenceLength) // last track?
@@ -616,7 +621,7 @@ void playTheList()
 
             // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         }
-        playSequence();
+        //playSequence();
     }
 }
 
