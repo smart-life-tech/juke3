@@ -112,15 +112,17 @@ void handleLongPress()
         addLongToSequenceList(100);
     else
         addLongToSequenceList(atoi(keyBuffer));
-    
+
     longPressed = true;
 }
 
 void addLongToSequenceList(int trackNumber)
 {
+    Serial.println("adding sequence to list of songs!");
     if (sequenceLength < MAX_SEQUENCE_LENGTH && trackNumber > 99 && trackNumber < 300)
     {
-        // sequenceList[sequenceLength] = trackNumber;
+        Serial.println("Long press detected!");
+        Serial.println(trackNumber);
         sequenceLength = 0;
         musicCount = 0;
         for (int i = trackNumber; i < (trackNumber + 490); i++)
