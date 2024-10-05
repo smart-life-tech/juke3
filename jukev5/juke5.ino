@@ -106,6 +106,8 @@ void handleLongPress()
 
     // Perform actions for long press
     Serial.println("Long press detected!");
+    Serial.println(atoi(keyBuffer));
+    delay(1000);
     longPressed = true;
     addLongToSequenceList(atoi(keyBuffer));
 }
@@ -126,7 +128,7 @@ void addLongToSequenceList(int trackNumber)
         Serial.print(sequenceLength);
         Serial.print("  Track generated for next  songs");
         Serial.print(trackNumber);
-        Serial.println(" added to sequence list");
+        Serial.println(" added to long  sequence list");
     }
     else
     {
@@ -573,7 +575,7 @@ void playTheList()
 
         // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         bool busyPinState = digitalRead(busyPin);                           // read the busy pin
-        if (busyPinState != lastBusyPinState && playIndex < sequenceLength) // has it changed?
+        if (/*busyPinState != lastBusyPinState &&*/ playIndex < sequenceLength) // has it changed?
         {
             if (busyPinState == 1) // has it gone from low to high?, meaning the track finished
             {
@@ -798,6 +800,7 @@ void getEntry(char key)
                 lcd.print("> ");
 
                 keyBufferIndex = 0;
+                playIndex = 0;
                 // playSequence();
                 break;
             case 'C': // STOP sequence
