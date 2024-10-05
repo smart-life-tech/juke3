@@ -108,8 +108,12 @@ void handleLongPress()
     Serial.println("Long press detected!");
     Serial.println(atoi(keyBuffer));
     delay(1000);
+    if (atoi(keyBuffer) > 299 || atoi(keyBuffer) < 100)
+        addLongToSequenceList(100);
+    else
+        addLongToSequenceList(atoi(keyBuffer));
+    
     longPressed = true;
-    addLongToSequenceList(atoi(keyBuffer));
 }
 
 void addLongToSequenceList(int trackNumber)
@@ -574,7 +578,7 @@ void playTheList()
         timer = millis();
 
         // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        bool busyPinState = digitalRead(busyPin);                           // read the busy pin
+        bool busyPinState = digitalRead(busyPin);                               // read the busy pin
         if (/*busyPinState != lastBusyPinState &&*/ playIndex < sequenceLength) // has it changed?
         {
             if (busyPinState == 1) // has it gone from low to high?, meaning the track finished
