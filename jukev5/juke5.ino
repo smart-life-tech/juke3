@@ -612,6 +612,8 @@ void playTheList()
                 if (playIndex == 3)
                 {
                     done_playing = true;
+                    Serial.println("done playing");
+                    playSequence();
                     delay(1000);
                 }
                 Serial.print("still playing next: ");
@@ -621,7 +623,7 @@ void playTheList()
 
             // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         }
-        //playSequence();
+        playSequence();
     }
 }
 
