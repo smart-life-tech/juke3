@@ -83,7 +83,7 @@ int randomNumber[200] = {};
 bool longPressed = false;
 bool lastState[] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 int playingIndex = 0;
-
+bool blinks = true;
 const char longD = 'Z'; // char returned if long press on 'D'
 // const unsigned int longPressDuration = 3000;
 unsigned long buzzStartTime = 0;
@@ -107,7 +107,7 @@ void handleLongPress()
     // Perform actions for long press
     Serial.println("Long press detected!");
     Serial.println(atoi(keyBuffer));
-    //delay(1000);
+    // delay(1000);
     if (atoi(keyBuffer) > 299 || atoi(keyBuffer) < 100)
         addLongToSequenceList(100);
     else
@@ -272,7 +272,7 @@ void updateTrackBlink()
         trackBlinkState = !trackBlinkState;
 
         // Update the LCD with the current blink state
-        if (!digitalRead(busyPin)) // blink when its playing
+        if (!digitalRead(busyPin) && blinks) // blink when its playing
         {
             if (playIndex == 1)
             {
@@ -599,6 +599,14 @@ void playTheList()
                 myDFPlayer.play(sequenceList[playIndex]);
                 delay(1000);
                 startBuzzPopSequence();
+                lcd.clear();
+                lcd.setCursor(0, 0);
+                lcd.print("playing num  = ");
+                lcd.print(sequenceList[playIndex]);
+                lcd.setCursor(0, 1);
+                lcd.print("song index = ");
+                lcd.print(playIndex);
+                blinks = false;
                 playIndex++;                    // next track
                 if (playIndex > sequenceLength) // last track?
                 {
