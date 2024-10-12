@@ -400,6 +400,12 @@ void skipSequence()
     {
         lightUpLEDs(sequenceList[playIndex]);
         myDFPlayer.play(sequenceList[playIndex]);
+        lcd.setCursor(0, 0);
+        lcd.print("playing num  = ");
+        lcd.print(sequenceList[playIndex]);
+        lcd.setCursor(0, 1);
+        lcd.print("song index = ");
+        lcd.print(playIndex);
         startBuzzPopSequence();
         playIndex++;
         playList = false;
