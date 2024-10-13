@@ -480,18 +480,25 @@ void continuePlayingLong()
                 //  if ((lastPlayed >= 100 && lastPlayed < 180) || (lastPlayed >= 200 && lastPlayed < 280))
                 if (1)
                 {
-                    lcd.clear();
                     Serial.print("playing number  = ");
                     Serial.println(sequenceList[playIndex]);
                     Serial.print("song index = ");
                     Serial.println(playIndex);
-
-                    lcd.setCursor(0, 0);
-                    lcd.print("playing num  = ");
-                    lcd.print(sequenceList[playIndex]);
-                    lcd.setCursor(0, 1);
-                    lcd.print("song index = ");
-                    lcd.print(playIndex);
+                    if (keypadLong)
+                    {
+                        lcd.clear();
+                        Serial.print("long list playing ");
+                        lcd.setCursor(0, 0);
+                        lcd.print("playing num  = ");
+                        lcd.print(sequenceList[playIndex]);
+                        lcd.setCursor(0, 1);
+                        lcd.print("song index = ");
+                        lcd.print(playIndex);
+                    }
+                    else
+                    {
+                        Serial.print("selected list playing");
+                    }
                     myDFPlayer.stop();
                     delay(500);
                     lightUpLEDs(sequenceList[playIndex]);
