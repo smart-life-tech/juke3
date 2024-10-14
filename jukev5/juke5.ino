@@ -400,12 +400,15 @@ void skipSequence()
     {
         lightUpLEDs(sequenceList[playIndex]);
         myDFPlayer.play(sequenceList[playIndex]);
-        lcd.setCursor(0, 0);
-        lcd.print("playing num  = ");
-        lcd.print(sequenceList[playIndex]);
-        lcd.setCursor(0, 1);
-        lcd.print("song index = ");
-        lcd.print(playIndex);
+        if (longPressed)
+        {
+            lcd.setCursor(0, 0);
+            lcd.print("playing num  = ");
+            lcd.print(sequenceList[playIndex]);
+            lcd.setCursor(0, 1);
+            lcd.print("song index = ");
+            lcd.print(playIndex);
+        }
         startBuzzPopSequence();
         playIndex++;
         playList = false;
@@ -804,7 +807,7 @@ void getEntry(char key)
                 break;
             case 'B': // Play sequence
                 Serial.println(F(" playing the sequence"));
-                playList = true;
+                cancel = true;
                 lcd.clear();
                 lcd.print(" Pause=# Reject=C ");
                 lcd.setCursor(0, 1);
@@ -1082,6 +1085,7 @@ void loop()
         {
             handleLongPress();
             keypadLong = true;
+            playList = true;
             Serial.print(F("keypad long pressed"));
         }
         getEntry(key);
