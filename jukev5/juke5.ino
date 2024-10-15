@@ -674,7 +674,7 @@ void getEntry(char key)
     static boolean entryStarted = false;
     if (key == 'C' && sequenceLength > 1)
     {
-        cancel = true;
+        //cancel = true;
         Serial.println(F(" stop the playing"));
         keyBufferIndex = 0;
         Serial.println(F(" skipping the track"));
@@ -1111,6 +1111,6 @@ void loop()
         digitalWrite(ledPins[0], LOW);
         blinkLong();
     }
-    continuePlayingLong();
+    continuePlaying();
     updateBuzzPopLeds();
 }
