@@ -423,7 +423,7 @@ void continuePlaying()
 {
     bool busyPinState = digitalRead(busyPin); // read the busy pin
 
-    if (busyPinState == 1 && playIndex == 1 && cancel) // has it gone from low to high?, meaning the track finished
+    if (busyPinState == 1 && playIndex == 0 && cancel) // has it gone from low to high?, meaning the track finished
     {
 
         Serial.print("play number continue 1  = ");
@@ -435,7 +435,7 @@ void continuePlaying()
         startBuzzPopSequence();
         playIndex++;
     }
-    if (busyPinState == 1 && playIndex == 2 && cancel) // has it gone from low to high?, meaning the track finished
+    if (busyPinState == 1 && playIndex == 1 && cancel) // has it gone from low to high?, meaning the track finished
     {
 
         Serial.print("play number continue 2 = ");
@@ -447,7 +447,7 @@ void continuePlaying()
         startBuzzPopSequence();
         playIndex++;
     }
-    if (busyPinState == 1 && playIndex == 3 && cancel) // has it gone from low to high?, meaning the track finished
+    if (busyPinState == 1 && playIndex == 2 && cancel) // has it gone from low to high?, meaning the track finished
     {
 
         Serial.print("play number continue 3  = ");
@@ -459,7 +459,7 @@ void continuePlaying()
         startBuzzPopSequence();
         playIndex++;
     }
-    if (busyPinState == 1 && playIndex == 4 && cancel) // has it gone from low to high?, meaning the track finished
+    if (busyPinState == 1 && playIndex == 3 && cancel) // has it gone from low to high?, meaning the track finished
     {
         playSequence();
     }
@@ -807,6 +807,8 @@ void getEntry(char key)
                 break;
             case 'B': // Play sequence
                 Serial.println(F(" playing the sequence"));
+                Serial.print("playindex :");
+                Serial.println(playIndex);
                 cancel = true;
                 lcd.clear();
                 lcd.print(" Pause=# Reject=C ");
