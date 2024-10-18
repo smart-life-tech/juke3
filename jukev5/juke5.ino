@@ -408,6 +408,7 @@ void skipSequence()
             lcd.setCursor(0, 1);
             lcd.print("song index = ");
             lcd.print(playIndex);
+            delay(1000);
         }
         startBuzzPopSequence();
         playIndex++;
@@ -434,8 +435,9 @@ void continuePlaying()
         myDFPlayer.play(sequenceList[playIndex]);
         startBuzzPopSequence();
         playIndex++;
+        delay(1000);
     }
-    if (busyPinState == 1 && playIndex == 1 && cancel) // has it gone from low to high?, meaning the track finished
+    else if (busyPinState == 1 && playIndex == 1 && cancel) // has it gone from low to high?, meaning the track finished
     {
 
         Serial.print("play number continue 2 = ");
@@ -446,8 +448,9 @@ void continuePlaying()
         myDFPlayer.play(sequenceList[playIndex]);
         startBuzzPopSequence();
         playIndex++;
+        delay(1000);
     }
-    if (busyPinState == 1 && playIndex == 2 && cancel) // has it gone from low to high?, meaning the track finished
+    else if (busyPinState == 1 && playIndex == 2 && cancel) // has it gone from low to high?, meaning the track finished
     {
 
         Serial.print("play number continue 3  = ");
@@ -458,10 +461,12 @@ void continuePlaying()
         myDFPlayer.play(sequenceList[playIndex]);
         startBuzzPopSequence();
         playIndex++;
+            delay(1000);
     }
-    if (busyPinState == 1 && playIndex == 3 && cancel) // has it gone from low to high?, meaning the track finished
+    else if (busyPinState == 1 && playIndex == 3 && cancel) // has it gone from low to high?, meaning the track finished
     {
         playSequence();
+        delay(1000);
     }
 }
 
@@ -1114,5 +1119,6 @@ void loop()
         blinkLong();
     }
     continuePlaying();
+    continuePlayingLong();
     updateBuzzPopLeds();
 }
