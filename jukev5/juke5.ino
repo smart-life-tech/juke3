@@ -409,6 +409,8 @@ void skipSequence()
             lcd.print("song index = ");
             lcd.print(playIndex);
             delay(1000);
+        }else{
+            if(playIndex==2)playSequence();
         }
         startBuzzPopSequence();
         playIndex++;
