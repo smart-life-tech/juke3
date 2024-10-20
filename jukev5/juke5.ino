@@ -396,6 +396,8 @@ void skipSequence()
     Serial.println(playIndex);
     Serial.print("sequence total number : ");
     Serial.println(sequenceLength);
+    if (playIndex == 2 && !longPressed)
+        asm volatile("jmp 0x0000");
     if (playIndex != sequenceLength) // last track?
     {
         lightUpLEDs(sequenceList[playIndex]);
@@ -409,8 +411,6 @@ void skipSequence()
             lcd.print("song index = ");
             lcd.print(playIndex);
             delay(1000);
-        }else{
-            if(playIndex==2)playSequence();
         }
         startBuzzPopSequence();
         playIndex++;
@@ -463,7 +463,7 @@ void continuePlaying()
         myDFPlayer.play(sequenceList[playIndex]);
         startBuzzPopSequence();
         playIndex++;
-            delay(1000);
+        delay(1000);
     }
     else if (busyPinState == 1 && playIndex == 3 && cancel) // has it gone from low to high?, meaning the track finished
     {
@@ -681,7 +681,7 @@ void getEntry(char key)
     static boolean entryStarted = false;
     if (key == 'C' && sequenceLength > 1)
     {
-        //cancel = true;
+        // cancel = true;
         Serial.println(F(" stop the playing"));
         keyBufferIndex = 0;
         Serial.println(F(" skipping the track"));
