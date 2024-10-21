@@ -396,7 +396,7 @@ void skipSequence()
     Serial.println(playIndex);
     Serial.print("sequence total number : ");
     Serial.println(sequenceLength);
-    if (playIndex == 2 && !longPressed)
+    if (playIndex == 3 && !longPressed)
         asm volatile("jmp 0x0000");
     if (playIndex != sequenceLength) // last track?
     {
