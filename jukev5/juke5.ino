@@ -25,6 +25,7 @@ int row = 16;
 bool apressed = false;
 bool pause_play = true;
 bool playImmediate = false;
+bool verified = true;
 int musicCount = 0;
 int lastPlayed = 0;
 byte currentSelection = 1; // Tracks the current selection (1st, 2nd, 3rd)
@@ -465,7 +466,7 @@ void continuePlaying()
         playIndex++;
         delay(1000);
     }
-    else if (busyPinState == 1 && playIndex == 3 && cancel) // has it gone from low to high?, meaning the track finished
+    else if (busyPinState == 1 && playIndex == 4 && cancel) // has it gone from low to high?, meaning the track finished
     {
         playSequence();
         delay(1000);
@@ -867,43 +868,49 @@ void getEntry(char key)
             // Serial.println("entry1");
             if (row <= 18) // max length to go
             {
-                // Serial.println("entry2");
-                keyBuffer[keyBufferIndex] = key;
-                keyBufferIndex++;
-                // Update LCD screen with entered track number for current selection
-                lcd.setCursor(row, currentSelection); // Adjust the cursor position as needed
-                if (!buttonEntry)
+                if ((verified == true) || (numCounter == 0 && (key == '1' || key == '2')))
                 {
-                    handleDigitPress();
-                    lcd.print(key);
-                }
-                else
-                {
-                    if (row == 16)
+                    // Serial.println("entry2");
+                    keyBuffer[keyBufferIndex] = key;
+                    keyBufferIndex++;
+                    // Update LCD screen with entered track number for current selection
+                    lcd.setCursor(row, currentSelection); // Adjust the cursor position as needed
+                    if (!buttonEntry)
                     {
-                        lcd.print(convertToUpperCase(String(collect1)));
+                        handleDigitPress();
+                        lcd.print(key);
                     }
-                    if (row == 17)
+                    else
                     {
-                        lcd.print(collect2);
-                        displayNum[numCounter] = String(collect1) + String(collect2);
-                        Serial.print("saved to mem: ");
-                        Serial.println(String(collect1) + String(collect2));
-                        Serial.print("saved to memss: ");
-                        Serial.println(displayNum[numCounter]);
-                        Serial.print("1st alpha: ");
-                        Serial.println(collect1);
-                        Serial.print("2nd alpha: ");
-                        Serial.println(collect2);
-                        Serial.print("counts: ");
-                        Serial.println(numCounter);
-                        numCounter++;
-                        if (numCounter >= 3)
-                            numCounter = 0;
+                        if (row == 16)
+                        {
+                            lcd.print(convertToUpperCase(String(collect1)));
+                        }
+                        if (row == 17)
+                        {
+                            lcd.print(collect2);
+                            displayNum[numCounter] = String(collect1) + String(collect2);
+                            Serial.print("saved to mem: ");
+                            Serial.println(String(collect1) + String(collect2));
+                            Serial.print("saved to memss: ");
+                            Serial.println(displayNum[numCounter]);
+                            Serial.print("1st alpha: ");
+                            Serial.println(collect1);
+                            Serial.print("2nd alpha: ");
+                            Serial.println(collect2);
+                            Serial.print("counts: ");
+                            Serial.println(numCounter);
+                            numCounter++;
+                            verified=true;
+                            if (numCounter >= 3){
+                                numCounter = 0;
+                                verified=false;
+                            }
+                        }
                     }
-                }
 
-                row++;
+                    row++;
+                }
             }
         }
     }
