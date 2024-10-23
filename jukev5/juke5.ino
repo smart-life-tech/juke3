@@ -868,7 +868,7 @@ void getEntry(char key)
             // Serial.println("entry1");
             if (row <= 18) // max length to go
             {
-                if ((verified == true) || (numCounter == 0 && (key == '1' || key == '2')))
+                if ((verified == true) || (numCounter == 0 && (key == '1' || key == '2')))// only accept one or tow at first press
                 {
                     // Serial.println("entry2");
                     keyBuffer[keyBufferIndex] = key;
