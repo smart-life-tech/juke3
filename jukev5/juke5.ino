@@ -811,6 +811,7 @@ void getEntry(char key)
                 // Clear the buffer
                 confirmSelection();
                 memset(keyBuffer, 10, sizeof(keyBuffer));
+                 verified=false;
                 // keyBufferIndex = 0;
                 break;
             case 'B': // Play sequence
@@ -868,9 +869,10 @@ void getEntry(char key)
             // Serial.println("entry1");
             if (row <= 18) // max length to go
             {
-                if ((verified == true) || (numCounter == 0 && (key == '1' || key == '2')))// only accept one or tow at first press
+                if ((verified == true) || (numCounter == 0 && (key == '1' || key == '2'))) // only accept one or tow at first press
                 {
                     // Serial.println("entry2");
+                    verified = true;
                     keyBuffer[keyBufferIndex] = key;
                     keyBufferIndex++;
                     // Update LCD screen with entered track number for current selection
@@ -901,10 +903,11 @@ void getEntry(char key)
                             Serial.print("counts: ");
                             Serial.println(numCounter);
                             numCounter++;
-                            verified=true;
-                            if (numCounter >= 3){
+                            verified = true;
+                            if (numCounter >= 3)
+                            {
                                 numCounter = 0;
-                                verified=false;
+                                verified = false;
                             }
                         }
                     }
