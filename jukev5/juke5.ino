@@ -811,7 +811,7 @@ void getEntry(char key)
                 // Clear the buffer
                 confirmSelection();
                 memset(keyBuffer, 10, sizeof(keyBuffer));
-                 verified=false;
+                verified = false;
                 // keyBufferIndex = 0;
                 break;
             case 'B': // Play sequence
