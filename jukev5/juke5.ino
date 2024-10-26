@@ -723,7 +723,7 @@ void getEntry(char key)
     if (key == 'A')
     {
         currentSelection++;
-
+        verified = false;
         row = 16;
         if (currentSelection > 3)
         {
