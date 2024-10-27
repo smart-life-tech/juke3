@@ -376,7 +376,7 @@ void addToSequenceList(int trackNumber)
 // Function to play the sequence
 void playSequence()
 {
-    if (digitalRead(busyPin) == 1 && (playIndex == 4 || done_playing))
+    if (digitalRead(busyPin) == 1 && (playIndex == 3 || done_playing))
     { // has it gone from low to high?, meaning the track finished
         asm volatile("jmp 0x0000");
     }
@@ -466,7 +466,7 @@ void continuePlaying()
         playIndex++;
         delay(1000);
     }
-    else if (busyPinState == 1 && playIndex == 4 && cancel) // has it gone from low to high?, meaning the track finished
+    else if (busyPinState == 1 && playIndex == 3 && cancel) // has it gone from low to high?, meaning the track finished
     {
         playSequence();
         delay(1000);
@@ -645,7 +645,7 @@ void playTheList()
                 {
                     done_playing = true;
                     Serial.println("done playing");
-                    playSequence();
+                   // playSequence();
                     delay(1000);
                 }
                 Serial.print("still playing next: ");
