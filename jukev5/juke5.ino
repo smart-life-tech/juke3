@@ -591,9 +591,9 @@ void blinkLong()
         if (!digitalRead(busyPin)) // blink when its playing
         {
 
-            lcd.setCursor(15, 2); // Assuming track number position
+            lcd.setCursor(14, 0); // Assuming track number position
             lcd.print(trackBlinkState ? "<" : " ");
-            lcd.setCursor(19, 2);
+            lcd.setCursor(16, 0);
             lcd.print(trackBlinkState ? ">" : " ");
         }
     }
@@ -1128,7 +1128,7 @@ void loop()
         digitalWrite(ledPins[2], LOW);
         digitalWrite(ledPins[1], LOW);
         digitalWrite(ledPins[0], LOW);
-        blinkLong();
+       // blinkLong();
     }
     continuePlaying();
     continuePlayingLong();
