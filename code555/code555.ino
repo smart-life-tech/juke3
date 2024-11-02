@@ -397,10 +397,15 @@ void skipSequence()
     Serial.println(playIndex);
     Serial.print("sequence total number : ");
     Serial.println(sequenceLength);
+    Serial.print("sequence list: ");
+    Serial.println(sequenceList[playIndex]);
     if (playIndex == 3 && !longPressed)
         asm volatile("jmp 0x0000");
     if (sequenceList[playIndex] == 299 && longPressed)
-        playIndex = 0;// goto the first song in the list
+    {
+        playIndex = 0; // goto the first song in the list
+        addLongToSequenceList(0);
+    }
     if (playIndex != sequenceLength) // last track?
     {
         lightUpLEDs(sequenceList[playIndex]);
