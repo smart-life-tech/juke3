@@ -419,6 +419,8 @@ void skipSequence()
             lcd.setCursor(0, 1);
             lcd.print("Continuous Play Mode Index counter = ");
             lcd.print(playIndex);
+            lcd.setCursor(0, 2);
+            lcd.print("Skip = C");
             delay(1000);
         }
         startBuzzPopSequence();
@@ -513,6 +515,8 @@ void continuePlayingLong()
                         lcd.setCursor(0, 1);
                         lcd.print("Continuous Play Mode Index counter = ");
                         lcd.print(playIndex);
+                        lcd.setCursor(0, 2);
+                        lcd.print("Skip = C");
                     }
                     else
                     {
