@@ -401,7 +401,7 @@ void skipSequence()
     Serial.println(sequenceList[playIndex]);
     if (playIndex == 3 && !longPressed)
         asm volatile("jmp 0x0000");
-    if (sequenceList[playIndex] == 299 && longPressed)
+    if (sequenceList[playIndex] == 300 && longPressed)
     {
         playIndex = 0; // goto the first song in the list
         sequenceLength = 0;
