@@ -400,7 +400,7 @@ void skipSequence()
     if (playIndex == 3 && !longPressed)
         asm volatile("jmp 0x0000");
     if (playIndex == 299 && longPressed)
-        playIndex = 0;
+        playIndex = 0;// goto the first song in the list
     if (playIndex != sequenceLength) // last track?
     {
         lightUpLEDs(sequenceList[playIndex]);
