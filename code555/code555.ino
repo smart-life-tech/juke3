@@ -404,7 +404,8 @@ void skipSequence()
     if (sequenceList[playIndex] == 299 && longPressed)
     {
         playIndex = 0; // goto the first song in the list
-        addLongToSequenceList(0);
+        sequenceLength = 0;
+        addLongToSequenceList(100);
     }
     if (playIndex != sequenceLength) // last track?
     {
