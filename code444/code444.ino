@@ -410,6 +410,7 @@ void continuePlayingLong()
         if (busyPinState == 1) // has it gone from low to high?, meaning the track finished
         {
             Serial.println("song not selected starting a new song");
+            Serial.print(myDFPlayer.readState());
 
             if ((lastPlayed >= 100 && lastPlayed < 180) || (lastPlayed >= 200 && lastPlayed < 280))
             {
@@ -430,8 +431,9 @@ void continuePlayingLong()
                 myDFPlayer.stop();
                 delay(500);
                 lightUpLEDs(lastPlayed);
-                delay(500);
+                delay(1000);
                 myDFPlayer.play(lastPlayed);
+                Serial.print(myDFPlayer.readState());
                 delay(50);
                 startBuzzPopSequence();
             }
