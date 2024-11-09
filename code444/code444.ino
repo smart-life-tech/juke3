@@ -433,7 +433,8 @@ void continuePlayingLong()
                 lightUpLEDs(lastPlayed);
                 delay(1000);
                 myDFPlayer.play(lastPlayed);
-                Serial.print(myDFPlayer.readState());
+                Serial.print("playing number in readstate = ");
+                Serial.println(myDFPlayer.readState());
                 delay(50);
                 startBuzzPopSequence();
             }
