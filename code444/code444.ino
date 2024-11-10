@@ -416,7 +416,7 @@ void continuePlayingLong()
             if ((lastPlayed >= 100 && lastPlayed < 180) || (lastPlayed >= 200 && lastPlayed < 280))
             {
 
-                lastPlayed++;
+               
                 if (lastPlayed == 180)
                     lastPlayed = 200;
                 if (lastPlayed >= 279)
@@ -434,6 +434,7 @@ void continuePlayingLong()
                 lightUpLEDs(lastPlayed);
                 delay(1000);
                 myDFPlayer.play(lastPlayed);
+                 lastPlayed++;
                 delay(1000);
                 Serial.print("playing number in readstate2 = ");
                 Serial.println(myDFPlayer.readState());
