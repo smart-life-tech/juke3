@@ -407,16 +407,19 @@ void continuePlayingLong()
 
         bool busyPinState = digitalRead(busyPin); // read the busy pin
         digitalWrite(A15, HIGH);
-        if (digitalRead(busyPin) == 1   ) // has it gone from low to high?, meaning the track finished
+        if (digitalRead(busyPin) == 1) // has it gone from low to high?, meaning the track finished
         {
             Serial.println("song not selected starting a new song");
             Serial.print("playing number in readstate1 = ");
             Serial.println(myDFPlayer.readState());
+            Serial.print("playing number currwnt file number = ");
+            Serial.println(myDFPlayer.readCurrentFileNumber());
+            Serial.print("playing number in read= ");
+            Serial.println(myDFPlayer.read());
 
             if ((lastPlayed >= 100 && lastPlayed < 180) || (lastPlayed >= 200 && lastPlayed < 280))
             {
 
-               
                 if (lastPlayed == 180)
                     lastPlayed = 200;
                 if (lastPlayed >= 279)
@@ -434,7 +437,7 @@ void continuePlayingLong()
                 lightUpLEDs(lastPlayed);
                 delay(1000);
                 myDFPlayer.play(lastPlayed);
-                 lastPlayed++;
+                lastPlayed++;
                 delay(1000);
                 Serial.print("playing number in readstate2 = ");
                 Serial.println(myDFPlayer.readState());
