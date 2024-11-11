@@ -435,10 +435,10 @@ void continuePlayingLong()
                 myDFPlayer.stop();
                 delay(500);
                 lightUpLEDs(lastPlayed);
-                delay(1000);
+                delay(2500);
                 myDFPlayer.play(lastPlayed);
                 lastPlayed++;
-                delay(1000);
+                delay(500);
                 Serial.print("playing number in readstate2 = ");
                 Serial.println(myDFPlayer.readState());
                 delay(50);
