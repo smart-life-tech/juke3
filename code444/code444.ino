@@ -409,7 +409,7 @@ void continuePlayingLong()
         digitalWrite(A15, HIGH);
         if (digitalRead(busyPin) == 1) // has it gone from low to high?, meaning the track finished
         {
-            Serial.println("song not selected starting a new song");  
+            Serial.println("song not selected starting a new song");
 
             if ((lastPlayed >= 100 && lastPlayed < 180) || (lastPlayed >= 200 && lastPlayed < 280))
             {
@@ -426,8 +426,8 @@ void continuePlayingLong()
                 }
                 Serial.print("playing number in continous mode = ");
                 Serial.println(lastPlayed);
-               // myDFPlayer.stop();
-                //delay(500);
+                // myDFPlayer.stop();
+                // delay(500);
                 lightUpLEDs(lastPlayed);
                 delay(2500);
                 myDFPlayer.play(lastPlayed);
@@ -443,6 +443,16 @@ void continuePlayingLong()
             {
                 Serial.print("un recongized number = ");
                 Serial.println(lastPlayed);
+                if (lastPlayed == 180)
+                    lastPlayed = 200;
+                if (lastPlayed >= 279)
+                {
+                    lastPlayed = 100;
+                    myDFPlayer.stop();
+                    Serial.println("last played reset to 100");
+                    delay(500);
+                    myDFPlayer.play(lastPlayed);
+                }
             }
         }
     }
