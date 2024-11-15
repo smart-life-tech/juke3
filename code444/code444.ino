@@ -59,7 +59,7 @@ byte currentDisplayLine = 1;
 bool keypadLong = false;
 #define MAX_SEQUENCE_LENGTH 100 // Maximum length of the sequence list
 bool numAlpha = false;
-
+bool verified = false;
 int sequenceList[MAX_SEQUENCE_LENGTH]; // Array to store the sequence list
 int sequenceLength = 0;                // Current length of the sequence list
 // Function to add a track to the sequence list
@@ -671,12 +671,21 @@ void getEntry(char key)
     { // Continue entry
         if (keyBufferIndex < 9 && isDigit(key))
         {
-            keyBuffer[keyBufferIndex] = key;
-            keyBufferIndex++;
-            Serial.print("counts: ");
-            Serial.println(numCounter);
-            numCounter++;
-            handleDigitPress();
+            if (/*(verified == true) ||*/ (numCounter == 0 && (key == '1' || key == '2')) || (numCounter == 1 && (key != '8' || key != '9')) || (numCounter == 2)) // only accept one or tow at first press
+            {
+                keyBuffer[keyBufferIndex] = key;
+                keyBufferIndex++;
+                Serial.print("counts: ");
+                Serial.println(numCounter);
+                numCounter++;
+                handleDigitPress();
+                verified = true;
+                if (numCounter >= 3)
+                {
+                    numCounter = 0;
+                    verified = false;
+                }
+            }
         }
     }
 
