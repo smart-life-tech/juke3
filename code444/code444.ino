@@ -681,7 +681,7 @@ void getEntry(char key)
             Serial.println(keyBuffer[keyBufferIndex]);
             Serial.print("num counter: ");
             Serial.println(numCounter);
-            if (/*(verified == true) ||*/ (numCounter == 0 && (key == '1' || key == '2')) || (numCounter == 1 && (key != '8' || key != '9')) || (numCounter == 2)) // only accept one or tow at first press
+            if (/*(verified == true) ||*/ (numCounter == 0 && (key == '1' || key == '2')) || (numCounter == 1 && (key != '8' || key != '9')) || (numCounter == '2')) // only accept one or tow at first press
             {
                 keyBuffer[keyBufferIndex] = key;
                 keyBufferIndex++;
