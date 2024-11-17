@@ -671,7 +671,7 @@ void getEntry(char key)
     { // Continue entry
         if (keyBufferIndex < 9 && isDigit(key))
         {
-            Serial.print("key: ");
+            Serial.print("key entered: ");
             Serial.println(key);
             Serial.print("keyBufferIndex: ");
             Serial.println(keyBufferIndex);
@@ -681,25 +681,35 @@ void getEntry(char key)
             Serial.println(keyBuffer[keyBufferIndex]);
             Serial.print("num counter: ");
             Serial.println(numCounter);
-            if (/*(verified == true) ||*/ (numCounter == 0 && (key == '1' || key == '2')) || (numCounter == 1 && (key != '8' || key != '9')) || (numCounter == '2')) // only accept one or tow at first press
+            if (numCounter == 0 && (key == '1' || key == '2'))
             {
-                keyBuffer[keyBufferIndex] = key;
-                keyBufferIndex++;
-                Serial.print("counts: ");
-                Serial.println(numCounter);
-                numCounter++;
-                handleDigitPress();
-                verified = true;
-                if (numCounter >= 3)
-                {
-                    numCounter = 0;
-                    verified = false;
-                }
+                doEntry(key);
             }
+            if (numCounter == 1 && (key != '8' || key != '9'))
+            { // only accept 0 to 7  at second press
+                doEntry(key);
+            }
+            if (numCounter == 2)
+                doEntry(key);
         }
     }
 
     row++;
+}
+void doEntry(char keys)
+{
+    keyBuffer[keyBufferIndex] = keys;
+    keyBufferIndex++;
+    Serial.print("counts: ");
+    Serial.println(numCounter);
+    numCounter++;
+    handleDigitPress();
+    verified = true;
+    // if (numCounter >= 3)
+    //{
+    //   numCounter = 0;
+    //  verified = false;
+    // }
 }
 
 float entryToFloat(char *entry)
@@ -904,6 +914,7 @@ void loop()
             numCounter = 0;
             delay(800);
             getEntry('A');
+            verified = false;
         }
     }
     playTheList();
