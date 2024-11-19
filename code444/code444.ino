@@ -685,11 +685,11 @@ void getEntry(char key)
             {
                 doEntry(key);
             }
-            if (numCounter == 1 && (key != '8' || key != '9'))
+            else if (numCounter == 1 && (key != '8' || key != '9'))
             { // only accept 0 to 7  at second press
                 doEntry(key);
             }
-            if (numCounter == 2)
+           else if (numCounter == 2)
                 doEntry(key);
         }
     }
