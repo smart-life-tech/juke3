@@ -431,8 +431,9 @@ void continuePlayingLong()
                 lightUpLEDs(lastPlayed);
                 delay(2500);
                 myDFPlayer.play(lastPlayed);
-                lastPlayed++;
                 delay(500);
+                lastPlayed++;
+
                 Serial.print("playing number in readstate2 = ");
                 Serial.println(myDFPlayer.readState());
                 Serial.print("  ");
@@ -689,7 +690,7 @@ void getEntry(char key)
             { // only accept 0 to 7  at second press
                 doEntry(key);
             }
-           else if (numCounter == 2)
+            else if (numCounter == 2)
                 doEntry(key);
         }
     }
