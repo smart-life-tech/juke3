@@ -53,7 +53,7 @@ byte trackList[3] = {0, 0, 0};
 byte trackIndex = 0;
 byte numTracks = 0;
 byte mode = 0;
-bool playList = true;
+bool playList = false;
 static bool lastBusyPinState = 0;
 byte currentDisplayLine = 1;
 bool keypadLong = false;
@@ -469,8 +469,8 @@ void playTheList()
         timer = millis();
 
         // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        bool busyPinState = digitalRead(busyPin);                           // read the busy pin
-        if (busyPinState != lastBusyPinState && playIndex < sequenceLength) // has it changed?
+        bool busyPinState = digitalRead(busyPin);                                       // read the busy pin
+        if (busyPinState != lastBusyPinState && playIndex < sequenceLength && playList) // has it changed?
         {
             if (busyPinState == 1 && !keypadLong) // has it gone from low to high?, meaning the track finished
             {
@@ -697,6 +697,7 @@ void getEntry(char key)
 
     row++;
 }
+
 void doEntry(char keys)
 {
     keyBuffer[keyBufferIndex] = keys;
