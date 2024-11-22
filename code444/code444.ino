@@ -470,7 +470,7 @@ void playTheList()
 
         // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         bool busyPinState = digitalRead(busyPin);                                       // read the busy pin
-        if (busyPinState != lastBusyPinState && playIndex < sequenceLength && playList) // has it changed?
+        if (busyPinState != lastBusyPinState && playIndex < sequenceLength ) // has it changed?
         {
             if (busyPinState == 1 && !keypadLong) // has it gone from low to high?, meaning the track finished
             {
@@ -490,6 +490,7 @@ void playTheList()
                     startBuzzPopSequence();
                     lastPlayed = sequenceList[playIndex];
                     playIndex++;                    // next track
+                    lastPlayed++;
                     if (playIndex > sequenceLength) // last track?
                     {
                         sequenceLength = 0;
