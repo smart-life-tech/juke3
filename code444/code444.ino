@@ -469,8 +469,8 @@ void playTheList()
         timer = millis();
 
         // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        bool busyPinState = digitalRead(busyPin);                                       // read the busy pin
-        if (busyPinState != lastBusyPinState && playIndex < sequenceLength ) // has it changed?
+        bool busyPinState = digitalRead(busyPin);                           // read the busy pin
+        if (busyPinState != lastBusyPinState && playIndex < sequenceLength) // has it changed?
         {
             if (busyPinState == 1 && !keypadLong) // has it gone from low to high?, meaning the track finished
             {
@@ -489,7 +489,7 @@ void playTheList()
                     myDFPlayer.play(sequenceList[playIndex]);
                     startBuzzPopSequence();
                     lastPlayed = sequenceList[playIndex];
-                    playIndex++;                    // next track
+                    playIndex++; // next track
                     lastPlayed++;
                     if (playIndex > sequenceLength) // last track?
                     {
@@ -675,12 +675,12 @@ void getEntry(char key)
         {
             Serial.print("key entered: ");
             Serial.println(key);
-            Serial.print("keyBufferIndex: ");
-            Serial.println(keyBufferIndex);
-            Serial.print("keyBuffer: ");
-            Serial.println(keyBuffer);
-            Serial.print("keyBuffer[keyBufferIndex]: ");
-            Serial.println(keyBuffer[keyBufferIndex]);
+            //.print("keyBufferIndex: ");
+            // Serial.println(keyBufferIndex);
+            // Serial.print("keyBuffer: ");
+            // Serial.println(keyBuffer);
+            // Serial.print("keyBuffer[keyBufferIndex]: ");
+            // Serial.println(keyBuffer[keyBufferIndex]);
             Serial.print("num counter: ");
             Serial.println(numCounter);
             if (numCounter == 0 && (key == '1' || key == '2'))
@@ -689,7 +689,10 @@ void getEntry(char key)
             }
             else if (numCounter == 1 && (key != '8' || key != '9'))
             { // only accept 0 to 7  at second press
-                doEntry(key);
+                if (key == '0' || key == '1' || key == '2' || key == '3' || key == '4' || key == '5' || key == '6' || key == '7')
+                {
+                    doEntry(key);
+                }
             }
             else if (numCounter == 2)
                 doEntry(key);
