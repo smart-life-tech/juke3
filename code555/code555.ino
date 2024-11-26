@@ -193,6 +193,7 @@ bool isAlpha(char c)
 {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
+
 void testled()
 {
     for (int i = 0; i < NUM_LEDS_GROUP1; i++)
@@ -976,7 +977,7 @@ char getKeypadInput()
     {
         if (digitalRead(digitPins[i]) == LOW)
         {
-            delay(250); // Debounce delay
+            delay(50); // Debounce delay
             if (digitalRead(digitPins[i]) == LOW)
             { // Confirm button press
 
@@ -1012,7 +1013,7 @@ char getKeypadInput()
 
     if (digitalRead(resetPin) == LOW)
     {
-        delay(250); // Debounce delay
+        delay(50); // Debounce delay
         if (digitalRead(resetPin) == LOW)
         { // Confirm button press
             while (digitalRead(resetPin) == LOW)
@@ -1025,7 +1026,7 @@ char getKeypadInput()
     {
         if (digitalRead(abcdPins[i]) == LOW)
         {
-            delay(100); // Debounce delay
+            delay(50); // Debounce delay
             if (digitalRead(abcdPins[i]) == LOW)
             { // Confirm button press
                 while (digitalRead(abcdPins[i]) == LOW)
@@ -1037,6 +1038,7 @@ char getKeypadInput()
 
     return '\0'; // No key pressed
 }
+
 void setup()
 {
     Serial.begin(115200);
