@@ -95,6 +95,12 @@ const int digitPins[10] = {15, 16, 17, 18, 19, 42, 43, 44, 45, 46}; // Pins for 
 const int resetPin = 51;                                            // Pin for reset (* and #)
 const int abcdPins[4] = {47, 48, 49, 50};                           // Pins for A, B, C, D
 
+// Variables for blinking
+unsigned long aDlastBlinkTime = 0;   // Timer for blinking
+unsigned int aDblinkInterval = 1000; // Blink interval in milliseconds
+bool blinkState = true;              // State for toggling the blink
+bool isBlinking = false;             // Indicates if the "A=ACCEPT D=DELETE" should blink
+
 void splitInteger(int number, char &hundreds, char &tens, char &units)
 {
     units = (number % 10) + '0';
@@ -311,6 +317,31 @@ void updateTrackBlink()
                 lcd.print(trackBlinkState ? "<" : " ");
                 lcd.setCursor(19, 2);
                 lcd.print(trackBlinkState ? ">" : " ");
+            }
+        }
+    }
+}
+// Function to handle blinking of "A=ACCEPT D=DELETE"
+void updateAcceptDeleteBlink()
+{
+    // Check if we are blinking
+    if (isBlinking)
+    {
+        // Check if it's time to toggle the blink state
+        if (millis() - aDlastBlinkTime >= aDblinkInterval)
+        {
+            aDlastBlinkTime = millis(); // Reset the timer
+            blinkState = !blinkState;   // Toggle the blink state
+
+            // Update the LCD based on blink state
+            lcd.setCursor(0, 0); // Line 1
+            if (blinkState)
+            {
+                lcd.print("A=ACCEPT  D=DELETE");
+            }
+            else
+            {
+                lcd.print("                  "); // Clear the line
             }
         }
     }
@@ -780,6 +811,8 @@ void getEntry(char key)
                 lcd.print(" 3rd Selection <___> ");
             }
             // return;
+            // Stop blinking if A or D is pressed
+            isBlinking = false;
         }
     }
     else if (key == '*' || key == 'A' || key == 'B' || key == 'C')
@@ -825,6 +858,8 @@ void getEntry(char key)
                 confirmSelection();
                 memset(keyBuffer, 10, sizeof(keyBuffer));
                 verified = false;
+                // Stop blinking if A or D is pressed
+                isBlinking = false;
                 // keyBufferIndex = 0;
                 break;
             case 'B': // Play sequence
@@ -919,6 +954,8 @@ void getEntry(char key)
                             verified = true;
                             if (numCounter >= 3)
                             {
+                                isBlinking = true;          // Enable blinking
+                                aDlastBlinkTime = millis(); // Initialize timer
                                 numCounter = 0;
                                 verified = false;
                             }
@@ -1147,4 +1184,6 @@ void loop()
     continuePlaying();
     continuePlayingLong();
     updateBuzzPopLeds();
+    // Manage the blinking display
+    updateAcceptDeleteBlink();
 }
