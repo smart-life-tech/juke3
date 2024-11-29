@@ -642,6 +642,7 @@ void blinkLong()
         }
     }
 }
+
 void playTheList()
 {
 
@@ -952,9 +953,11 @@ void getEntry(char key)
                             Serial.println(numCounter);
                             numCounter++;
                             verified = true;
+                            if (numCounter >= 2)
+                                isBlinking = true;
                             if (numCounter >= 3)
                             {
-                                isBlinking = true;          // Enable blinking
+                                isBlinking = false;         // Enable blinking
                                 aDlastBlinkTime = millis(); // Initialize timer
                                 numCounter = 0;
                                 verified = false;
