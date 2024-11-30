@@ -922,7 +922,8 @@ void getEntry(char key)
             {
                 if ((verified == true) || (numCounter == 0 && (key == '1' || key == '2'))) // only accept one or tow at first press
                 {
-                    Serial.println("entry2");
+                    Serial.print("entry: ");
+                    Serial.println(key);
                     verified = true;
                     keyBuffer[keyBufferIndex] = key;
                     keyBufferIndex++;
