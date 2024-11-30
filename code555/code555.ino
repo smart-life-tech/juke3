@@ -327,9 +327,11 @@ void updateAcceptDeleteBlink()
     // Check if we are blinking
     if (isBlinking)
     {
+        Serial.println("blink activated");
         // Check if it's time to toggle the blink state
         if (millis() - aDlastBlinkTime >= aDblinkInterval)
         {
+            Serial.println("blinking");
             aDlastBlinkTime = millis(); // Reset the timer
             blinkState = !blinkState;   // Toggle the blink state
 
@@ -954,11 +956,15 @@ void getEntry(char key)
                             numCounter++;
                             verified = true;
                             if (numCounter >= 2)
+                            {
                                 isBlinking = true;
+                                Serial.println("blink on");
+                            }
                             if (numCounter >= 3)
                             {
-                                isBlinking = false;         // Enable blinking
-                                aDlastBlinkTime = millis(); // Initialize timer
+                                isBlinking = false; // Enable blinking
+                                Serial.println("blink off");
+                                // aDlastBlinkTime = millis(); // Initialize timer
                                 numCounter = 0;
                                 verified = false;
                             }
