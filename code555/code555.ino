@@ -922,7 +922,7 @@ void getEntry(char key)
             {
                 if ((verified == true) || (numCounter == 0 && (key == '1' || key == '2'))) // only accept one or tow at first press
                 {
-                    // Serial.println("entry2");
+                    Serial.println("entry2");
                     verified = true;
                     keyBuffer[keyBufferIndex] = key;
                     keyBufferIndex++;
@@ -932,6 +932,7 @@ void getEntry(char key)
                     {
                         handleDigitPress();
                         lcd.print(key);
+                        Serial.print("not button entry");
                     }
                     else
                     {
@@ -1158,8 +1159,8 @@ void loop()
     if (key)
     {
         isPressing = false; // Reset if another key is pressed
-        Serial.print(F(" key code = "));
-        Serial.print(key);
+        Serial.print(F(" key code entered = "));
+        Serial.println(key);
         if (key == 'Z')
         {
             handleLongPress();
