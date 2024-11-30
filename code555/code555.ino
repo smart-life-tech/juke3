@@ -934,6 +934,23 @@ void getEntry(char key)
                         handleDigitPress();
                         lcd.print(key);
                         Serial.print("not button entry");
+                        Serial.print("counts: ");
+                        Serial.println(numCounter);
+                        numCounter++;
+                        verified = true;
+                        if (numCounter >= 2)
+                        {
+                            isBlinking = true;
+                            Serial.println("blink on");
+                        }
+                        if (numCounter >= 3)
+                        {
+                            isBlinking = false; // Enable blinking
+                            Serial.println("blink off");
+                            // aDlastBlinkTime = millis(); // Initialize timer
+                            numCounter = 0;
+                            verified = false;
+                        }
                     }
                     else
                     {
