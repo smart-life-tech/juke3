@@ -339,11 +339,11 @@ void updateAcceptDeleteBlink()
             lcd.setCursor(0, 0); // Line 1
             if (blinkState)
             {
-                lcd.print("A=ACCEPT  D=DELETE");
+                lcd.print("A=ACCEPT   D=DELETE");
             }
             else
             {
-                lcd.print("                  "); // Clear the line
+                lcd.print("                    "); // Clear the line
             }
         }
     }
@@ -938,15 +938,11 @@ void getEntry(char key)
                         Serial.println(numCounter);
                         numCounter++;
                         verified = true;
-                        if (numCounter >= 2)
-                        {
-                            isBlinking = true;
-                            Serial.println("blink on");
-                        }
+                        
                         if (numCounter >= 3)
                         {
-                            isBlinking = false; // Enable blinking
-                            Serial.println("blink off");
+                            isBlinking = true; // Enable blinking
+                            Serial.println("blink on");
                             // aDlastBlinkTime = millis(); // Initialize timer
                             numCounter = 0;
                             verified = false;
@@ -974,15 +970,11 @@ void getEntry(char key)
                             Serial.println(numCounter);
                             numCounter++;
                             verified = true;
-                            if (numCounter >= 2)
-                            {
-                                isBlinking = true;
-                                Serial.println("blink on");
-                            }
+                            
                             if (numCounter >= 3)
                             {
-                                isBlinking = false; // Enable blinking
-                                Serial.println("blink off");
+                                isBlinking = true; // Enable blinking
+                                Serial.println("blink on");
                                 // aDlastBlinkTime = millis(); // Initialize timer
                                 numCounter = 0;
                                 verified = false;
