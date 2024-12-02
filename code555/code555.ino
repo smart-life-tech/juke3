@@ -379,6 +379,37 @@ void updateAcceptDeleteBlink()
     }
 }
 
+void updateSelectionBlinkDpressed()
+{ // Toggle the blink state
+    selectionBlinkState = true;
+    // Update the LCD with the current blink state
+    if (currentSelection == 1 && !apressed)
+    {
+        lcd.setCursor(0, 1);
+        lcd.print(selectionBlinkState ? " 1st Selection " : "              ");
+        lcd.setCursor(0, 3);
+        lcd.print(" 3rd Selection ");
+    }
+    else if (currentSelection == 2 && !apressed)
+    {
+        lcd.setCursor(0, 2);
+        lcd.print(selectionBlinkState ? " 2nd Selection " : "              ");
+        lcd.setCursor(0, 1);
+        lcd.print(" 1st Selection ");
+        lcd.setCursor(0, 3);
+        lcd.print(" 3rd Selection ");
+    }
+    else if (currentSelection == 3 && !apressed)
+    {
+        lcd.setCursor(0, 3);
+        lcd.print(selectionBlinkState ? " 3rd Selection " : "              ");
+        lcd.setCursor(0, 1);
+        lcd.print(" 1st Selection ");
+        lcd.setCursor(0, 2);
+        lcd.print(" 2nd Selection ");
+    }
+}
+
 void updateSelectionBlink()
 {
     // Check if it's time to toggle the blink state
@@ -847,8 +878,9 @@ void getEntry(char key)
             // Stop blinking if A or D is pressed
             isBlinking = false;
             longPressed = false;
-            Serial.print("current selection when d pressed " );
+            Serial.print("current selection when d pressed ");
             Serial.println(currentSelection);
+            updateSelectionBlinkDpressed();
         }
     }
     else if (key == '*' || key == 'A' || key == 'B' || key == 'C')
