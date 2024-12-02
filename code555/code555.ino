@@ -327,11 +327,11 @@ void updateAcceptDeleteBlink()
     // Check if we are blinking
     if (isBlinking)
     {
-        Serial.println("blink activated");
-        // Check if it's time to toggle the blink state
+        // Serial.println("blink activated");
+        //  Check if it's time to toggle the blink state
         if (millis() - aDlastBlinkTime >= aDblinkInterval)
         {
-            Serial.println("blinking");
+            // Serial.println("blinking");
             aDlastBlinkTime = millis(); // Reset the timer
             blinkState = !blinkState;   // Toggle the blink state
 
@@ -846,7 +846,9 @@ void getEntry(char key)
             // return;
             // Stop blinking if A or D is pressed
             isBlinking = false;
-           // longPressed = false;
+            longPressed = false;
+            Serial.print("current selection when d pressed " );
+            Serial.println(currentSelection);
         }
     }
     else if (key == '*' || key == 'A' || key == 'B' || key == 'C')
