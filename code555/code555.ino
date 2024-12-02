@@ -380,7 +380,8 @@ void updateAcceptDeleteBlink()
 }
 
 void updateSelectionBlinkDpressed()
-{ // Toggle the blink state
+{
+     // Toggle the blink state
     selectionBlinkState = true;
     // Update the LCD with the current blink state
     if (currentSelection == 1 && !apressed)
@@ -1009,6 +1010,7 @@ void getEntry(char key)
                         {
                             isBlinking = true; // Enable blinking
                             longPressed = true;
+                            updateSelectionBlinkDpressed();
                             Serial.println("blink on");
                             // aDlastBlinkTime = millis(); // Initialize timer
                             numCounter = 0;
@@ -1042,6 +1044,7 @@ void getEntry(char key)
                             {
                                 isBlinking = true; // Enable blinking
                                 longPressed = true;
+                                updateSelectionBlinkDpressed();
                                 Serial.println("blink on");
                                 // aDlastBlinkTime = millis(); // Initialize timer
                                 numCounter = 0;
