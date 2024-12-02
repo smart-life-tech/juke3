@@ -846,6 +846,7 @@ void getEntry(char key)
             // return;
             // Stop blinking if A or D is pressed
             isBlinking = false;
+            longPressed = false;
         }
     }
     else if (key == '*' || key == 'A' || key == 'B' || key == 'C')
@@ -893,6 +894,7 @@ void getEntry(char key)
                 verified = false;
                 // Stop blinking if A or D is pressed
                 isBlinking = false;
+                longPressed = false;
                 // keyBufferIndex = 0;
                 break;
             case 'B': // Play sequence
@@ -972,6 +974,7 @@ void getEntry(char key)
                         if (numCounter >= 3)
                         {
                             isBlinking = true; // Enable blinking
+                            longPressed = true;
                             Serial.println("blink on");
                             // aDlastBlinkTime = millis(); // Initialize timer
                             numCounter = 0;
@@ -1004,6 +1007,7 @@ void getEntry(char key)
                             if (numCounter >= 3)
                             {
                                 isBlinking = true; // Enable blinking
+                                longPressed = true;
                                 Serial.println("blink on");
                                 // aDlastBlinkTime = millis(); // Initialize timer
                                 numCounter = 0;
