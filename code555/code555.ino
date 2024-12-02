@@ -1185,7 +1185,7 @@ void setup()
     // myDFPlayer.play(3);
     lcd.begin(20, 4);
     lcd.clear(); // the only time that you should use clear
-    lcd.print("A=Accept    D=Delete");
+    lcd.print("AMI/Rowe 1978");
     lcd.setCursor(0, 1);
     lcd.print(" 1st Selection <___> ");
     lcd.setCursor(0, 2);
