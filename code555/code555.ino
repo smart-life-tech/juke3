@@ -846,7 +846,7 @@ void getEntry(char key)
             // return;
             // Stop blinking if A or D is pressed
             isBlinking = false;
-            longPressed = false;
+           // longPressed = false;
         }
     }
     else if (key == '*' || key == 'A' || key == 'B' || key == 'C')
