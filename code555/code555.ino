@@ -340,35 +340,40 @@ void updateAcceptDeleteBlink()
             if (blinkState)
             {
                 lcd.print("A=ACCEPT   D=DELETE");
+                if (currentSelection == 1)
+                {
+                    lcd.setCursor(16, 1);
+                    lcd.print(atoi(keyBuffer));
+                }
+                else if (currentSelection == 2)
+                {
+                    lcd.setCursor(16, 2);
+                    lcd.print(atoi(keyBuffer));
+                }
+                else if (currentSelection == 3)
+                {
+                    lcd.setCursor(16, 3);
+                    lcd.print(atoi(keyBuffer));
+                }
             }
             else
             {
                 lcd.print("                    "); // Clear the line
-            }
-            if (currentSelection == 1 && !apressed)
-            {
-                lcd.setCursor(17, 1);
-                lcd.print(selectionBlinkState ? String(sequenceList[0]) : "              ");
-                // lcd.setCursor(0, 3);
-                // lcd.print(" 3rd Selection ");
-            }
-            else if (currentSelection == 2 && !apressed)
-            {
-                lcd.setCursor(17, 2);
-                lcd.print(selectionBlinkState ? String(sequenceList[1]) : "              ");
-                // lcd.setCursor(0, 1);
-                // lcd.print(" 1st Selection ");
-                // lcd.setCursor(0, 3);
-                // lcd.print(" 3rd Selection ");
-            }
-            else if (currentSelection == 3 && !apressed)
-            {
-                lcd.setCursor(17, 3);
-                lcd.print(selectionBlinkState ? String(sequenceList[2]) : "              ");
-                //  lcd.setCursor(0, 1);
-                // lcd.print(" 1st Selection ");
-                // lcd.setCursor(0, 2);
-                // lcd.print(" 2nd Selection ");
+                if (currentSelection == 1)
+                {
+                    lcd.setCursor(16, 1);
+                    lcd.print("   ");
+                }
+                else if (currentSelection == 2)
+                {
+                    lcd.setCursor(16, 2);
+                    lcd.print("   ");
+                }
+                else if (currentSelection == 3)
+                {
+                    lcd.setCursor(16, 3);
+                    lcd.print("   ");
+                }
             }
         }
     }
