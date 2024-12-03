@@ -340,7 +340,7 @@ void updateAcceptDeleteBlink()
             if (blinkState)
             {
                 lcd.print("A=ACCEPT   D=DELETE");
-                if (currentSelection == 1)
+                /*if (currentSelection == 1)
                 {
                     lcd.setCursor(16, 1);
                     lcd.print(atoi(keyBuffer));
@@ -354,12 +354,12 @@ void updateAcceptDeleteBlink()
                 {
                     lcd.setCursor(16, 3);
                     lcd.print(atoi(keyBuffer));
-                }
+                }*/
             }
             else
             {
                 lcd.print("                    "); // Clear the line
-                if (currentSelection == 1)
+                /*if (currentSelection == 1)
                 {
                     lcd.setCursor(16, 1);
                     lcd.print("   ");
@@ -373,7 +373,7 @@ void updateAcceptDeleteBlink()
                 {
                     lcd.setCursor(16, 3);
                     lcd.print("   ");
-                }
+                }*/
             }
         }
     }
