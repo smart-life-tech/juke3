@@ -1,5 +1,6 @@
 {
-    "configuration": "cpu=atmega2560",
     "board": "arduino:avr:mega",
-    "sketch": "code555\\code555.ino"
+    "sketch": "code555\\code555.ino",
+    "configuration": "cpu=atmega2560",
+    "port": "COM10"
 }
