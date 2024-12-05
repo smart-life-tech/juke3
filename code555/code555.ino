@@ -381,9 +381,9 @@ void updateAcceptDeleteBlink()
 
 void updateSelectionBlinkDpressed()
 {
-     // Toggle the blink state
+    // Toggle the blink state
     selectionBlinkState = true;
-    apressed=false;
+    apressed = false;
     // Update the LCD with the current blink state
     if (currentSelection == 1 && !apressed)
     {
