@@ -382,7 +382,7 @@ void updateAcceptDeleteBlink()
 void updateSelectionBlinkDpressed()
 {
      // Toggle the blink state
-    selectionBlinkState = true;
+    //selectionBlinkState = true;
     // Update the LCD with the current blink state
     if (currentSelection == 1 && !apressed)
     {
@@ -881,6 +881,7 @@ void getEntry(char key)
             longPressed = false;
             Serial.print("current selection when d pressed ");
             Serial.println(currentSelection);
+            numCounter = 0;
             updateSelectionBlinkDpressed();
         }
     }
