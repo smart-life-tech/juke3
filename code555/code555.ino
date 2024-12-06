@@ -1246,14 +1246,15 @@ void loop()
         isPressing = false; // Reset if another key is pressed
         Serial.print(F(" key code entered = "));
         Serial.println(key);
-        if (key == 'Z')
+        if (key == 'Z' && digitalRead(resetPin) == HIGH)
         {
             handleLongPress();
             keypadLong = true;
             playList = true;
             Serial.print(F("keypad long pressed"));
         }
-        getEntry(key);
+        if (digitalRead(busyPin) == 1 || key == 'C')
+            getEntry(key);
     }
 
     if (playList && pause_play)
