@@ -384,6 +384,8 @@ void updateSelectionBlinkDpressed()
     // Toggle the blink state
     selectionBlinkState = true;
     apressed = false;
+    lcd.setCursor(0, 0); // Line 1
+    lcd.print("A=ACCEPT   D=DELETE");
     // Update the LCD with the current blink state
     if (currentSelection == 1 && !apressed)
     {
