@@ -840,13 +840,14 @@ void getEntry(char key)
         if (currentSelection > 3)
         {
             currentSelection = 1;
-            lcd.setCursor(0, 3);
-            lcd.print(" 3rd Selection ");
+            //lcd.setCursor(0, 3);
+            //lcd.print(" 3rd Selection ");
             apressed = true;
             delay(1000);
-            lcd.clear();
-            lcd.setCursor(0, 1);
-            lcd.print("Press B to play all");
+            //lcd.clear();
+            //lcd.setCursor(0, 1);
+            //lcd.print("Press B to play all");
+            getEntry('B');
         }
     }
     if (key == 'D')
