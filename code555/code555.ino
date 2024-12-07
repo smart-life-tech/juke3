@@ -934,6 +934,7 @@ void getEntry(char key)
                 // Stop blinking if A or D is pressed
                 isBlinking = false;
                 longPressed = false;
+                updateSelectionBlinkDpressed();
                 // keyBufferIndex = 0;
                 break;
             case 'B': // Play sequence
