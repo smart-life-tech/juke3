@@ -837,18 +837,20 @@ void getEntry(char key)
         currentSelection++;
         verified = false;
         row = 16;
-        if (currentSelection > 3)
-        {
-            currentSelection = 1;
-            //lcd.setCursor(0, 3);
-            //lcd.print(" 3rd Selection ");
-            apressed = true;
-            delay(1000);
-            //lcd.clear();
-            //lcd.setCursor(0, 1);
-            //lcd.print("Press B to play all");
-            getEntry('B');
-        }
+        Serial.print("current selection is :");
+        Serial.println(currentSelection);
+        // if (currentSelection >= 3)
+        // {
+        //     currentSelection = 1;
+        //     lcd.setCursor(0, 3);
+        //     lcd.print(" 3rd Selection ");
+        //     apressed = true;
+        //     delay(1000);
+        //     lcd.clear();
+        //     lcd.setCursor(0, 1);
+        //     lcd.print("Press B to play all");
+        //     getEntry('B');
+        // }
     }
     if (key == 'D')
     { // Delete last key entry
