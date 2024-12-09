@@ -929,14 +929,15 @@ void getEntry(char key)
                 if (currentSelection > 3)
                 {
                     currentSelection = 1;
-                    //lcd.setCursor(0, 3);
-                    //lcd.print(" 3rd Selection ");
+                    // lcd.setCursor(0, 3);
+                    // lcd.print(" 3rd Selection ");
                     apressed = true;
-                    delay(1000);
-                    lcd.clear();
-                    lcd.setCursor(0, 1);
-                    lcd.print("Press B to play all");
-                    //getEntry('B');
+                    cancel = true;
+                    // delay(1000);
+                    // lcd.clear();
+                    // lcd.setCursor(0, 1);
+                    // lcd.print("Press B to play all");
+                    // getEntry('B');
                 }
                 // keyBufferIndex = 0;
                 break;
@@ -1257,7 +1258,11 @@ void loop()
             playList = true;
             Serial.print(F("keypad long pressed"));
         }
-        if (digitalRead(busyPin) == 1 || key == 'C')
+        if (digitalRead(busyPin) == 1) // music isnt playing listen to any key
+            getEntry(key);
+        if (key == 'C' && !digitalRead(busyPin)) // cancel pressed while playing
+            getEntry(key);
+        if (key == 'A' && isBlinking) // add is pressed when its blinking listened
             getEntry(key);
     }
 
