@@ -1258,7 +1258,7 @@ void loop()
             playList = true;
             Serial.print(F("keypad long pressed"));
         }
-        if (digitalRead(busyPin) == 1) // music isnt playing listen to any key
+        if (digitalRead(busyPin) == 1 && key != 'A') // music isnt playing listen to any key exept A
             getEntry(key);
         if (key == 'C' && !digitalRead(busyPin)) // cancel pressed while playing
             getEntry(key);
