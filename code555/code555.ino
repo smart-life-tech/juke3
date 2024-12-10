@@ -926,6 +926,8 @@ void getEntry(char key)
                 isBlinking = false;
                 longPressed = false;
                 updateSelectionBlinkDpressed();
+                lcd.setCursor(0, 0);
+                lcd.print(" ENJOY YOUR MUSIC ");
                 if (currentSelection > 3)
                 {
                     currentSelection = 1;
