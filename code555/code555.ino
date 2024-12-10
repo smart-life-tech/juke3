@@ -876,6 +876,7 @@ void getEntry(char key)
             Serial.print("current selection when d pressed ");
             Serial.println(currentSelection);
             numCounter = 0;
+            verified=false;
             updateSelectionBlinkDpressed();
         }
     }
