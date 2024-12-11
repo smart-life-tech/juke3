@@ -325,7 +325,7 @@ void updateTrackBlink()
 void updateAcceptDeleteBlink()
 {
     // Check if we are blinking
-    if (isBlinking)
+    if (isBlinking&&!longPressed)
     {
         // Serial.println("blink activated");
         //  Check if it's time to toggle the blink state
