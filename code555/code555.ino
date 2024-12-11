@@ -927,11 +927,12 @@ void getEntry(char key)
                 isBlinking = false;
                 longPressed = false;
                 updateSelectionBlinkDpressed();
-                lcd.setCursor(0, 0);
-                lcd.print(" ENJOY YOUR MUSIC ");
+                
                 if (currentSelection > 3)
                 {
                     currentSelection = 1;
+                    lcd.setCursor(0, 0);
+                    lcd.print(" ENJOY YOUR MUSIC ");
                     // lcd.setCursor(0, 3);
                     // lcd.print(" 3rd Selection ");
                     apressed = true;
