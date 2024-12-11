@@ -1265,7 +1265,7 @@ void loop()
             getEntry(key);
         if (key == 'C' && !digitalRead(busyPin)) // cancel pressed while playing
             getEntry(key);
-        if (key == 'A' && isBlinking) // add is pressed when its blinking listened
+        if (key == 'A' && isBlinking&&!keypadLong) // add is pressed when its blinking listened
             getEntry(key);
     }
 
