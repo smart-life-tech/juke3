@@ -87,7 +87,7 @@ unsigned long buzzStartTime = 0;
 unsigned long popStartTime = 0;
 bool buzzLedOn = false;
 bool popLedOn = false;
-const int digitPins[10] = {15, 16, 17, 18, 19, 42, 43, 44, 45, 46}; // Pins for digits 0-9
+const int digitPins[10] = {15, 16, 17, 18, 19, 43, 42, 44, 45, 46}; // Pins for digits 0-9
 const int resetPin = 51;                                            // Pin for reset (* and #)
 const int abcdPins[4] = {47, 48, 49, 50};                           // Pins for A, B, C, D
 
@@ -829,6 +829,7 @@ char getKeypadInput()
 
     return '\0'; // No key pressed
 }
+
 void setup()
 {
     Serial.begin(115200);
