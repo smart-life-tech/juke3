@@ -5,8 +5,8 @@ int musicCount = 0;
 const int buzzLedPin = 13; // LED pin for buzz
 const int popLedPin = 14;  // LED pin for pop
 #define NUM_LEDS_GROUP1 2
-#define NUM_LEDS_GROUP2 8
-#define NUM_LEDS_GROUP3 10
+#define NUM_LEDS_GROUP2 10
+#define NUM_LEDS_GROUP3 8
 #define LED_PIN_GROUP1 22
 #define LED_PIN_GROUP2 24
 #define LED_PIN_GROUP3 32
@@ -87,7 +87,7 @@ unsigned long buzzStartTime = 0;
 unsigned long popStartTime = 0;
 bool buzzLedOn = false;
 bool popLedOn = false;
-const int digitPins[10] = {15, 16, 17, 18, 19, 43, 42, 44, 45, 46}; // Pins for digits 0-9
+const int digitPins[10] = {15, 16, 17, 18, 19, 42, 43, 44, 45, 46}; // Pins for digits 0-9
 const int resetPin = 51;                                            // Pin for reset (* and #)
 const int abcdPins[4] = {47, 48, 49, 50};                           // Pins for A, B, C, D
 
