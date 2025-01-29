@@ -9,7 +9,7 @@ const int popLedPin = 14;  // LED pin for pop
 #define NUM_LEDS_GROUP3 8
 #define LED_PIN_GROUP1 22
 #define LED_PIN_GROUP2 24
-#define LED_PIN_GROUP3 32
+#define LED_PIN_GROUP3 34
 int lastPlayed = 0;
 const int LONG_PRESS_DURATION = 5000; // 5 seconds (in milliseconds)
 unsigned long buttonPressStartTime = 0;
