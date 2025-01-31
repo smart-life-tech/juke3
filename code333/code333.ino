@@ -140,11 +140,13 @@ void generateRandomList()
 
         if ((randomIndex > 100 && randomIndex < 180) || (randomIndex > 200 && randomIndex < 279))
         {
-
-            randomNumber[i] = randomIndex; // Generate number between 100 and 179
-            i++;
-            if (i > 200)
-                break;
+            if (randomIndex % 100 != 8 && randomIndex % 100 != 9)
+            {
+                randomNumber[i] = randomIndex; // Generate number between 100 and 179
+                i++;
+                if (i > 200)
+                    break;
+            }
         }
     }
     for (int i = 0; i < 200; i++)
@@ -274,13 +276,20 @@ void addToSequenceList(int trackNumber)
 {
     if (sequenceLength < MAX_SEQUENCE_LENGTH)
     {
-        sequenceList[sequenceLength] = trackNumber;
-        sequenceLength++;
-        musicCount++;
-        Serial.print(sequenceLength);
-        Serial.print("  Track ");
-        Serial.print(trackNumber);
-        Serial.println(" added to sequence list");
+        if (trackNumber % 100 != 8 && trackNumber % 100 != 9)
+        {
+            sequenceList[sequenceLength] = trackNumber;
+            sequenceLength++;
+            musicCount++;
+            Serial.print(sequenceLength);
+            Serial.print("  Track ");
+            Serial.print(trackNumber);
+            Serial.println(" added to sequence list");
+        }
+        else
+        {
+            Serial.println("enter track not ending in 8 or 9 !!!");
+        }
     }
     else
     {
@@ -690,7 +699,7 @@ void getEntry(char key)
             else if (numCounter == 1) //&& (key != '8' || key != '9'))
             {                         // only accept 0 to 7  at second press
                                       // if (key == '0' || key == '1' || key == '2' || key == '3' || key == '4' || key == '5' || key == '6' || key == '7')
-              //  {
+                                      //  {
                 doEntry(key);
                 //}
             }
