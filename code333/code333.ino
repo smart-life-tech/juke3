@@ -465,6 +465,7 @@ void continuePlayingLong()
                 else
                 {
                     Serial.println("number ended in a 8 or 9");
+                    lastPlayed++;
                 }
             }
             else
