@@ -126,7 +126,7 @@ void handleLongPress()
 
 void generateRandomList()
 {
-    Serial.println("Generating random list of 200 songs...");
+    Serial.println("Generating random list of 200 songsss...");
     digitalWrite(ledPins[2], LOW);
     digitalWrite(ledPins[1], LOW);
     digitalWrite(ledPins[0], LOW);
