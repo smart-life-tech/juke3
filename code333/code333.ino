@@ -434,7 +434,7 @@ void continuePlayingLong()
 
             if ((lastPlayed >= 100 && lastPlayed < 180) || (lastPlayed >= 200 && lastPlayed < 280))
             {
-                if ((trackString.substring(2, 3).toInt()) != 8 || (trackString.substring(2, 3).toInt()) != 9)
+                if ((trackString.substring(2, 3).toInt() != 8) && (trackString.substring(2, 3).toInt() != 9))
                 {
                     if (lastPlayed == 180)
                         lastPlayed = 200;
@@ -464,7 +464,7 @@ void continuePlayingLong()
                 }
                 else
                 {
-                    Serial.println("number ended in a 9");
+                    Serial.println("number ended in a 8 or 9");
                 }
             }
             else
