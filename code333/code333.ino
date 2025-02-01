@@ -424,12 +424,18 @@ void continuePlayingLong()
         if (digitalRead(busyPin) == 1) // has it gone from low to high?, meaning the track finished
         {
             Serial.println("song not selected starting a new song now");
+            String trackString = String(lastPlayed); // Convert track number to a string
+            trackString = String("000") + trackString;
+            trackString = trackString.substring(trackString.length() - 3);
+            Serial.print("playing :");
+            Serial.println(trackString);
+            Serial.print("playing length :");
+            Serial.println(trackString.substring(2, 3).toInt());
 
             if ((lastPlayed >= 100 && lastPlayed < 180) || (lastPlayed >= 200 && lastPlayed < 280))
             {
-                if (lastPlayed % 100 != 8 || lastPlayed % 100 != 9)
+                if ((trackString.substring(2, 3).toInt()) != 8 || (trackString.substring(2, 3).toInt()) != 9)
                 {
-
                     if (lastPlayed == 180)
                         lastPlayed = 200;
                     if (lastPlayed >= 277)
@@ -455,6 +461,10 @@ void continuePlayingLong()
                     Serial.print("  ");
                     delay(50);
                     startBuzzPopSequence();
+                }
+                else
+                {
+                    Serial.println("number ended in a 9");
                 }
             }
             else
