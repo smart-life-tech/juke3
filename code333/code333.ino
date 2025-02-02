@@ -429,16 +429,14 @@ void continuePlayingLong()
             trackString = trackString.substring(trackString.length() - 3);
             Serial.print("playing :");
             Serial.println(trackString);
-            Serial.print("playing length :");
+            Serial.print("playing endings :");
             Serial.println(trackString.substring(2, 3).toInt());
 
-            if ((lastPlayed >= 100 && lastPlayed < 180) || (lastPlayed >= 200 && lastPlayed < 280))
+            if (lastPlayed >= 100 && lastPlayed < 298)
             {
                 if ((trackString.substring(2, 3).toInt() != 8) && (trackString.substring(2, 3).toInt() != 9))
                 {
-                    if (lastPlayed == 180)
-                        lastPlayed = 200;
-                    if (lastPlayed >= 277)
+                    if (lastPlayed >= 297)
                     {
                         lastPlayed = 100;
                         myDFPlayer.stop();
