@@ -501,7 +501,7 @@ void playTheList()
             if (busyPinState == 1 && !keypadLong) // has it gone from low to high?, meaning the track finished
             {
                 lastPlayed = sequenceList[playIndex];
-                if ((lastPlayed >= 100 && lastPlayed < 180) || (lastPlayed >= 200 && lastPlayed < 298))
+                if ((lastPlayed >= 100 && lastPlayed < 180) || (lastPlayed >= 180 && lastPlayed < 298))
                 {
                     Serial.print("playing number  = ");
                     Serial.println(sequenceList[playIndex]);
