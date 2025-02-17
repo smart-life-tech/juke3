@@ -90,6 +90,8 @@ bool popLedOn = false;
 const int digitPins[10] = {15, 16, 17, 18, 19, 42, 43, 44, 45, 46}; // Pins for digits 0-9
 const int resetPin = 51;                                            // Pin for reset (* and #)
 const int abcdPins[4] = {47, 48, 49, 50};                           // Pins for A, B, C, D
+static unsigned long resetTimer = 0;
+unsigned long resetInterval = 30000;
 
 void splitInteger(int number, char &hundreds, char &tens, char &units)
 {
@@ -301,7 +303,34 @@ void addToSequenceList(int trackNumber)
         Serial.println("Sequence list is full");
     }
 }
+void checkReset()
+{
 
+    // Check if 30 seconds have passed since the last song ended
+    if (millis() - resetTimer >= resetInterval && playIndex < sequenceLength && digitalRead(busyPin) == 1)
+    {
+        // Reset logic
+        Serial.println("Resetting due to inactivity...");
+        sequenceLength = 0;
+        playIndex = 0;      // reset list
+        keyBuffer[0] = 'C'; // set up for stop mode
+        mode = 6;           // call stop mode
+        playList = false;
+        cancel = false;
+        for (int i = 0; i < NUM_LEDS_GROUP1; i++)
+        {
+            digitalWrite(LED_PIN_GROUP1 + i, LOW);
+        }
+        for (int i = 0; i < NUM_LEDS_GROUP2; i++)
+        {
+            digitalWrite(LED_PIN_GROUP2 + i, LOW);
+        }
+        for (int i = 0; i < NUM_LEDS_GROUP3; i++)
+        {
+            digitalWrite(LED_PIN_GROUP3 + i, LOW);
+        }
+    }
+}
 // Function to play the sequence
 void playSequence()
 {
@@ -357,6 +386,7 @@ void skipSeq()
     Serial.println("skipped");
     delay(1000);
 }
+
 void continuePlaying(int play)
 {
     bool busyPinState = digitalRead(busyPin);             // read the busy pin
@@ -517,6 +547,8 @@ void playTheList()
                     lastPlayed = sequenceList[playIndex];
                     playIndex++; // next track
                     lastPlayed++;
+                    // Reset the reset timer
+                    resetTimer = millis();
                     if (playIndex > sequenceLength) // last track?
                     {
                         sequenceLength = 0;
@@ -567,7 +599,7 @@ void playTheList()
 
             // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         }
-
+        checkReset();
         playSequence();
     }
 }
