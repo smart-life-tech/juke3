@@ -577,7 +577,7 @@ void playTheList()
                         Serial.println(musicCount);
                         if (musicCount < 0)
                         {
-                            musicCount = 0;
+                            //musicCount = 0;
                             digitalWrite(ledPins[2], LOW);
                             digitalWrite(ledPins[1], LOW);
                             digitalWrite(ledPins[0], LOW);
