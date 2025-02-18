@@ -92,6 +92,7 @@ const int resetPin = 51;                                            // Pin for r
 const int abcdPins[4] = {47, 48, 49, 50};                           // Pins for A, B, C, D
 static unsigned long resetTimer = 0;
 unsigned long resetInterval = 30000;
+bool hasSongStarted = false;
 
 void splitInteger(int number, char &hundreds, char &tens, char &units)
 {
@@ -292,6 +293,7 @@ void addToSequenceList(int trackNumber)
             Serial.print("  Track ");
             Serial.print(trackNumber);
             Serial.println(" added to sequence list");
+            hasSongStarted = true;
         }
         else
         {
@@ -308,7 +310,7 @@ void checkReset()
     if (digitalRead(busyPin) == 0)
         resetTimer = millis();
     // Check if 30 seconds have passed since the last song ended
-    if (musicCount < 0 && digitalRead(busyPin) == 1)
+    if (musicCount <= 0 && digitalRead(busyPin) == 1 && hasSongStarted)
     {
         if (millis() - resetTimer > resetInterval)
         {
