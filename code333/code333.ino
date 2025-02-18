@@ -305,29 +305,36 @@ void addToSequenceList(int trackNumber)
 }
 void checkReset()
 {
-
+    if (digitalRead(busyPin) == 0)
+        resetTimer = millis();
     // Check if 30 seconds have passed since the last song ended
     if (musicCount < 0 && digitalRead(busyPin) == 1)
     {
-        // Reset logic
-        Serial.println("Resetting due to inactivity...");
-        sequenceLength = 0;
-        playIndex = 0;      // reset list
-        keyBuffer[0] = 'C'; // set up for stop mode
-        mode = 6;           // call stop mode
-        playList = false;
-        cancel = false;
-        for (int i = 0; i < NUM_LEDS_GROUP1; i++)
+        if (millis() - resetTimer > resetInterval)
         {
-            digitalWrite(LED_PIN_GROUP1 + i, LOW);
-        }
-        for (int i = 0; i < NUM_LEDS_GROUP2; i++)
-        {
-            digitalWrite(LED_PIN_GROUP2 + i, LOW);
-        }
-        for (int i = 0; i < NUM_LEDS_GROUP3; i++)
-        {
-            digitalWrite(LED_PIN_GROUP3 + i, LOW);
+            // Reset logic
+            Serial.println("Resetting due to inactivity...");
+            sequenceLength = 0;
+            playIndex = 0;      // reset list
+            keyBuffer[0] = 'C'; // set up for stop mode
+            mode = 6;           // call stop mode
+            playList = false;
+            cancel = false;
+            resetTimer = millis();
+            musicCount = 0;
+            for (int i = 0; i < NUM_LEDS_GROUP1; i++)
+            {
+                digitalWrite(LED_PIN_GROUP1 + i, LOW);
+            }
+            for (int i = 0; i < NUM_LEDS_GROUP2; i++)
+            {
+                digitalWrite(LED_PIN_GROUP2 + i, LOW);
+            }
+            for (int i = 0; i < NUM_LEDS_GROUP3; i++)
+            {
+                digitalWrite(LED_PIN_GROUP3 + i, LOW);
+            }
+            asm volatile("jmp 0x0000");
         }
     }
 }
@@ -577,7 +584,7 @@ void playTheList()
                         Serial.println(musicCount);
                         if (musicCount < 0)
                         {
-                            //musicCount = 0;
+                            // musicCount = 0;
                             digitalWrite(ledPins[2], LOW);
                             digitalWrite(ledPins[1], LOW);
                             digitalWrite(ledPins[0], LOW);
