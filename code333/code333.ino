@@ -307,7 +307,7 @@ void checkReset()
 {
 
     // Check if 30 seconds have passed since the last song ended
-    if (millis() - resetTimer >= resetInterval && playIndex < sequenceLength && digitalRead(busyPin) == 1)
+    if (musicCount <= 0 && digitalRead(busyPin) == 1)
     {
         // Reset logic
         Serial.println("Resetting due to inactivity...");
@@ -573,6 +573,8 @@ void playTheList()
                     else
                     {
                         musicCount--;
+                        Serial.print("music count : ");
+                        Serial.println(musicCount);
                         if (musicCount < 0)
                         {
                             musicCount = 0;
