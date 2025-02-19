@@ -305,6 +305,7 @@ void addToSequenceList(int trackNumber)
         Serial.println("Sequence list is full");
     }
 }
+
 void checkReset()
 {
     if (digitalRead(busyPin) == 0)
@@ -340,6 +341,7 @@ void checkReset()
         }
     }
 }
+
 // Function to play the sequence
 void playSequence()
 {

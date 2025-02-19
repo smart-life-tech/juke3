@@ -91,6 +91,11 @@ const int digitPins[10] = {15, 16, 17, 18, 19, 42, 43, 44, 45, 46}; // Pins for 
 const int resetPin = 51;                                            // Pin for reset (* and #)
 const int abcdPins[4] = {47, 48, 49, 50};                           // Pins for A, B, C, D
 
+static unsigned long resetTimer = 0;
+unsigned long resetInterval = 30000;
+bool hasSongStarted = false;
+
+
 void splitInteger(int number, char &hundreds, char &tens, char &units)
 {
     units = (number % 10) + '0';
@@ -281,6 +286,7 @@ void addToSequenceList(int trackNumber)
         Serial.print("  Track ");
         Serial.print(trackNumber);
         Serial.println(" added to sequence list");
+        hasSongStarted = true;
     }
     else
     {
@@ -343,6 +349,7 @@ void skipSeq()
     Serial.println("skipped");
     delay(1000);
 }
+
 void continuePlaying(int play)
 {
     bool busyPinState = digitalRead(busyPin);             // read the busy pin
@@ -459,6 +466,42 @@ void continuePlayingLong()
     }
 }
 
+void checkReset()
+{
+    if (digitalRead(busyPin) == 0)
+        resetTimer = millis();
+    // Check if 30 seconds have passed since the last song ended
+    if (musicCount <= 0 && digitalRead(busyPin) == 1 && hasSongStarted)
+    {
+        if (millis() - resetTimer > resetInterval)
+        {
+            // Reset logic
+            Serial.println("Resetting due to inactivity...");
+            sequenceLength = 0;
+            playIndex = 0;      // reset list
+            keyBuffer[0] = 'C'; // set up for stop mode
+            mode = 6;           // call stop mode
+            playList = false;
+            cancel = false;
+            resetTimer = millis();
+            musicCount = 0;
+            for (int i = 0; i < NUM_LEDS_GROUP1; i++)
+            {
+                digitalWrite(LED_PIN_GROUP1 + i, LOW);
+            }
+            for (int i = 0; i < NUM_LEDS_GROUP2; i++)
+            {
+                digitalWrite(LED_PIN_GROUP2 + i, LOW);
+            }
+            for (int i = 0; i < NUM_LEDS_GROUP3; i++)
+            {
+                digitalWrite(LED_PIN_GROUP3 + i, LOW);
+            }
+            asm volatile("jmp 0x0000");
+        }
+    }
+}
+
 void playTheList()
 {
 
@@ -541,7 +584,7 @@ void playTheList()
 
             // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         }
-
+        checkReset();
         playSequence();
     }
 }
@@ -824,6 +867,7 @@ char getKeypadInput()
 
     return '\0'; // No key pressed
 }
+
 void setup()
 {
     Serial.begin(115200);
