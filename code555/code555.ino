@@ -325,7 +325,7 @@ void updateTrackBlink()
 void updateAcceptDeleteBlink()
 {
     // Check if we are blinking
-    if (isBlinking&&!keypadLong)
+    if (isBlinking && !keypadLong)
     {
         // Serial.println("blink activated");
         //  Check if it's time to toggle the blink state
@@ -340,6 +340,12 @@ void updateAcceptDeleteBlink()
             if (blinkState)
             {
                 lcd.print("A=ACCEPT   D=DELETE");
+                pinMode(abcdPins[0], OUTPUT);
+                pinMode(abcdPins[3], OUTPUT);
+                digitalWrite(abcdPins[0], HIGH);
+                digitalWrite(abcdPins[3], HIGH);
+                pinMode(abcdPins[0], INPUT);
+                pinMode(abcdPins[3], INPUT);
                 /*if (currentSelection == 1)
                 {
                     lcd.setCursor(16, 1);
@@ -359,6 +365,12 @@ void updateAcceptDeleteBlink()
             else
             {
                 lcd.print("                    "); // Clear the line
+                pinMode(abcdPins[0], OUTPUT);
+                pinMode(abcdPins[3], OUTPUT);
+                digitalWrite(abcdPins[0], LOW);
+                digitalWrite(abcdPins[3], LOW);
+                pinMode(abcdPins[0], INPUT);
+                pinMode(abcdPins[3], INPUT);
                 /*if (currentSelection == 1)
                 {
                     lcd.setCursor(16, 1);
@@ -876,7 +888,7 @@ void getEntry(char key)
             Serial.print("current selection when d pressed ");
             Serial.println(currentSelection);
             numCounter = 0;
-            verified=false;
+            verified = false;
             updateSelectionBlinkDpressed();
         }
     }
@@ -927,7 +939,7 @@ void getEntry(char key)
                 isBlinking = false;
                 longPressed = false;
                 updateSelectionBlinkDpressed();
-                
+
                 if (currentSelection > 3)
                 {
                     currentSelection = 1;
@@ -1266,7 +1278,7 @@ void loop()
             getEntry(key);
         if (key == 'C' && !digitalRead(busyPin)) // cancel pressed while playing
             getEntry(key);
-        if (key == 'A' && isBlinking&&!keypadLong) // add is pressed when its blinking listened
+        if (key == 'A' && isBlinking && !keypadLong) // add is pressed when its blinking listened
             getEntry(key);
     }
 
