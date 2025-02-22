@@ -94,7 +94,7 @@ bool popLedOn = false;
 const int digitPins[10] = {15, 16, 17, 18, 19, 42, 43, 44, 45, 46}; // Pins for digits 0-9
 const int resetPin = 51;                                            // Pin for reset (* and #)
 const int abcdPins[4] = {47, 48, 49, 50};                           // Pins for A, B, C, D
-
+const int adPins[2] = {51, 52};
 // Variables for blinking
 unsigned long aDlastBlinkTime = 0;   // Timer for blinking
 unsigned int aDblinkInterval = 1000; // Blink interval in milliseconds
@@ -340,12 +340,9 @@ void updateAcceptDeleteBlink()
             if (blinkState)
             {
                 lcd.print("A=ACCEPT   D=DELETE");
-                pinMode(abcdPins[0], OUTPUT);
-                pinMode(abcdPins[3], OUTPUT);
-                digitalWrite(abcdPins[0], HIGH);
-                digitalWrite(abcdPins[3], HIGH);
-                pinMode(abcdPins[0], INPUT);
-                pinMode(abcdPins[3], INPUT);
+
+                digitalWrite(adPins[0], HIGH);
+                digitalWrite(adPins[1], HIGH);
                 /*if (currentSelection == 1)
                 {
                     lcd.setCursor(16, 1);
@@ -365,12 +362,9 @@ void updateAcceptDeleteBlink()
             else
             {
                 lcd.print("                    "); // Clear the line
-                pinMode(abcdPins[0], OUTPUT);
-                pinMode(abcdPins[3], OUTPUT);
                 digitalWrite(abcdPins[0], LOW);
-                digitalWrite(abcdPins[3], LOW);
-                pinMode(abcdPins[0], INPUT);
-                pinMode(abcdPins[3], INPUT);
+                digitalWrite(abcdPins[1], LOW);
+
                 /*if (currentSelection == 1)
                 {
                     lcd.setCursor(16, 1);
@@ -1255,6 +1249,10 @@ void setup()
     digitalWrite(buzzLedPin, LOW); // Ensure buzz LED is off initially
     pinMode(popLedPin, OUTPUT);
     digitalWrite(popLedPin, LOW); // Ensure pop LED is off initially
+    pinMode(adPins[0], OUTPUT);
+    pinMode(adPins[1], OUTPUT);
+    digitalWrite(adPins[0], HIGH);
+    digitalWrite(adPins[1], HIGH);
 }
 
 void loop()
