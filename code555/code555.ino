@@ -230,6 +230,14 @@ void testled()
     {
         digitalWrite(LED_PIN_GROUP3 + i, LOW);
     }
+    for (int i =0;i<5;i++){
+    digitalWrite(adPins[0], HIGH);
+    digitalWrite(adPins[1], HIGH);
+    delay (800);
+    digitalWrite(adPins[0], LOW);
+    digitalWrite(adPins[1], LOW);
+    delay(400);
+    }
 }
 
 void lightUpLEDs(int trackNumber)
@@ -1212,6 +1220,8 @@ void setup()
     lcd.setCursor(0, 3);
     lcd.print(" 3rd Selection <___>");
     pinMode(busyPin, INPUT);
+    pinMode(adPins[0], OUTPUT);
+    pinMode(adPins[1], OUTPUT);
     // Serial.begin(115200);
     //  Set LED pins as OUTPUT
     for (int i = 0; i < NUM_LEDS_GROUP1; i++)
@@ -1249,8 +1259,7 @@ void setup()
     digitalWrite(buzzLedPin, LOW); // Ensure buzz LED is off initially
     pinMode(popLedPin, OUTPUT);
     digitalWrite(popLedPin, LOW); // Ensure pop LED is off initially
-    pinMode(adPins[0], OUTPUT);
-    pinMode(adPins[1], OUTPUT);
+    
     digitalWrite(adPins[0], HIGH);
     digitalWrite(adPins[1], HIGH);
 }
