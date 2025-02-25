@@ -94,7 +94,7 @@ bool popLedOn = false;
 const int digitPins[10] = {15, 16, 17, 18, 19, 42, 43, 44, 45, 46}; // Pins for digits 0-9
 const int resetPin = 51;                                            // Pin for reset (* and #)
 const int abcdPins[4] = {47, 48, 49, 50};                           // Pins for A, B, C, D
-const int adPins[2] = {51, 52};
+const int adPins[2] = {2, 3};
 // Variables for blinking
 unsigned long aDlastBlinkTime = 0;   // Timer for blinking
 unsigned int aDblinkInterval = 1000; // Blink interval in milliseconds
