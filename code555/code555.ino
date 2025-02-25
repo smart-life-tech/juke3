@@ -232,7 +232,7 @@ void testled()
     }
     for (int i = 0; i < 5; i++)
     {
-        Serial.print("button led should be blinking now");
+        Serial.println("button led should be blinking now");
         digitalWrite(adPins[0], HIGH);
         digitalWrite(adPins[1], HIGH);
         delay(800);
@@ -351,45 +351,15 @@ void updateAcceptDeleteBlink()
             {
                 lcd.print("A=ACCEPT   D=DELETE");
 
-                digitalWrite(adPins[0], HIGH);
-                digitalWrite(adPins[1], HIGH);
-                /*if (currentSelection == 1)
-                {
-                    lcd.setCursor(16, 1);
-                    lcd.print(atoi(keyBuffer));
-                }
-                else if (currentSelection == 2)
-                {
-                    lcd.setCursor(16, 2);
-                    lcd.print(atoi(keyBuffer));
-                }
-                else if (currentSelection == 3)
-                {
-                    lcd.setCursor(16, 3);
-                    lcd.print(atoi(keyBuffer));
-                }*/
+               // digitalWrite(adPins[0], HIGH);
+                //digitalWrite(adPins[1], HIGH);
+               
             }
             else
             {
                 lcd.print("                    "); // Clear the line
-                digitalWrite(abcdPins[0], LOW);
-                digitalWrite(abcdPins[1], LOW);
-
-                /*if (currentSelection == 1)
-                {
-                    lcd.setCursor(16, 1);
-                    lcd.print("   ");
-                }
-                else if (currentSelection == 2)
-                {
-                    lcd.setCursor(16, 2);
-                    lcd.print("   ");
-                }
-                else if (currentSelection == 3)
-                {
-                    lcd.setCursor(16, 3);
-                    lcd.print("   ");
-                }*/
+                //digitalWrite(abcdPins[0], LOW);
+                //digitalWrite(abcdPins[1], LOW);
             }
         }
     }
