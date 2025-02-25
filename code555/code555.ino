@@ -335,7 +335,7 @@ void updateTrackBlink()
 void updateAcceptDeleteBlink()
 {
     // Check if we are blinking
-    if (isBlinking && !keypadLong)
+    if (isBlinking )
     {
         // Serial.println("blink activated");
         //   Check if it's time to toggle the blink state
@@ -1029,7 +1029,7 @@ void getEntry(char key)
                     {
                         handleDigitPress();
                         lcd.print(key);
-                        Serial.print("not button entry");
+                        Serial.println("not button entry");
                         Serial.print("counts: ");
                         Serial.println(numCounter);
                         numCounter++;
@@ -1041,6 +1041,7 @@ void getEntry(char key)
                             longPressed = true;
                             updateSelectionBlinkDpressed();
                             Serial.println("blink on");
+                            lcd.clear();
                             // aDlastBlinkTime = millis(); // Initialize timer
                             numCounter = 0;
                             verified = false;
@@ -1074,7 +1075,8 @@ void getEntry(char key)
                                 isBlinking = true; // Enable blinking
                                 longPressed = true;
                                 updateSelectionBlinkDpressed();
-                                Serial.println("blink on");
+                                Serial.println("blink on, button entry");
+                                lcd.clear();
                                 // aDlastBlinkTime = millis(); // Initialize timer
                                 numCounter = 0;
                                 verified = false;
