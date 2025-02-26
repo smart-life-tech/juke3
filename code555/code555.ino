@@ -325,6 +325,11 @@ void updateTrackBlink()
 // Function to handle blinking of "A=ACCEPT D=DELETE"
 void updateAcceptDeleteBlink()
 {
+    if (!isBlinking)
+    {
+        digitalWrite(addPin, HIGH);
+        digitalWrite(deletePin, HIGH);
+    }
     // Check if we are blinking
     if (isBlinking && !keypadLong)
     {
@@ -341,8 +346,8 @@ void updateAcceptDeleteBlink()
             if (blinkState)
             {
                 lcd.print("A=ACCEPT   D=DELETE");
-                digitalWrite(addPin,HIGH);
-                digitalWrite(deletePin,HIGH);
+                digitalWrite(addPin, HIGH);
+                digitalWrite(deletePin, HIGH);
                 /*if (currentSelection == 1)
                 {
                     lcd.setCursor(16, 1);
@@ -362,8 +367,8 @@ void updateAcceptDeleteBlink()
             else
             {
                 lcd.print("                    "); // Clear the line
-                digitalWrite(addPin,LOW);
-                digitalWrite(deletePin,LOW);
+                digitalWrite(addPin, LOW);
+                digitalWrite(deletePin, LOW);
                 /*if (currentSelection == 1)
                 {
                     lcd.setCursor(16, 1);
@@ -391,8 +396,8 @@ void updateSelectionBlinkDpressed()
     apressed = false;
     lcd.setCursor(0, 0); // Line 1
     lcd.print("A=ACCEPT   D=DELETE");
-    digitalWrite(addPin,HIGH);
-    digitalWrite(deletePin,HIGH);
+    digitalWrite(addPin, HIGH);
+    digitalWrite(deletePin, HIGH);
     // Update the LCD with the current blink state
     if (currentSelection == 1 && !apressed)
     {
@@ -1215,6 +1220,8 @@ void setup()
     pinMode(busyPin, INPUT);
     pinMode(addPin, OUTPUT);
     pinMode(deletePin, OUTPUT);
+    digitalWrite(addPin, HIGH);
+    digitalWrite(deletePin, HIGH);
     // Serial.begin(115200);
     //  Set LED pins as OUTPUT
     for (int i = 0; i < NUM_LEDS_GROUP1; i++)
