@@ -94,7 +94,7 @@ bool popLedOn = false;
 const int digitPins[10] = {15, 16, 17, 18, 19, 42, 43, 44, 45, 46}; // Pins for digits 0-9
 const int resetPin = 51;                                            // Pin for reset (* and #)
 const int abcdPins[4] = {47, 48, 49, 50};                           // Pins for A, B, C, D
-const int adPins[2] = {2, 3};//  use pin 2 and 3
+const int adPins[2] = {2, 3};//  use pin 2 and 3const int adPins[2] = {2, 3};//  use pin 2 and 3
 // Variables for blinking
 unsigned long aDlastBlinkTime = 0;   // Timer for blinking
 unsigned int aDblinkInterval = 1000; // Blink interval in milliseconds
@@ -230,16 +230,6 @@ void testled()
     {
         digitalWrite(LED_PIN_GROUP3 + i, LOW);
     }
-    for (int i = 0; i < 5; i++)
-    {
-        Serial.println("button led should be blinking now");
-        digitalWrite(adPins[0], HIGH);
-        digitalWrite(adPins[1], HIGH);
-        delay(800);
-        digitalWrite(adPins[0], LOW);
-        digitalWrite(adPins[1], LOW);
-        delay(400);
-    }
 }
 
 void lightUpLEDs(int trackNumber)
@@ -335,13 +325,13 @@ void updateTrackBlink()
 void updateAcceptDeleteBlink()
 {
     // Check if we are blinking
-    if (isBlinking )
+    if (isBlinking && !keypadLong)
     {
         // Serial.println("blink activated");
-        //   Check if it's time to toggle the blink state
+        //  Check if it's time to toggle the blink state
         if (millis() - aDlastBlinkTime >= aDblinkInterval)
         {
-            Serial.println("blinking");
+            // Serial.println("blinking");
             aDlastBlinkTime = millis(); // Reset the timer
             blinkState = !blinkState;   // Toggle the blink state
 
@@ -351,15 +341,15 @@ void updateAcceptDeleteBlink()
             {
                 lcd.print("A=ACCEPT   D=DELETE");
 
-               // digitalWrite(adPins[0], HIGH);
-                //digitalWrite(adPins[1], HIGH);
+                digitalWrite(adPins[0], HIGH);
+                digitalWrite(adPins[1], HIGH);
                
             }
             else
             {
                 lcd.print("                    "); // Clear the line
-                //digitalWrite(abcdPins[0], LOW);
-                //digitalWrite(abcdPins[1], LOW);
+                digitalWrite(abcdPins[0], LOW);
+                digitalWrite(abcdPins[1], LOW);
             }
         }
     }
@@ -372,6 +362,9 @@ void updateSelectionBlinkDpressed()
     apressed = false;
     lcd.setCursor(0, 0); // Line 1
     lcd.print("A=ACCEPT   D=DELETE");
+    
+    digitalWrite(adPins[0], HIGH);
+    digitalWrite(adPins[1], HIGH);
     // Update the LCD with the current blink state
     if (currentSelection == 1 && !apressed)
     {
@@ -918,7 +911,7 @@ void getEntry(char key)
                 {
                     currentSelection = 1;
                     lcd.setCursor(0, 0);
-                    lcd.print(" ENJOY YOUR MUSIC ");
+                    lcd.print("  ENJOY YOUR MUSIC ");
                     // lcd.setCursor(0, 3);
                     // lcd.print(" 3rd Selection ");
                     apressed = true;
@@ -999,7 +992,7 @@ void getEntry(char key)
                     {
                         handleDigitPress();
                         lcd.print(key);
-                        Serial.println("not button entry");
+                        Serial.print("not button entry");
                         Serial.print("counts: ");
                         Serial.println(numCounter);
                         numCounter++;
@@ -1011,7 +1004,6 @@ void getEntry(char key)
                             longPressed = true;
                             updateSelectionBlinkDpressed();
                             Serial.println("blink on");
-                            lcd.clear();
                             // aDlastBlinkTime = millis(); // Initialize timer
                             numCounter = 0;
                             verified = false;
@@ -1045,8 +1037,7 @@ void getEntry(char key)
                                 isBlinking = true; // Enable blinking
                                 longPressed = true;
                                 updateSelectionBlinkDpressed();
-                                Serial.println("blink on, button entry");
-                                lcd.clear();
+                                Serial.println("blink on");
                                 // aDlastBlinkTime = millis(); // Initialize timer
                                 numCounter = 0;
                                 verified = false;
@@ -1186,7 +1177,7 @@ void setup()
     // myDFPlayer.play(3);
     lcd.begin(20, 4);
     lcd.clear(); // the only time that you should use clear
-    lcd.print("AMI/Rowe 1978");
+    lcd.print("  JukeboxHero ***  ");
     lcd.setCursor(0, 1);
     lcd.print(" 1st Selection <___> ");
     lcd.setCursor(0, 2);
