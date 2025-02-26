@@ -3,7 +3,7 @@
 #include <Wire.h>
 #include <hd44780.h> // main hd44780 header enter 777
 #include <hd44780ioClass/hd44780_I2Cexp.h>
-    hd44780_I2Cexp lcd;
+hd44780_I2Cexp lcd;
 const int buzzLedPin = 13; // LED pin for buzz
 const int popLedPin = 14;  // LED pin for pop
 #define NUM_LEDS_GROUP1 2
