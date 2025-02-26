@@ -1,9 +1,12 @@
+
+digitalWrite(adPins[0], HIGH);
+digitalWrite(adPins[1], HIGH);
 #include "SoftwareSerial.h"
 #include "DFRobotDFPlayerMini.h"
 #include <Wire.h>
 #include <hd44780.h> // main hd44780 header enter 777
 #include <hd44780ioClass/hd44780_I2Cexp.h>
-hd44780_I2Cexp lcd;
+    hd44780_I2Cexp lcd;
 const int buzzLedPin = 13; // LED pin for buzz
 const int popLedPin = 14;  // LED pin for pop
 #define NUM_LEDS_GROUP1 2
@@ -94,7 +97,7 @@ bool popLedOn = false;
 const int digitPins[10] = {15, 16, 17, 18, 19, 42, 43, 44, 45, 46}; // Pins for digits 0-9
 const int resetPin = 51;                                            // Pin for reset (* and #)
 const int abcdPins[4] = {47, 48, 49, 50};                           // Pins for A, B, C, D
-const int adPins[2] = {2, 3};//  use pin 2 and 3const int adPins[2] = {2, 3};//  use pin 2 and 3
+
 // Variables for blinking
 unsigned long aDlastBlinkTime = 0;   // Timer for blinking
 unsigned int aDblinkInterval = 1000; // Blink interval in milliseconds
@@ -340,16 +343,40 @@ void updateAcceptDeleteBlink()
             if (blinkState)
             {
                 lcd.print("A=ACCEPT   D=DELETE");
-
-                digitalWrite(adPins[0], HIGH);
-                digitalWrite(adPins[1], HIGH);
-               
+                /*if (currentSelection == 1)
+                {
+                    lcd.setCursor(16, 1);
+                    lcd.print(atoi(keyBuffer));
+                }
+                else if (currentSelection == 2)
+                {
+                    lcd.setCursor(16, 2);
+                    lcd.print(atoi(keyBuffer));
+                }
+                else if (currentSelection == 3)
+                {
+                    lcd.setCursor(16, 3);
+                    lcd.print(atoi(keyBuffer));
+                }*/
             }
             else
             {
                 lcd.print("                    "); // Clear the line
-                digitalWrite(abcdPins[0], LOW);
-                digitalWrite(abcdPins[1], LOW);
+                /*if (currentSelection == 1)
+                {
+                    lcd.setCursor(16, 1);
+                    lcd.print("   ");
+                }
+                else if (currentSelection == 2)
+                {
+                    lcd.setCursor(16, 2);
+                    lcd.print("   ");
+                }
+                else if (currentSelection == 3)
+                {
+                    lcd.setCursor(16, 3);
+                    lcd.print("   ");
+                }*/
             }
         }
     }
@@ -362,9 +389,6 @@ void updateSelectionBlinkDpressed()
     apressed = false;
     lcd.setCursor(0, 0); // Line 1
     lcd.print("A=ACCEPT   D=DELETE");
-    
-    digitalWrite(adPins[0], HIGH);
-    digitalWrite(adPins[1], HIGH);
     // Update the LCD with the current blink state
     if (currentSelection == 1 && !apressed)
     {
@@ -1185,8 +1209,6 @@ void setup()
     lcd.setCursor(0, 3);
     lcd.print(" 3rd Selection <___>");
     pinMode(busyPin, INPUT);
-    pinMode(adPins[0], OUTPUT);
-    pinMode(adPins[1], OUTPUT);
     // Serial.begin(115200);
     //  Set LED pins as OUTPUT
     for (int i = 0; i < NUM_LEDS_GROUP1; i++)
@@ -1224,9 +1246,6 @@ void setup()
     digitalWrite(buzzLedPin, LOW); // Ensure buzz LED is off initially
     pinMode(popLedPin, OUTPUT);
     digitalWrite(popLedPin, LOW); // Ensure pop LED is off initially
-
-    digitalWrite(adPins[0], HIGH);
-    digitalWrite(adPins[1], HIGH);
 }
 
 void loop()
