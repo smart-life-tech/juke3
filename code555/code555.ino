@@ -94,7 +94,8 @@ bool popLedOn = false;
 const int digitPins[10] = {15, 16, 17, 18, 19, 42, 43, 44, 45, 46}; // Pins for digits 0-9
 const int resetPin = 51;                                            // Pin for reset (* and #)
 const int abcdPins[4] = {47, 48, 49, 50};                           // Pins for A, B, C, D
-
+const int addPin = 2;
+const int deletePin = 3;
 // Variables for blinking
 unsigned long aDlastBlinkTime = 0;   // Timer for blinking
 unsigned int aDblinkInterval = 1000; // Blink interval in milliseconds
@@ -340,6 +341,8 @@ void updateAcceptDeleteBlink()
             if (blinkState)
             {
                 lcd.print("A=ACCEPT   D=DELETE");
+                digitalWrite(addPin,HIGH);
+                digitalWrite(deletePin,HIGH);
                 /*if (currentSelection == 1)
                 {
                     lcd.setCursor(16, 1);
@@ -359,6 +362,8 @@ void updateAcceptDeleteBlink()
             else
             {
                 lcd.print("                    "); // Clear the line
+                digitalWrite(addPin,LOW);
+                digitalWrite(deletePin,LOW);
                 /*if (currentSelection == 1)
                 {
                     lcd.setCursor(16, 1);
@@ -386,6 +391,8 @@ void updateSelectionBlinkDpressed()
     apressed = false;
     lcd.setCursor(0, 0); // Line 1
     lcd.print("A=ACCEPT   D=DELETE");
+    digitalWrite(addPin,HIGH);
+    digitalWrite(deletePin,HIGH);
     // Update the LCD with the current blink state
     if (currentSelection == 1 && !apressed)
     {
@@ -1206,6 +1213,8 @@ void setup()
     lcd.setCursor(0, 3);
     lcd.print(" 3rd Selection <___>");
     pinMode(busyPin, INPUT);
+    pinMode(addPin, OUTPUT);
+    pinMode(deletePin, OUTPUT);
     // Serial.begin(115200);
     //  Set LED pins as OUTPUT
     for (int i = 0; i < NUM_LEDS_GROUP1; i++)
