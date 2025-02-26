@@ -327,8 +327,8 @@ void updateAcceptDeleteBlink()
 {
     if (!isBlinking)
     {
-        digitalWrite(addPin, HIGH);
-        digitalWrite(deletePin, HIGH);
+        digitalWrite(addPin, LOW);
+        digitalWrite(deletePin, LOW);
     }
     // Check if we are blinking
     if (isBlinking && !keypadLong)
