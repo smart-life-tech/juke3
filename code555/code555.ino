@@ -1,6 +1,3 @@
-
-digitalWrite(adPins[0], HIGH);
-digitalWrite(adPins[1], HIGH);
 #include "SoftwareSerial.h"
 #include "DFRobotDFPlayerMini.h"
 #include <Wire.h>
