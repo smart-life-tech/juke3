@@ -11,6 +11,12 @@ const int popLedPin = 14;  // LED pin for pop
 #define LED_PIN_GROUP2 32
 #define LED_PIN_GROUP3 24
 int lastPlayed = 0;
+// Add these near the top with other pin definitions
+const int interruptPin = 2; // Using pin 2 for interrupt (can be changed)
+volatile bool triggerSongSelection = false;
+unsigned long lastInterruptTime = 0;
+const unsigned long debounceTime = 200; // Debounce time in milliseconds
+
 const int LONG_PRESS_DURATION = 5000; // 5 seconds (in milliseconds)
 unsigned long buttonPressStartTime = 0;
 unsigned long pressStartTime = 0;
@@ -93,6 +99,19 @@ const int abcdPins[4] = {47, 48, 49, 50};                           // Pins for 
 static unsigned long resetTimer = 0;
 unsigned long resetInterval = 30000;
 bool hasSongStarted = false;
+
+// Add this function with other function definitions
+void songSelectionTrigger()
+{
+    unsigned long currentTime = millis();
+    // Debounce
+    if (currentTime - lastInterruptTime > debounceTime)
+    {
+        triggerSongSelection = true;
+        lastInterruptTime = currentTime;
+        Serial.println(F("External trigger activated for song selection"));
+    }
+}
 
 void splitInteger(int number, char &hundreds, char &tens, char &units)
 {
@@ -903,6 +922,12 @@ char getKeypadInput()
 
 void setup()
 {
+    pinMode(interruptPin, INPUT_PULLUP);
+    attachInterrupt(digitalPinToInterrupt(interruptPin), songSelectionTrigger, FALLING);
+    Serial.println(F("Interrupt for song selection trigger initialized"));
+    while (!triggerSongSelection)
+    {
+    }
     Serial.begin(115200);
     Serial.print(F("Enter track number then enter action"));
     Serial.println(F(" # = ENTER"));
