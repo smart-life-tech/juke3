@@ -925,7 +925,7 @@ void setup()
     pinMode(interruptPin, INPUT);
     //attachInterrupt(digitalPinToInterrupt(interruptPin), songSelectionTrigger, CHANGE);
     Serial.println(F("Interrupt for song selection trigger initialized"));
-    while (!digitalRead(interruptPin)
+    while (!digitalRead(interruptPin))
     {
         delay(50);
     }
