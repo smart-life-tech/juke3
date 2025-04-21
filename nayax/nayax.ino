@@ -922,11 +922,12 @@ char getKeypadInput()
 
 void setup()
 {
-    pinMode(interruptPin, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(interruptPin), songSelectionTrigger, CHANGE);
+    pinMode(interruptPin, INPUT);
+    //attachInterrupt(digitalPinToInterrupt(interruptPin), songSelectionTrigger, CHANGE);
     Serial.println(F("Interrupt for song selection trigger initialized"));
-    while (!triggerSongSelection)
+    while (!digitalRead(interruptPin)
     {
+        delay(50);
     }
     Serial.begin(115200);
     Serial.print(F("Enter track number then enter action"));
