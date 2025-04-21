@@ -923,7 +923,7 @@ char getKeypadInput()
 void setup()
 {
     pinMode(interruptPin, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(interruptPin), songSelectionTrigger, FALLING);
+    attachInterrupt(digitalPinToInterrupt(interruptPin), songSelectionTrigger, CHANGE);
     Serial.println(F("Interrupt for song selection trigger initialized"));
     while (!triggerSongSelection)
     {
