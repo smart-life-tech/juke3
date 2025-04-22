@@ -366,6 +366,7 @@ void playSequence()
 {
     if (digitalRead(busyPin) == 1 && (playIndex == 4 || done_playing))
     { // has it gone from low to high?, meaning the track finished
+        Serial.println("reset the system");
         asm volatile("jmp 0x0000");
     }
 }
@@ -922,13 +923,7 @@ char getKeypadInput()
 
 void setup()
 {
-    pinMode(interruptPin, INPUT);
-    //attachInterrupt(digitalPinToInterrupt(interruptPin), songSelectionTrigger, CHANGE);
-    Serial.println(F("Interrupt for song selection trigger initialized"));
-    while (!digitalRead(interruptPin))
-    {
-        delay(50);
-    }
+    delay (1000);
     Serial.begin(115200);
     Serial.print(F("Enter track number then enter action"));
     Serial.println(F(" # = ENTER"));
@@ -938,7 +933,16 @@ void setup()
     Serial.println(F("To add track 18 to the list, \"18A\""));
     Serial.println(F("To play track 3 immediately, \"3*\""));
     Serial.println(F(" C = STOP sequence"));
+    Serial.print("system ready swipe your card");
     Serial.println(F("\n\n"));
+    pinMode(interruptPin, INPUT);
+    //attachInterrupt(digitalPinToInterrupt(interruptPin), songSelectionTrigger, CHANGE);
+    Serial.println(F("Interrupt for song selection trigger initialized"));
+    while (!digitalRead(interruptPin))
+    {
+        Serial.println("swiped card now on pin");
+        delay(50);
+    }
     mp3ss.begin(9600);
     myDFPlayer.begin(mp3ss);
     myDFPlayer.volume(25);
