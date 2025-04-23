@@ -990,13 +990,17 @@ void loop()
     // Serial.print("pin value = ");
     // Serial.println(analogRead(interruptPin));
     // delay(1000);
-    if (analogRead(interruptPin) < 450 && swiped)
+    while (true)
     {
-        Serial.println(" card SWIPING OCCURED now on pin");
-        Serial.print("pin value = ");
-        Serial.println(analogRead(interruptPin));
-        delay(500);
-        swiped = true;
+        if (analogRead(interruptPin) < 500 && swiped)
+        {
+            Serial.println(" card SWIPING OCCURED now on pin");
+            Serial.print("pin value = ");
+            Serial.println(analogRead(interruptPin));
+            delay(500);
+            swiped = true;
+            break;
+        }
     }
     if (swiped)
     {
