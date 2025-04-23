@@ -12,7 +12,7 @@ const int popLedPin = 14;  // LED pin for pop
 #define LED_PIN_GROUP3 24
 int lastPlayed = 0;
 // Add these near the top with other pin definitions
-const int interruptPin = 2; // Using pin 2 for interrupt (can be changed)
+const int interruptPin = A2; // Using pin 2 for interrupt (can be changed)
 volatile bool triggerSongSelection = false;
 unsigned long lastInterruptTime = 0;
 const unsigned long debounceTime = 200; // Debounce time in milliseconds
@@ -924,7 +924,7 @@ char getKeypadInput()
 
 void setup()
 {
-    delay (1000);
+    delay(1000);
     Serial.begin(115200);
     Serial.print(F("Enter track number then enter action"));
     Serial.println(F(" # = ENTER"));
@@ -937,8 +937,8 @@ void setup()
     Serial.print("system ready swipe your card");
     Serial.println(F("\n\n"));
     pinMode(interruptPin, INPUT);
-    //attachInterrupt(digitalPinToInterrupt(interruptPin), songSelectionTrigger, CHANGE);
-   // Serial.println(F("Interrupt for song selection trigger initialized"));
+    // attachInterrupt(digitalPinToInterrupt(interruptPin), songSelectionTrigger, CHANGE);
+    // Serial.println(F("Interrupt for song selection trigger initialized"));
 
     mp3ss.begin(9600);
     myDFPlayer.begin(mp3ss);
@@ -987,55 +987,61 @@ void setup()
 
 void loop()
 {
-    if (digitalRead(interruptPin)==HIGH)
+    Serial.print("pin value = ");
+    Serial.println(analogRead(interruptPin));
+    delay(1000);
+    if (analogRead(interruptPin) > 900 && swiped)
     {
         Serial.println(" card SWIPING OCCURED now on pin");
-        delay(50);
+        Serial.print("pin value = ");
+        Serial.println(analogRead(interruptPin));
+        delay(500);
         swiped = true;
     }
-    if(swiped){
-    checking = true;
-    // key = keypad.getKey();
-    key = getKeypadInput();
-    if (key == 'C' && sequenceLength > 1 && keypadLong)
+    if (swiped)
     {
-        cancel = true;
-        Serial.println(F(" stop the playing"));
-        keyBufferIndex = 0;
-        Serial.println(F(" skipping the track"));
-        skipSeq();
-        // delay(2000);
-        //  playList = false;
-    }
-    if (key == 'C' && longPressed)
-    {
-        skipSeq();
-    }
-    if (key && !keypadLong)
-    {
-        isPressing = false; // Reset if another key is pressed
-        Serial.print(F(" key code = "));
-        Serial.println(key);
-        if (key == 'Z')
+        checking = true;
+        // key = keypad.getKey();
+        key = getKeypadInput();
+        if (key == 'C' && sequenceLength > 1 && keypadLong)
         {
-            handleLongPress();
-            keypadLong = true;
-            Serial.print(F("keypad long pressed"));
-            digitalWrite(ledPins[0], LOW); // Turn off the first LED
-            digitalWrite(ledPins[1], LOW); // Turn off the second LED
-            digitalWrite(ledPins[2], LOW); // Turn OFF the third LED
+            cancel = true;
+            Serial.println(F(" stop the playing"));
+            keyBufferIndex = 0;
+            Serial.println(F(" skipping the track"));
+            skipSeq();
+            // delay(2000);
+            //  playList = false;
         }
-        getEntry(key);
-        if (numCounter >= 3)
+        if (key == 'C' && longPressed)
         {
-            numCounter = 0;
-            delay(800);
-            getEntry('A');
-            verified = false;
+            skipSeq();
         }
+        if (key && !keypadLong)
+        {
+            isPressing = false; // Reset if another key is pressed
+            Serial.print(F(" key code = "));
+            Serial.println(key);
+            if (key == 'Z')
+            {
+                handleLongPress();
+                keypadLong = true;
+                Serial.print(F("keypad long pressed"));
+                digitalWrite(ledPins[0], LOW); // Turn off the first LED
+                digitalWrite(ledPins[1], LOW); // Turn off the second LED
+                digitalWrite(ledPins[2], LOW); // Turn OFF the third LED
+            }
+            getEntry(key);
+            if (numCounter >= 3)
+            {
+                numCounter = 0;
+                delay(800);
+                getEntry('A');
+                verified = false;
+            }
+        }
+        playTheList();
+        updateBuzzPopLeds();
+        continuePlayingLong();
     }
-    playTheList();
-    updateBuzzPopLeds();
-    continuePlayingLong();
-}
 }
