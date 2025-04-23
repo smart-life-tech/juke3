@@ -988,12 +988,12 @@ void setup()
 void loop()
 {
 
-    while (true)
+    while (!swiped)
     {
         Serial.print("pin value = ");
         Serial.println(analogRead(interruptPin));
         delay(500);
-        if (analogRead(interruptPin) < 500 && !swiped)
+        if (analogRead(interruptPin) > 1000 && !swiped)
         {
             Serial.println(" card SWIPING OCCURED now on pin");
             Serial.print("pin value = ");
