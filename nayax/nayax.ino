@@ -2,7 +2,9 @@
 #include "DFRobotDFPlayerMini.h"
 #include <Wire.h>
 int musicCount = 0;
-int swipeCounter=0;
+int swipeCounter = 0;
+int missCounter = 0;
+
 const int buzzLedPin = 13; // LED pin for buzz
 const int popLedPin = 14;  // LED pin for pop
 #define NUM_LEDS_GROUP1 2
@@ -991,22 +993,38 @@ void loop()
 
     while (!swiped)
     {
+        int pinValue = analogRead(interruptPin);
         Serial.print("pin value = ");
-        Serial.println(analogRead(interruptPin));
+        Serial.println(pinValue);
         delay(500);
-        if (analogRead(interruptPin) > 1000 && !swiped)
+
+        if (pinValue > 1000)
         {
             swipeCounter++;
-            if (swipeCounter>10){
-            Serial.println(" card SWIPING OCCURED now on pin");
-            Serial.print("pin value = ");
-            Serial.println(analogRead(interruptPin));
-            delay(500);
-            swiped = true;
-            break;
+            missCounter = 0; // reset misses since we got a valid read
+
+            if (swipeCounter > 10)
+            {
+                Serial.println("card SWIPING OCCURRED now on pin");
+                Serial.print("pin value = ");
+                Serial.println(pinValue);
+                delay(500);
+                swiped = true;
+                break;
+            }
         }
+        else
+        {
+            missCounter++;
+            if (missCounter >= 10)
+            {
+                Serial.println("Too many invalid reads. Resetting swipeCounter.");
+                swipeCounter = 0;
+                missCounter = 0;
+            }
         }
     }
+
     if (swiped)
     {
         checking = true;
