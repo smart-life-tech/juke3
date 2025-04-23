@@ -60,6 +60,7 @@ byte trackIndex = 0;
 byte numTracks = 0;
 byte mode = 0;
 bool playList = false;
+bool swiped = false;
 static bool lastBusyPinState = 0;
 byte currentDisplayLine = 1;
 bool keypadLong = false;
@@ -937,12 +938,8 @@ void setup()
     Serial.println(F("\n\n"));
     pinMode(interruptPin, INPUT);
     //attachInterrupt(digitalPinToInterrupt(interruptPin), songSelectionTrigger, CHANGE);
-    Serial.println(F("Interrupt for song selection trigger initialized"));
-    while (!digitalRead(interruptPin))
-    {
-        Serial.println("swiped card now on pin");
-        delay(50);
-    }
+   // Serial.println(F("Interrupt for song selection trigger initialized"));
+
     mp3ss.begin(9600);
     myDFPlayer.begin(mp3ss);
     myDFPlayer.volume(25);
@@ -990,6 +987,13 @@ void setup()
 
 void loop()
 {
+    if (digitalRead(interruptPin)==HIGH)
+    {
+        Serial.println(" card SWIPING OCCURED now on pin");
+        delay(50);
+        swiped = true;
+    }
+    if(swiped){
     checking = true;
     // key = keypad.getKey();
     key = getKeypadInput();
@@ -1033,4 +1037,5 @@ void loop()
     playTheList();
     updateBuzzPopLeds();
     continuePlayingLong();
+}
 }
