@@ -998,12 +998,12 @@ void loop()
         Serial.println(pinValue);
         delay(500);
 
-        if (pinValue > 1000)
+        if (pinValue > 700)
         {
             swipeCounter++;
             missCounter = 0; // reset misses since we got a valid read
 
-            if (swipeCounter > 4)
+            if (swipeCounter >= 2 )
             {
                 Serial.println("card SWIPING OCCURRED now on pin");
                 Serial.print("pin value = ");
@@ -1018,7 +1018,7 @@ void loop()
             missCounter++;
             if (missCounter >= 10)
             {
-                Serial.println("Too many invalid reads. Resetting swipeCounter.");
+                //Serial.println("Too many invalid reads. Resetting swipeCounter.");
                 swipeCounter = 0;
                 missCounter = 0;
             }
