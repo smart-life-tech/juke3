@@ -1003,7 +1003,7 @@ void loop()
             swipeCounter++;
             missCounter = 0; // reset misses since we got a valid read
 
-            if (swipeCounter >= 5)
+            if (swipeCounter >= 1)
             {
                 Serial.println("card SWIPING OCCURRED now on pin");
                 Serial.print("pin value = ");
