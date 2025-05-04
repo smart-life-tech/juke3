@@ -103,7 +103,7 @@ void splitInteger(int number, char &hundreds, char &tens, char &units)
     hundreds = (number / 100) + '0';
 }
 
-void handleLongPress()
+void handleLongPres()
 {
 
     // Perform actions for long press
@@ -584,7 +584,7 @@ void playTheList()
 
             // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         }
-       // checkReset();
+       // checkReset();//test
         playSequence();
     }
 }
