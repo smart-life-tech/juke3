@@ -584,7 +584,7 @@ void playTheList()
 
             // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         }
-        checkReset();
+       // checkReset();
         playSequence();
     }
 }
