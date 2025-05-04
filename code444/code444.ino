@@ -103,7 +103,7 @@ void splitInteger(int number, char &hundreds, char &tens, char &units)
     hundreds = (number / 100) + '0';
 }
 
-void handleLongPres()
+void handleLongPress()
 {
 
     // Perform actions for long press
@@ -473,6 +473,7 @@ void checkReset()
     // Check if 30 seconds have passed since the last song ended
     if (musicCount <= 0 && digitalRead(busyPin) == 1 && hasSongStarted)
     {
+       
         if (millis() - resetTimer > resetInterval)
         {
             // Reset logic
@@ -532,6 +533,8 @@ void playTheList()
                     myDFPlayer.play(sequenceList[playIndex]);
                     startBuzzPopSequence();
                     lastPlayed = sequenceList[playIndex];
+                    if(playIndex==0)
+                        delay (5000);
                     playIndex++; // next track
                     lastPlayed++;
                     if (playIndex > sequenceLength) // last track?
@@ -584,7 +587,7 @@ void playTheList()
 
             // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         }
-       // checkReset();//test
+       checkReset();//test
         playSequence();
     }
 }
