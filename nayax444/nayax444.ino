@@ -536,6 +536,8 @@ void playTheList()
                     Serial.println(sequenceList[playIndex]);
                     myDFPlayer.play(sequenceList[playIndex]);
                     startBuzzPopSequence();
+                    if (playIndex == 0)
+                        delay(5000);
                     lastPlayed = sequenceList[playIndex];
                     playIndex++; // next track
                     lastPlayed++;
