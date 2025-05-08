@@ -80,7 +80,7 @@ int randomNumber[200] = {};
 bool longPressed = false;
 bool lastState[] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 int playingIndex = 0;
-
+unsigned long firstTimer = 0;
 const char longD = 'Z'; // char returned if long press on 'D'
 // const unsigned int longPressDuration = 3000;
 unsigned long buzzStartTime = 0;
@@ -470,7 +470,7 @@ void checkReset()
     if (digitalRead(busyPin) == 0)
         resetTimer = millis();
     // Check if 30 seconds have passed since the last song ended
-    if (musicCount <= 0 && digitalRead(busyPin) == 1 && hasSongStarted)
+    if (musicCount <= 0 && digitalRead(busyPin) == 1 && hasSongStarted && ((millis() - firstTimer) > 7000))
     {
 
         if (millis() - resetTimer > resetInterval)
@@ -532,8 +532,9 @@ void playTheList()
                     myDFPlayer.play(sequenceList[playIndex]);
                     startBuzzPopSequence();
                     lastPlayed = sequenceList[playIndex];
-                    if (playIndex == 0)
-                        delay(5000);
+                    //  if (playIndex == 0)
+                    // delay(5000);
+                    firstTimer = millis();
                     playIndex++; // next track
                     lastPlayed++;
                     if (playIndex > sequenceLength) // last track?
