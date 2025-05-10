@@ -470,7 +470,7 @@ void checkReset()
     if (digitalRead(busyPin) == 0)
         resetTimer = millis();
     // Check if 30 seconds have passed since the last song ended
-    if (musicCount <= 0 && digitalRead(busyPin) == 1 && hasSongStarted && ((millis() - firstTimer) > 7000))
+    if (musicCount <= 0 && digitalRead(busyPin) == 1 && hasSongStarted && ((millis() - firstTimer) > 3000))
     {
 
         if (millis() - resetTimer > resetInterval)
