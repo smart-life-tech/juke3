@@ -470,7 +470,7 @@ void checkReset()
     if (digitalRead(busyPin) == 0)
         resetTimer = millis();
     // Check if 30 seconds have passed since the last song ended
-    if (musicCount <= 0 && digitalRead(busyPin) == 1 && hasSongStarted && ((millis() - firstTimer) > 3000))
+    if (musicCount <= 0 && digitalRead(busyPin) == 1 && hasSongStarted && ((millis() - firstTimer) > 7000))
     {
 
         if (millis() - resetTimer > resetInterval)
@@ -521,19 +521,17 @@ void playTheList()
                 if ((lastPlayed >= 100 && lastPlayed < 180) || (lastPlayed >= 200 && lastPlayed < 280))
                 {
                     Serial.print("playing number  = ");
-                    Serial.println(sequenceList[playIndex]);
-                    Serial.print("song index = ");
-                    Serial.println(playIndex);
+                    //Serial.println(sequenceList[playIndex]);
+                    //Serial.print("song index = ");
+                    //Serial.println(playIndex);
                     myDFPlayer.stop();
-                    delay(500);
+                   // delay(500);
                     lightUpLEDs(sequenceList[playIndex]);
                     Serial.print(" playing the list: ");
                     Serial.println(sequenceList[playIndex]);
                     myDFPlayer.play(sequenceList[playIndex]);
                     startBuzzPopSequence();
                     lastPlayed = sequenceList[playIndex];
-                    //  if (playIndex == 0)
-                    // delay(5000);
                     firstTimer = millis();
                     playIndex++; // next track
                     lastPlayed++;
