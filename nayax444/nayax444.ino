@@ -2,7 +2,7 @@
 #include "DFRobotDFPlayerMini.h"
 #include <Wire.h>
 int musicCount = 0;
-
+unsigned long firstTimer = 0;
 int swipeCounter = 0;
 int missCounter = 0;
 const int interruptPin = A0; // Using pin a0 for interrupt (can be changed)
@@ -476,7 +476,7 @@ void checkReset()
     if (digitalRead(busyPin) == 0)
         resetTimer = millis();
     // Check if 30 seconds have passed since the last song ended
-    if (musicCount <= 0 && digitalRead(busyPin) == 1 && hasSongStarted)
+    if (musicCount <= 0 && digitalRead(busyPin) == 1 && hasSongStarted && ((millis() - firstTimer) > 7000))
     {
         if (millis() - resetTimer > resetInterval)
         {
@@ -527,17 +527,18 @@ void playTheList()
                 {
                     Serial.print("playing number  = ");
                     Serial.println(sequenceList[playIndex]);
-                    Serial.print("song index = ");
-                    Serial.println(playIndex);
-                    myDFPlayer.stop();
-                    delay(500);
+                    // Serial.print("song index = ");
+                    // Serial.println(playIndex);
+                    // myDFPlayer.stop();
+                    // delay(500);
                     lightUpLEDs(sequenceList[playIndex]);
+                    firstTimer = millis();
                     Serial.print(" playing the list: ");
                     Serial.println(sequenceList[playIndex]);
                     myDFPlayer.play(sequenceList[playIndex]);
                     startBuzzPopSequence();
-                    if (playIndex == 0)
-                        delay(5000);
+                    // if (playIndex == 0)
+                    //     delay(5000);
                     lastPlayed = sequenceList[playIndex];
                     playIndex++; // next track
                     lastPlayed++;
