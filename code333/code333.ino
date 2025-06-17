@@ -93,7 +93,25 @@ const int abcdPins[4] = {47, 48, 49, 50};                           // Pins for 
 static unsigned long resetTimer = 0;
 unsigned long resetInterval = 30000;
 bool hasSongStarted = false;
+const int inhibitPin = 52; // Pin connected to Nayax inhibit wire
+bool inhibitActive = false;
 
+// Add this function to control the inhibit
+void setInhibit(bool enable)
+{
+    if (enable)
+    {
+        digitalWrite(inhibitPin, LOW); // Pull to ground to activate inhibit
+        inhibitActive = true;
+        Serial.println("Nayax inhibit ACTIVATED - card swipes disabled");
+    }
+    else
+    {
+        digitalWrite(inhibitPin, HIGH); // Release to 3.3V to disable inhibit
+        inhibitActive = false;
+        Serial.println("Nayax inhibit DEACTIVATED - card swipes enabled");
+    }
+}
 void splitInteger(int number, char &hundreds, char &tens, char &units)
 {
     units = (number % 10) + '0';
@@ -562,6 +580,7 @@ void playTheList()
                     resetTimer = millis();
                     if (playIndex > sequenceLength) // last track?
                     {
+                        setInhibit(false);
                         sequenceLength = 0;
                         playIndex = 0;      // reset list
                         keyBuffer[0] = 'C'; // set up for stop mode
@@ -584,6 +603,7 @@ void playTheList()
                     else
                     {
                         musicCount--;
+                        setInhibit(true);
                         Serial.print("music count : ");
                         Serial.println(musicCount);
                         if (musicCount < 0)
@@ -918,7 +938,9 @@ void setup()
     myDFPlayer.volume(25);
     // myDFPlayer.play(3);
     pinMode(busyPin, INPUT);
-    // Serial.begin(115200);
+    // Initialize inhibit pin
+    pinMode(inhibitPin, OUTPUT);
+    digitalWrite(inhibitPin, HIGH); // Start with inhibit disabled (3.3V)
     //  Set LED pins as OUTPUT
     for (int i = 0; i < NUM_LEDS_GROUP1; i++)
     {
