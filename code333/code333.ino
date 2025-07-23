@@ -940,7 +940,8 @@ void setup()
     pinMode(busyPin, INPUT);
     // Initialize inhibit pin
     pinMode(inhibitPin, OUTPUT);
-    digitalWrite(inhibitPin, HIGH); // Start with inhibit disabled (3.3V)
+    digitalWrite(inhibitPin, LOW); // Start with inhibit disabled (0v)
+    Serial.println("inhibit started with disabled");
     //  Set LED pins as OUTPUT
     for (int i = 0; i < NUM_LEDS_GROUP1; i++)
     {
@@ -978,6 +979,7 @@ void setup()
     pinMode(popLedPin, OUTPUT);
     digitalWrite(popLedPin, LOW); // Ensure pop LED is off initially
     // myDFPlayer.play(100);         // play the 100 track at start to check
+    digitalWrite(inhibitPin, HIGH); // Start with inhibit disabled (0v)
 }
 
 void loop()
