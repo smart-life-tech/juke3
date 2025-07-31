@@ -1,7 +1,16 @@
 #include "SoftwareSerial.h"
 #include "DFRobotDFPlayerMini.h"
 #include <Wire.h>
+//=================================================================
 int musicCount = 0;
+int swipeCounter = 0;
+int missCounter = 0;
+bool swiped = false;
+const int interruptPin = A2; // Using pin 2 for interrupt (can be changed)
+volatile bool triggerSongSelection = false;
+unsigned long lastInterruptTime = 0;
+const unsigned long debounceTime = 200; // Debounce time in milliseconds
+//===================================================================
 const int buzzLedPin = 13; // LED pin for buzz
 const int popLedPin = 14;  // LED pin for pop
 #define NUM_LEDS_GROUP1 2
@@ -96,6 +105,17 @@ bool hasSongStarted = false;
 const int inhibitPin = 52; // Pin connected to Nayax inhibit wire
 bool inhibitActive = false;
 
+void songSelectionTrigger()
+{
+    unsigned long currentTime = millis();
+    // Debounce
+    if (currentTime - lastInterruptTime > debounceTime)
+    {
+        triggerSongSelection = true;
+        lastInterruptTime = currentTime;
+        Serial.println(F("External trigger activated for song selection"));
+    }
+}
 // Add this function to control the inhibit
 void setInhibit(bool enable)
 {
@@ -938,6 +958,7 @@ void setup()
     myDFPlayer.volume(25);
     // myDFPlayer.play(3);
     pinMode(busyPin, INPUT);
+    pinMode(interruptPin, INPUT);
     // Initialize inhibit pin
     pinMode(inhibitPin, OUTPUT);
     digitalWrite(inhibitPin, LOW); // Start with inhibit disabled (0v)
@@ -984,47 +1005,84 @@ void setup()
 
 void loop()
 {
-    checking = true;
-    // key = keypad.getKey();
-    key = getKeypadInput();
-    if (key == 'C' && sequenceLength > 1 && keypadLong)
+    while (!swiped)
     {
-        cancel = true;
-        Serial.println(F(" stop the playing"));
-        keyBufferIndex = 0;
-        Serial.println(F(" skipping the track"));
-        skipSeq();
-        // delay(2000);
-        //  playList = false;
-    }
-    if (key == 'C' && longPressed)
-    {
-        skipSeq();
-    }
-    if (key && !keypadLong)
-    {
-        isPressing = false; // Reset if another key is pressed
-        Serial.print(F(" key code = "));
-        Serial.println(key);
-        if (key == 'Z')
+        int pinValue = analogRead(interruptPin);
+        Serial.print("pin value = ");
+        Serial.println(pinValue);
+        delay(500);
+
+        if (pinValue <= 0)
         {
-            handleLongPress();
-            keypadLong = true;
-            Serial.print(F("keypad long pressed"));
-            digitalWrite(ledPins[0], LOW); // Turn off the first LED
-            digitalWrite(ledPins[1], LOW); // Turn off the second LED
-            digitalWrite(ledPins[2], LOW); // Turn OFF the third LED
+            swipeCounter++;
+            missCounter = 0; // reset misses since we got a valid read
+
+            if (swipeCounter >= 1)
+            {
+                Serial.println("card SWIPING OCCURRED now on pin");
+                Serial.print("pin value = ");
+                Serial.println(pinValue);
+                delay(500);
+                swiped = true;
+                break;
+            }
         }
-        getEntry(key);
-        if (numCounter >= 3)
+        else
         {
-            numCounter = 0;
-            delay(800);
-            getEntry('A');
-            verified = false;
+            missCounter++;
+            if (missCounter >= 10)
+            {
+                // Serial.println("Too many invalid reads. Resetting swipeCounter.");
+                swipeCounter = 0;
+                missCounter = 0;
+            }
         }
     }
-    playTheList();
-    updateBuzzPopLeds();
-    continuePlayingLong();
+    if (swiped)
+    {
+        checking = true;
+        digitalWrite(inhibitPin, LOW);
+        // key = keypad.getKey();
+        key = getKeypadInput();
+        if (key == 'C' && sequenceLength > 1 && keypadLong)
+        {
+            cancel = true;
+            Serial.println(F(" stop the playing"));
+            keyBufferIndex = 0;
+            Serial.println(F(" skipping the track"));
+            skipSeq();
+            // delay(2000);
+            //  playList = false;
+        }
+        if (key == 'C' && longPressed)
+        {
+            skipSeq();
+        }
+        if (key && !keypadLong)
+        {
+            isPressing = false; // Reset if another key is pressed
+            Serial.print(F(" key code = "));
+            Serial.println(key);
+            if (key == 'Z')
+            {
+                handleLongPress();
+                keypadLong = true;
+                Serial.print(F("keypad long pressed"));
+                digitalWrite(ledPins[0], LOW); // Turn off the first LED
+                digitalWrite(ledPins[1], LOW); // Turn off the second LED
+                digitalWrite(ledPins[2], LOW); // Turn OFF the third LED
+            }
+            getEntry(key);
+            if (numCounter >= 3)
+            {
+                numCounter = 0;
+                delay(800);
+                getEntry('A');
+                verified = false;
+            }
+        }
+        playTheList();
+        updateBuzzPopLeds();
+        continuePlayingLong();
+    }
 }
