@@ -121,13 +121,13 @@ void setInhibit(bool enable)
 {
     if (enable)
     {
-        digitalWrite(inhibitPin, LOW); // Pull to ground to activate inhibit
+        digitalWrite(inhibitPin, HIGH); // Pull to ground to activate inhibit
         inhibitActive = true;
         Serial.println("Nayax inhibit ACTIVATED - card swipes disabled");
     }
     else
     {
-        digitalWrite(inhibitPin, HIGH); // Release to 3.3V to disable inhibit
+        digitalWrite(inhibitPin, LOW); // Release to 3.3V to disable inhibit
         inhibitActive = false;
         Serial.println("Nayax inhibit DEACTIVATED - card swipes enabled");
     }
@@ -961,7 +961,7 @@ void setup()
     pinMode(interruptPin, INPUT);
     // Initialize inhibit pin
     pinMode(inhibitPin, OUTPUT);
-    digitalWrite(inhibitPin, LOW); // Start with inhibit disabled (0v)
+    digitalWrite(inhibitPin, HIGH); // Start with inhibit disabled (0v)
     Serial.println("inhibit started with disabled");
     //  Set LED pins as OUTPUT
     for (int i = 0; i < NUM_LEDS_GROUP1; i++)
@@ -1041,7 +1041,7 @@ void loop()
     if (swiped)
     {
         checking = true;
-        digitalWrite(inhibitPin, LOW);
+        digitalWrite(inhibitPin, HIGH);
         // key = keypad.getKey();
         key = getKeypadInput();
         if (key == 'C' && sequenceLength > 1 && keypadLong)
