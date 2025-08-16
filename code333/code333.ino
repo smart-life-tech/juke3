@@ -566,13 +566,11 @@ void continuePlayingLong()
 
 void playTheList()
 {
-
     static unsigned long timer = 0;
     unsigned long interval = 500;
     if (millis() - timer >= interval)
     {
         timer = millis();
-
         // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         bool busyPinState = digitalRead(busyPin);                           // read the busy pin
         if (busyPinState != lastBusyPinState && playIndex < sequenceLength) // has it changed?
