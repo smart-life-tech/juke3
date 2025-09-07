@@ -1025,8 +1025,8 @@ void getEntry(char key)
                     {
                         handleDigitPress();
                         lcd.print(key);
-                        Serial.print("not button entry");
-                        Serial.print("counts: ");
+                        Serial.print("not alpha entry");
+                        Serial.print(" counts: ");
                         Serial.println(numCounter);
                         numCounter++;
                         verified = true;
@@ -1126,64 +1126,62 @@ void confirmSelection()
 
 char getKeypadInput()
 {
+    // Check digit keys (0–9)
     for (int i = 0; i < 10; i++)
     {
         if (digitalRead(digitPins[i]) == LOW)
         {
-            delay(50); // Debounce delay
+            delay(50); // Debounce
             if (digitalRead(digitPins[i]) == LOW)
-            { // Confirm button press
-
-                Serial.println("button pressed");
-                // Handle long press for '0'
-                if (!isKeyPressed)
-                {
-                    Serial.println("do once");
-                    keyPressStartTime = millis();
-                    isKeyPressed = true;
-                }
-
+            {
+                // Start timing press
+                keyPressStartTime = millis();
                 while (digitalRead(digitPins[i]) == LOW)
                 {
-                    if (millis() - keyPressStartTime >= 5000)
+                    // Handle long press
+                    if (millis() - keyPressStartTime >= 5000 && !keypadLong)
                     {
-                        // generateRandomList();
                         handleLongPress();
                         keypadLong = true;
-                        Serial.print(F("keypad long pressed"));
-                        isKeyPressed = false;
-                        return '\0';
-                        break;
+                        return '\0'; // consume, don’t repeat
                     }
                 }
 
-                // Wait until button is released
-                isKeyPressed = false;
-                return '0' + i;
+                // Button released here
+                if (!keypadLong) // Only return short press if not long
+                {
+                    return '0' + i;
+                }
+                else
+                {
+                    keypadLong = false; // reset for next key
+                }
             }
         }
     }
 
+    // Reset key
     if (digitalRead(resetPin) == LOW)
     {
-        delay(50); // Debounce delay
+        delay(50);
         if (digitalRead(resetPin) == LOW)
-        { // Confirm button press
+        {
             while (digitalRead(resetPin) == LOW)
-                ;       // Wait until button is released
-            return '#'; // Use # as reset key
+                ; // wait release
+            return '#';
         }
     }
 
+    // A–D keys
     for (int i = 0; i < 4; i++)
     {
         if (digitalRead(abcdPins[i]) == LOW)
         {
-            delay(50); // Debounce delay
+            delay(50);
             if (digitalRead(abcdPins[i]) == LOW)
-            { // Confirm button press
+            {
                 while (digitalRead(abcdPins[i]) == LOW)
-                    ; // Wait until button is released
+                    ; // wait release
                 return 'A' + i;
             }
         }

@@ -1,6 +1,6 @@
 {
     "board": "arduino:avr:mega",
-    "sketch": "nayax444\\nayax444.ino",
+    "sketch": "code555\\code555.ino",
     "configuration": "cpu=atmega2560",
     "port": "COM10"
 }
