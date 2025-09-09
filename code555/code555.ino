@@ -1259,12 +1259,13 @@ void setup()
     digitalWrite(popLedPin, LOW); // Ensure pop LED is off initially
 }
 
+char lastKey = '\0'; // remembers last processed key
 void loop()
 {
     checking = true;
     // key = keypad.getKey();
     key = getKeypadInput();
-    if (key)
+    if (key && key != lastKey)
     {
         isPressing = false; // Reset if another key is pressed
         Serial.print(F(" key code entered = "));
@@ -1282,6 +1283,7 @@ void loop()
             getEntry(key);
         if (key == 'A' && isBlinking && !keypadLong) // add is pressed when its blinking listened
             getEntry(key);
+        lastKey = key; // remember it
     }
 
     if (playList && pause_play)
@@ -1303,6 +1305,11 @@ void loop()
         digitalWrite(ledPins[1], LOW);
         digitalWrite(ledPins[0], LOW);
         // blinkLong();
+    }
+    // Reset when no key is pressed (so it can be detected again)
+    if (!key)
+    {
+        lastKey = '\0';
     }
     continuePlaying();
     continuePlayingLong();
