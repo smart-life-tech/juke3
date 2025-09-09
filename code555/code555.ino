@@ -1267,8 +1267,7 @@ void loop()
     checking = true;
     // key = keypad.getKey();
     key = getKeypadInput();
-    pressStart = millis();  // mark time
-    longPressFired = false; // reset long press flag
+
     if (key && key != lastKey)
     {
         isPressing = false; // Reset if another key is pressed
@@ -1287,11 +1286,15 @@ void loop()
             getEntry(key);
         if (key == 'A' && isBlinking && !keypadLong) // add is pressed when its blinking listened
             getEntry(key);
-        lastKey = key; // remember it
+        pressStart = millis();  // mark time
+        longPressFired = false; // reset long press flag
+        lastKey = key;          // remember it
     }
     //===========================================================================================
     if (key && key == lastKey) // still holding the same key
     {
+        Serial.print("Long press detected on: ");
+        Serial.println(key);
         if (!longPressFired && (millis() - pressStart >= 5000))
         {
             Serial.print("Long press detected on: ");
