@@ -1142,6 +1142,7 @@ char getKeypadInput()
                     if (millis() - keyPressStartTime >= 5000 && !keypadLong)
                     {
                         handleLongPress();
+                        Serial.println("long presses");
                         keypadLong = true;
                         return '\0'; // consume, don’t repeat
                     }
@@ -1299,7 +1300,8 @@ void loop()
         {
             Serial.print("Long press detected on: ");
             Serial.println(key);
-
+            keypadLong = true;
+            playList = true;
             handleLongPress(); // your long press action
             longPressFired = true;
         }
