@@ -1294,8 +1294,6 @@ void loop()
     //===========================================================================================
     if (key && key == lastKey) // still holding the same key
     {
-        Serial.print("Long press detected on: ");
-        Serial.println(key);
         if (!longPressFired && (millis() - pressStart >= 5000))
         {
             Serial.print("Long press detected on: ");
