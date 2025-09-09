@@ -1260,11 +1260,15 @@ void setup()
 }
 
 char lastKey = '\0'; // remembers last processed key
+unsigned long pressStart = 0;
+bool longPressFired = false;
 void loop()
 {
     checking = true;
     // key = keypad.getKey();
     key = getKeypadInput();
+    pressStart = millis();  // mark time
+    longPressFired = false; // reset long press flag
     if (key && key != lastKey)
     {
         isPressing = false; // Reset if another key is pressed
@@ -1285,6 +1289,32 @@ void loop()
             getEntry(key);
         lastKey = key; // remember it
     }
+    //===========================================================================================
+    if (key && key == lastKey) // still holding the same key
+    {
+        if (!longPressFired && (millis() - pressStart >= 5000))
+        {
+            Serial.print("Long press detected on: ");
+            Serial.println(key);
+
+            handleLongPress(); // your long press action
+            longPressFired = true;
+        }
+    }
+
+    if (!key && lastKey != '\0') // key was released
+    {
+        if (!longPressFired)
+        {
+            Serial.print("Short press detected on: ");
+            Serial.println(lastKey);
+
+            // short press action here ...
+        }
+
+        lastKey = '\0'; // reset for next press
+    }
+    //=====================================================================================
 
     if (playList && pause_play)
     {
