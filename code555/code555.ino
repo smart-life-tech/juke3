@@ -101,7 +101,9 @@ unsigned long aDlastBlinkTime = 0;   // Timer for blinking
 unsigned int aDblinkInterval = 1000; // Blink interval in milliseconds
 bool blinkState = true;              // State for toggling the blink
 bool isBlinking = false;             // Indicates if the "A=ACCEPT D=DELETE" should blink
-
+char lastKey = '\0';                 // remembers last processed key
+unsigned long pressStart = 0;
+bool longPressFired = false;
 void splitInteger(int number, char &hundreds, char &tens, char &units)
 {
     units = (number % 10) + '0';
@@ -1260,16 +1262,13 @@ void setup()
     digitalWrite(popLedPin, LOW); // Ensure pop LED is off initially
 }
 
-char lastKey = '\0'; // remembers last processed key
-unsigned long pressStart = 0;
-bool longPressFired = false;
 void loop()
 {
     checking = true;
     // key = keypad.getKey();
     key = getKeypadInput();
 
-    if (key && key != lastKey && !longPressFired) // got a new key
+    if (key && key != lastKey) // got a new key
     {
         isPressing = false; // Reset if another key is pressed
         Serial.print(F(" key code entered = "));
@@ -1281,15 +1280,15 @@ void loop()
             playList = true;
             Serial.print(F("keypad long pressed"));
         }
-        if (digitalRead(busyPin) == 1 && key != 'A') // music isnt playing listen to any key exept A
+        if (digitalRead(busyPin) == 1 && key != 'A' && !longPressFired) // music isnt playing listen to any key exept A
             getEntry(key);
         if (key == 'C' && !digitalRead(busyPin)) // cancel pressed while playing
             getEntry(key);
-        if (key == 'A' && isBlinking && !keypadLong) // add is pressed when its blinking listened
+        if (key == 'A' && isBlinking && !keypadLong && !longPressFired) // add is pressed when its blinking listened
             getEntry(key);
-        pressStart = millis();  // mark time
-        //longPressFired = false; // reset long press flag
-        lastKey = key;          // remember it
+        pressStart = millis(); // mark time
+        // longPressFired = false; // reset long press flag
+        lastKey = key; // remember it
     }
     //===========================================================================================
     if (key && key == lastKey) // still holding the same key
@@ -1302,6 +1301,7 @@ void loop()
             handleLongPress(); // your long press action
             longPressFired = true;
             longPressed = true;
+            isBlinking = false;
         }
     }
 
