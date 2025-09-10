@@ -529,7 +529,7 @@ void skipSequence()
             lcd.print(sequenceList[playIndex]);
             lcd.setCursor(0, 1);
             lcd.print("Continuous Play Mode Index counter = ");
-            lcd.print(playIndex);
+            lcd.print(playIndex+1);
             lcd.setCursor(0, 2);
             lcd.print("Skip = C");
             delay(1000);
@@ -625,7 +625,7 @@ void continuePlayingLong()
                         lcd.print(sequenceList[playIndex]);
                         lcd.setCursor(0, 1);
                         lcd.print("Continuous Play Mode Index counter = ");
-                        lcd.print(playIndex);
+                        lcd.print(playIndex+1);
                         lcd.setCursor(0, 2);
                         lcd.print("Skip = C");
                     }
@@ -1301,6 +1301,7 @@ void loop()
             keypadLong = true;
             handleLongPress(); // your long press action
             longPressFired = true;
+            longPressed=true;
         }
     }
 
