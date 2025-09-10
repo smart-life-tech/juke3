@@ -1269,7 +1269,7 @@ void loop()
     // key = keypad.getKey();
     key = getKeypadInput();
 
-    if (key && key != lastKey && !longPressed)
+    if (key && key != lastKey && !longPressFired) // got a new key
     {
         isPressing = false; // Reset if another key is pressed
         Serial.print(F(" key code entered = "));
@@ -1288,7 +1288,7 @@ void loop()
         if (key == 'A' && isBlinking && !keypadLong) // add is pressed when its blinking listened
             getEntry(key);
         pressStart = millis();  // mark time
-        longPressFired = false; // reset long press flag
+        //longPressFired = false; // reset long press flag
         lastKey = key;          // remember it
     }
     //===========================================================================================
