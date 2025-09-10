@@ -1299,7 +1299,6 @@ void loop()
             Serial.print("Long press detected on: ");
             Serial.println(key);
             keypadLong = true;
-            playList = true;
             handleLongPress(); // your long press action
             longPressFired = true;
         }
