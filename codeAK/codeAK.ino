@@ -6,6 +6,8 @@
 #define MAX_TRACKS 100
 #define MAX_QUEUE 3
 
+const int busyPin = 12;
+
 // Letter button pins A–K (skipping I)
 int letterPins[NUM_LETTERS] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 // Number button pins 0–9
@@ -49,6 +51,8 @@ void setup()
         digitalWrite(numberLEDs[i], HIGH);
     }
 
+    pinMode(busyPin, INPUT);
+
     Serial.println("Code AK Ready!");
 }
 
@@ -69,7 +73,12 @@ void loop()
         handleNumberPress(numberPressed);
     }
 
-    // Check if song finished (simulate or use busy pin if wired)
+    // Check if song finished using busy pin
+    if (digitalRead(busyPin) == HIGH)
+    {
+        Serial.println("Song finished");
+        lightAllLEDs();
+    }
 }
 
 int getPressedKey(int *pins, int count)
@@ -122,7 +131,8 @@ void handleNumberPress(int index)
 
 void playSong(int letterIndex, int numberIndex)
 {
-    int trackNumber = (letterIndex * 10) + numberIndex + 1; // 0–99 → 1–100
+    int number = (numberIndex == 0) ? 10 : numberIndex;
+    int trackNumber = (letterIndex * 10) + number;
     if (trackNumber > MAX_TRACKS)
         trackNumber = MAX_TRACKS;
 
