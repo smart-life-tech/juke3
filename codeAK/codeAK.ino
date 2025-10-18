@@ -33,9 +33,10 @@ void setup()
     mp3Serial.begin(9600);
     if (!mp3.begin(mp3Serial))
     {
-        Serial.println("DFPlayer Mini not found!");
-        while (true)
-            ;
+        Serial.println("DFPlayer Mini not found!, proceeding regardless");
+        // while (true)
+        //     ;
+        mp3.play(1);
     }
 
     for (int i = 0; i < NUM_LETTERS; i++)

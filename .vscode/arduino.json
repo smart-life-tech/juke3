@@ -1,6 +1,6 @@
 {
     "board": "arduino:avr:mega",
-    "sketch": "code222\\code222.ino",
+    "sketch": "codeAK\\codeAK.ino",
     "configuration": "cpu=atmega2560",
     "port": "COM10"
 }
