@@ -36,7 +36,7 @@ void setup()
         Serial.println("DFPlayer Mini not found!, proceeding regardless");
         // while (true)
         //     ;
-        mp3.play(1);
+        //mp3.play(1);
     }
 
     for (int i = 0; i < NUM_LETTERS; i++)
@@ -141,20 +141,23 @@ void playSong(int letterIndex, int numberIndex)
     Serial.println(trackNumber);
     mp3.play(trackNumber);
 
-    // Turn off all LEDs except this pair
-    for (int i = 0; i < NUM_LETTERS; i++)
-        digitalWrite(letterLEDs[i], LOW);
-    for (int i = 0; i < NUM_NUMBERS; i++)
-        digitalWrite(numberLEDs[i], LOW);
-    digitalWrite(letterLEDs[letterIndex], HIGH);
-    digitalWrite(numberLEDs[numberIndex], HIGH);
+    // Turn off all LEDs except this pair only for the last song
+    if (songsPlayed + 1 == MAX_QUEUE)
+    {
+        for (int i = 0; i < NUM_LETTERS; i++)
+            digitalWrite(letterLEDs[i], LOW);
+        for (int i = 0; i < NUM_NUMBERS; i++)
+            digitalWrite(numberLEDs[i], LOW);
+        digitalWrite(letterLEDs[letterIndex], HIGH);
+        digitalWrite(numberLEDs[numberIndex], HIGH);
+    }
 
     songsPlayed++;
     if (songsPlayed >= MAX_QUEUE)
     {
         songsPlayed = 0;
         delay(500); // small wait
-        lightAllLEDs();
+        // Removed lightAllLEDs() here; it will be called when song finishes in loop()
     }
 }
 
