@@ -115,15 +115,16 @@ void handleNumberPress(int index)
         return;
     }
 
-    currentNumber = index;
+    int number = (index == 9) ? 0 : (index + 1);
+    currentNumber = number;
     Serial.print("Number pressed: ");
-    Serial.println(index);
+    Serial.println(number);
 
     // Turn LED on
     digitalWrite(numberLEDs[index], HIGH);
 
     // Play song
-    playSong(currentLetter, currentNumber);
+    playSong(currentLetter, index);
 
     // Reset for next selection
     currentLetter = -1;
@@ -132,7 +133,8 @@ void handleNumberPress(int index)
 
 void playSong(int letterIndex, int numberIndex)
 {
-    int number = (numberIndex == 0) ? 10 : numberIndex;
+    int number = ((numberIndex + 1) % 10);
+    if (number == 0) number = 10;
     int trackNumber = (letterIndex * 10) + number;
     if (trackNumber > MAX_TRACKS)
         trackNumber = MAX_TRACKS;
