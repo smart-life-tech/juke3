@@ -4,7 +4,7 @@
 #define NUM_LETTERS 10
 #define NUM_NUMBERS 10
 #define MAX_TRACKS 100
-#define MAX_QUEUE 2
+#define MAX_QUEUE 3
 
 const int busyPin = 12;
 
@@ -21,9 +21,14 @@ DFRobotDFPlayerMini mp3;
 
 char letters[NUM_LETTERS] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K'};
 
-int currentLetter = -1;
-int currentNumber = -1;
-int songsPlayed = 0;
+struct Song {
+    int letter;
+    int number;
+};
+
+Song queue[MAX_QUEUE];
+int queueSize = 0;
+int currentPlaying = -1;
 
 unsigned long lastLetterDebounce = 0;
 unsigned long lastNumberDebounce = 0;
@@ -79,10 +84,22 @@ void loop()
     // Check if song finished using busy pin
     if (digitalRead(busyPin) == HIGH)
     {
-        // Serial.println("Song finished");
-        if (songsPlayed > MAX_QUEUE)
+        Serial.println("Song finished");
+        // Move to next song in queue
+        if (currentPlaying != -1)
         {
-            lightAllLEDs();
+            currentPlaying++;
+            if (currentPlaying < queueSize)
+            {
+                playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
+            }
+            else
+            {
+                // Queue finished
+                currentPlaying = -1;
+                queueSize = 0;
+                lightAllLEDs();
+            }
         }
     }
 }
@@ -111,6 +128,9 @@ void handleLetterPress(int index)
     digitalWrite(letterLEDs[index], HIGH); // keep LED on
 }
 
+int currentLetter = -1;
+int currentNumber = -1;
+
 void handleNumberPress(int index)
 {
     // Only valid if a letter was pressed before
@@ -127,8 +147,22 @@ void handleNumberPress(int index)
 
     digitalWrite(numberLEDs[index], HIGH);
 
-    // Play song based on current letter and number
-    playSong(currentLetter, index);
+    // Add to queue
+    if (queueSize < MAX_QUEUE)
+    {
+        queue[queueSize].letter = currentLetter;
+        queue[queueSize].number = index;
+        queueSize++;
+        Serial.print("Queued song ");
+        Serial.println(queueSize);
+    }
+
+    // If no song is playing, start playing
+    if (currentPlaying == -1 && queueSize > 0)
+    {
+        currentPlaying = 0;
+        playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
+    }
 }
 
 void playSong(int letterIndex, int numberIndex)
@@ -144,22 +178,15 @@ void playSong(int letterIndex, int numberIndex)
     Serial.println(trackNumber);
     mp3.play(trackNumber);
 
-    songsPlayed++;
-    if (songsPlayed == MAX_QUEUE)
+    // For the last song in queue, turn off all LEDs except this pair
+    if (currentPlaying == queueSize - 1)
     {
-        // Turn off all LEDs except this pair only for the last song
         for (int i = 0; i < NUM_LETTERS; i++)
             digitalWrite(letterLEDs[i], LOW);
         for (int i = 0; i < NUM_NUMBERS; i++)
             digitalWrite(numberLEDs[i], LOW);
         digitalWrite(letterLEDs[letterIndex], HIGH);
         digitalWrite(numberLEDs[numberIndex], HIGH);
-    }
-    if (songsPlayed >= MAX_QUEUE)
-    {
-        songsPlayed = 0;
-        delay(500); // small wait
-        lightAllLEDs();
     }
 }
 
