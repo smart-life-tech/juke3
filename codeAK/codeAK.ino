@@ -157,9 +157,10 @@ void handleNumberPress(int index)
     }
 
     // If no song is playing, start playing
-    if (currentPlaying == -1 && queueSize > 0)
+    if (currentPlaying == -1 && queueSize > 0 && digitalRead(busyPin))
     {
         currentPlaying = 0;
+        Serial.println("Starting playback from queue.");
         playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
     }
     currentLetter = -1; // reset letter selection
@@ -178,6 +179,11 @@ void playSong(int letterIndex, int numberIndex)
     Serial.print("Playing track ");
     Serial.println(trackNumber);
     mp3.play(trackNumber);
+    Serial.print("Playing song: ");
+    Serial.println(letters[letterIndex]);
+    Serial.println(number);
+    Serial.print("current playing: ");
+    Serial.println(currentPlaying);
 
     // For the last song in queue, turn off all LEDs except this pair
     if (currentPlaying == queueSize - 1)
