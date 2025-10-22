@@ -22,7 +22,8 @@ DFRobotDFPlayerMini mp3;
 
 char letters[NUM_LETTERS] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K'};
 
-struct Song {
+struct Song
+{
     int letter;
     int number;
 };
@@ -129,8 +130,6 @@ void handleLetterPress(int index)
     digitalWrite(letterLEDs[index], HIGH); // keep LED on
 }
 
-
-
 void handleNumberPress(int index)
 {
     // Only valid if a letter was pressed before
@@ -163,6 +162,8 @@ void handleNumberPress(int index)
         currentPlaying = 0;
         playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
     }
+    currentLetter = -1; // reset letter selection
+    currentNumber = -1; // reset number selection
 }
 
 void playSong(int letterIndex, int numberIndex)
