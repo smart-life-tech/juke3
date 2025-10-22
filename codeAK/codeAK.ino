@@ -24,7 +24,9 @@ char letters[NUM_LETTERS] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K'};
 int currentLetter = -1;
 int currentNumber = -1;
 int songsPlayed = 0;
-unsigned long lastDebounce = 0;
+
+unsigned long lastLetterDebounce = 0;
+unsigned long lastNumberDebounce = 0;
 const unsigned long debounceDelay = 200;
 
 void setup()
@@ -62,15 +64,15 @@ void loop()
     int letterPressed = getPressedKey(letterPins, NUM_LETTERS);
     int numberPressed = getPressedKey(numberPins, NUM_NUMBERS);
 
-    if (letterPressed != -1 && millis() - lastDebounce > debounceDelay)
+    if (letterPressed != -1 && millis() - lastLetterDebounce > debounceDelay)
     {
-        lastDebounce = millis();
+        lastLetterDebounce = millis();
         handleLetterPress(letterPressed);
     }
 
-    if (numberPressed != -1 && millis() - lastDebounce > debounceDelay)
+    if (numberPressed != -1 && millis() - lastNumberDebounce > debounceDelay)
     {
-        lastDebounce = millis();
+        lastNumberDebounce = millis();
         handleNumberPress(numberPressed);
     }
 
@@ -103,6 +105,9 @@ void handleLetterPress(int index)
 
     // Store selected letter
     currentLetter = index;
+    // Turn off all letter LEDs except the current one
+    for (int i = 0; i < NUM_LETTERS; i++)
+        digitalWrite(letterLEDs[i], LOW);
     digitalWrite(letterLEDs[index], HIGH); // keep LED on
 }
 
@@ -120,15 +125,13 @@ void handleNumberPress(int index)
     Serial.print("Number pressed: ");
     Serial.println(number);
 
-    // Turn LED on
+    // Turn off all number LEDs except the current one
+    for (int i = 0; i < NUM_NUMBERS; i++)
+        digitalWrite(numberLEDs[i], LOW);
     digitalWrite(numberLEDs[index], HIGH);
 
     // Play song
     playSong(currentLetter, index);
-
-    // Reset for next selection
-    currentLetter = -1;
-    currentNumber = -1;
 }
 
 void playSong(int letterIndex, int numberIndex)
@@ -143,17 +146,6 @@ void playSong(int letterIndex, int numberIndex)
     Serial.print("Playing track ");
     Serial.println(trackNumber);
     mp3.play(trackNumber);
-
-    // Turn off all LEDs except this pair only for the last song
-    if (songsPlayed + 1 == MAX_QUEUE)
-    {
-        for (int i = 0; i < NUM_LETTERS; i++)
-            digitalWrite(letterLEDs[i], LOW);
-        for (int i = 0; i < NUM_NUMBERS; i++)
-            digitalWrite(numberLEDs[i], LOW);
-        digitalWrite(letterLEDs[letterIndex], HIGH);
-        digitalWrite(numberLEDs[numberIndex], HIGH);
-    }
 
     songsPlayed++;
     if (songsPlayed >= MAX_QUEUE)
