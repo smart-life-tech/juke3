@@ -1,0 +1,3 @@
+- [ ] Modify playSong() function to always turn off all LEDs except the current pair when a song starts playing
+- [ ] Remove the conditional check for the last song in the queue for LED control
+- [ ] Test the changes by uploading to Arduino and verifying LED behavior

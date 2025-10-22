@@ -4,7 +4,7 @@
 #define NUM_LETTERS 10
 #define NUM_NUMBERS 10
 #define MAX_TRACKS 100
-#define MAX_QUEUE 3
+#define MAX_QUEUE 2
 
 const int busyPin = 12;
 
@@ -36,7 +36,7 @@ void setup()
         Serial.println("DFPlayer Mini not found!, proceeding regardless");
         // while (true)
         //     ;
-        //mp3.play(1);
+        // mp3.play(1);
     }
 
     for (int i = 0; i < NUM_LETTERS; i++)
@@ -77,7 +77,7 @@ void loop()
     // Check if song finished using busy pin
     if (digitalRead(busyPin) == HIGH)
     {
-        Serial.println("Song finished");
+        // Serial.println("Song finished");
         lightAllLEDs();
     }
 }
@@ -134,7 +134,8 @@ void handleNumberPress(int index)
 void playSong(int letterIndex, int numberIndex)
 {
     int number = ((numberIndex + 1) % 10);
-    if (number == 0) number = 10;
+    if (number == 0)
+        number = 10;
     int trackNumber = (letterIndex * 10) + number;
     if (trackNumber > MAX_TRACKS)
         trackNumber = MAX_TRACKS;
@@ -169,5 +170,5 @@ void lightAllLEDs()
         digitalWrite(letterLEDs[i], HIGH);
     for (int i = 0; i < NUM_NUMBERS; i++)
         digitalWrite(numberLEDs[i], HIGH);
-    Serial.println("All LEDs re-enabled for next round.");
+    // Serial.println("All LEDs re-enabled for next round.");
 }
