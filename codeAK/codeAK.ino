@@ -5,7 +5,8 @@
 #define NUM_NUMBERS 10
 #define MAX_TRACKS 100
 #define MAX_QUEUE 3
-
+int currentLetter = -1;
+int currentNumber = -1;
 const int busyPin = 12;
 
 // Letter button pins A–K (skipping I)
@@ -128,8 +129,7 @@ void handleLetterPress(int index)
     digitalWrite(letterLEDs[index], HIGH); // keep LED on
 }
 
-int currentLetter = -1;
-int currentNumber = -1;
+
 
 void handleNumberPress(int index)
 {
