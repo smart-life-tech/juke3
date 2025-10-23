@@ -88,17 +88,18 @@ void loop()
     {
         Serial.println("Song finished");
         // Move to next song in queue
-        if (currentPlaying != -1)
+        if (currentPlaying > -1)
         {
             currentPlaying++;
             if (currentPlaying < queueSize)
             {
+                Serial.println("Playing next song in queue.");
                 playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
             }
             else
             {
                 // Queue finished
-                currentPlaying = -1;
+                //currentPlaying = -1;
                 queueSize = 0;
                 lightAllLEDs();
             }
