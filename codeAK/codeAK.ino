@@ -9,6 +9,7 @@ int currentLetter = -1;
 int currentNumber = -1;
 const int busyPin = 12;
 bool donePlaying = true;
+bool play = true;
 // Letter button pins A–K (skipping I)
 int letterPins[NUM_LETTERS] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 // Number button pins 0–9
@@ -88,10 +89,12 @@ void loop()
     {
         //Serial.println("Song finished");
         // Move to next song in queue
-        if (donePlaying)
+        if (donePlaying && play)
         {
             currentPlaying++;
-            if (currentPlaying < queueSize)
+            Serial.println("Song done, moving to next in queue.");
+            Serial.println(currentPlaying);
+            if (currentPlaying < queueSize+1)
             {
                 Serial.print("Playing next song in queue.. ");
                 Serial.println(queue[currentPlaying].letter);
@@ -166,10 +169,11 @@ void handleNumberPress(int index)
         queueSize++;
         Serial.print("Queued song ");
         Serial.println(queueSize);
+        play = true;
     }
 
     // If no song is playing, start playing
-    if (currentPlaying == -1 && queueSize > 0 && digitalRead(busyPin))
+    if (currentPlaying == 0 && queueSize > 0 && digitalRead(busyPin))
     {
         currentPlaying = 0;
         Serial.println("Starting playback from queue immediately after number entered.");
