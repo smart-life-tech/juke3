@@ -8,7 +8,7 @@
 int currentLetter = -1;
 int currentNumber = -1;
 const int busyPin = 12;
-
+bool donePlaying = true;
 // Letter button pins A–K (skipping I)
 int letterPins[NUM_LETTERS] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 // Number button pins 0–9
@@ -30,7 +30,7 @@ struct Song
 
 Song queue[MAX_QUEUE];
 int queueSize = 0;
-int currentPlaying = -1;
+int currentPlaying = 0;
 
 unsigned long lastLetterDebounce = 0;
 unsigned long lastNumberDebounce = 0;
@@ -86,9 +86,9 @@ void loop()
     // Check if song finished using busy pin
     if (digitalRead(busyPin) == HIGH)
     {
-        Serial.println("Song finished");
+        //Serial.println("Song finished");
         // Move to next song in queue
-        if (1)
+        if (donePlaying)
         {
             currentPlaying++;
             if (currentPlaying < queueSize)
@@ -103,11 +103,18 @@ void loop()
             else
             {
                 // Queue finished
-                //currentPlaying = -1;
+                // currentPlaying = -1;
+                Serial.println("max que all  leds on");
                 queueSize = 0;
                 lightAllLEDs();
             }
+            donePlaying = false;
         }
+    }
+    else
+    {
+        donePlaying = true;
+         Serial.println("Song playing");
     }
 }
 
