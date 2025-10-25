@@ -94,7 +94,7 @@ void loop()
 
             Serial.println("Song done, moving to next in queue.");
             Serial.println(currentPlaying);
-            if (currentPlaying < queueSize + 1)
+            if (currentPlaying < queueSize + 2)
             {
                 Serial.print("Playing next song in queue.. ");
                 Serial.println(queue[currentPlaying].letter);
@@ -176,10 +176,11 @@ void handleNumberPress(int index)
     // If no song is playing, start playing
     if (queueSize > 0 && currentPlaying == 0)
     {
-        currentPlaying = 1;
+        
         Serial.println("Starting playback from queue immediately after number entered.");
         playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
         play = true;
+        currentPlaying = 1;
         delay(2000); // brief delay to allow mp3 module to start
     }
     currentLetter = -1; // reset letter selection
