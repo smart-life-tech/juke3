@@ -173,7 +173,7 @@ void handleNumberPress(int index)
     }
 
     // If no song is playing, start playing
-    if (currentPlaying == 0 && queueSize > 0 && digitalRead(busyPin))
+    if (currentPlaying == 0 && queueSize > 0 )
     {
         currentPlaying = 0;
         Serial.println("Starting playback from queue immediately after number entered.");
