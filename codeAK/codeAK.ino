@@ -143,6 +143,7 @@ void handleLetterPress(int index)
     // Store selected letter
     currentLetter = index;
     digitalWrite(letterLEDs[index], HIGH); // keep LED on
+    delay(500);
 }
 
 void handleNumberPress(int index)
@@ -173,7 +174,7 @@ void handleNumberPress(int index)
     }
 
     // If no song is playing, start playing
-    if (currentPlaying == 0 && queueSize > 0 )
+    if (queueSize > 0 )
     {
         currentPlaying = 0;
         Serial.println("Starting playback from queue immediately after number entered.");
