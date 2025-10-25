@@ -9,7 +9,7 @@ int currentLetter = -1;
 int currentNumber = -1;
 const int busyPin = 12;
 bool donePlaying = true;
-bool play = true;
+bool play = false;
 // Letter button pins A–K (skipping I)
 int letterPins[NUM_LETTERS] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 // Number button pins 0–9
