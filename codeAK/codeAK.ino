@@ -101,7 +101,8 @@ void loop()
                 Serial.println(queue[currentPlaying].letter);
                 Serial.print("Number: ");
                 Serial.println(queue[currentPlaying].number);
-                delay(7000); 
+                mp3.stop();
+                delay(1000); 
                 playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
                 currentPlaying++;
                 delay(2000); // brief delay to allow mp3 module to start
