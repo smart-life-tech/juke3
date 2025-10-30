@@ -48,6 +48,8 @@ void setup()
         //     ;
         // mp3.play(1);
     }
+    mp3.setTimeOut(500); // Set timeout to prevent hangs
+    mp3.volume(20); // Set volume
 
     for (int i = 0; i < NUM_LETTERS; i++)
     {
@@ -101,11 +103,9 @@ void loop()
                 Serial.println(queue[currentPlaying].letter);
                 Serial.print("Number: ");
                 Serial.println(queue[currentPlaying].number);
-                mp3.stop();
-                delay(1000);
                 playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
                 currentPlaying++;
-                delay(2000); // brief delay to allow mp3 module to start
+                delay(3000); // brief delay to allow mp3 module to start
             }
             else
             {
@@ -206,6 +206,10 @@ void playSong(int letterIndex, int numberIndex)
     Serial.println(number);
     Serial.print("current playing: ");
     Serial.println(currentPlaying);
+    mp3.reset();
+    delay(500);
+    mp3.begin(mp3Serial);
+    delay(1000);
     mp3.play(trackNumber);
     Serial.print("Playing song: ");
     Serial.println(letters[letterIndex]);
