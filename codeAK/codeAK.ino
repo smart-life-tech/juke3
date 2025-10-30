@@ -95,14 +95,14 @@ void loop()
             Serial.println("Song done, moving to next in queue.");
             Serial.println(currentPlaying);
             
-            if (currentPlaying < queueSize + 2)
+            if (currentPlaying < queueSize)
             {
                 Serial.print("Playing next song in queue.. ");
                 Serial.println(queue[currentPlaying].letter);
                 Serial.print("Number: ");
                 Serial.println(queue[currentPlaying].number);
                 mp3.stop();
-                delay(1000); 
+                delay(1000);
                 playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
                 currentPlaying++;
                 delay(2000); // brief delay to allow mp3 module to start
@@ -110,9 +110,9 @@ void loop()
             else
             {
                 // Queue finished
-                // currentPlaying = -1;
                 Serial.println("max que all  leds on");
                 queueSize = 0;
+                currentPlaying = 0;
                 lightAllLEDs();
             }
             donePlaying = false;
