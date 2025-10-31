@@ -48,7 +48,7 @@ void setup()
         //     ;
         // mp3.play(1);
     }
-    mp3.setTimeOut(500); // Set timeout to prevent hangs
+    mp3.setTimeOut(50); // Set timeout to prevent hangs
     mp3.volume(20); // Set volume
 
     for (int i = 0; i < NUM_LETTERS; i++)
@@ -213,7 +213,8 @@ void playSong(int letterIndex, int numberIndex)
     mp3.reset();
     Serial.println("resetting The df player");
     delay(500);
-   // mp3.begin(mp3Serial);
+    mp3Serial.begin(9600);
+    mp3.begin(mp3Serial);
     Serial.print("re initialize");
     delay(1000);
     mp3.play(trackNumber);
