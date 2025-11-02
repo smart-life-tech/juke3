@@ -49,7 +49,7 @@ void setup()
         // mp3.play(1);
     }
     mp3.setTimeOut(50); // Set timeout to prevent hangs
-    mp3.volume(20); // Set volume
+    mp3.volume(20);     // Set volume
 
     for (int i = 0; i < NUM_LETTERS; i++)
     {
@@ -96,7 +96,7 @@ void loop()
 
             Serial.println("Song done, moving to next in queue.");
             Serial.println(currentPlaying);
-            
+
             if (currentPlaying < queueSize)
             {
                 Serial.print("Playing next song in queue.. ");
@@ -179,7 +179,7 @@ void handleNumberPress(int index)
     // If no song is playing, start playing
     if (queueSize > 0 && currentPlaying == 0)
     {
-        
+
         Serial.println("Starting playback from queue immediately after number entered.");
         playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
         play = true;
@@ -206,16 +206,16 @@ void playSong(int letterIndex, int numberIndex)
     Serial.println(number);
     Serial.print("current playing: ");
     Serial.println(currentPlaying);
-    Serial.println("stopping The df player");
-    mp3.stop();
-    Serial.println("stopped The df player");
-    // delay(500);
-    // mp3.reset();
-    // Serial.println("resetting The df player");
-    // delay(500);
-    // mp3Serial.begin(9600);
-    // mp3.begin(mp3Serial);
-    // Serial.print("re initialize");
+    // Serial.println("stopping The df player");
+    // mp3.stop();
+    // Serial.println("stopped The df player");
+    //  delay(500);
+    //  mp3.reset();
+    //  Serial.println("resetting The df player");
+    //  delay(500);
+    //  mp3Serial.begin(9600);
+    //  mp3.begin(mp3Serial);
+    //  Serial.print("re initialize");
     delay(1000);
     mp3.play(trackNumber);
     Serial.print("Playing song: ");
