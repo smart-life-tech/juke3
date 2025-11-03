@@ -1,5 +1,6 @@
 #include <SoftwareSerial.h>
 #include <DFRobotDFPlayerMini.h>
+#include <EEPROM.h>
 
 #define NUM_LETTERS 10
 #define NUM_NUMBERS 10
@@ -37,6 +38,32 @@ unsigned long lastLetterDebounce = 0;
 unsigned long lastNumberDebounce = 0;
 const unsigned long debounceDelay = 200;
 
+// EEPROM addresses
+#define EEPROM_QUEUE_START 0
+#define EEPROM_QUEUE_SIZE_ADDR 6
+#define EEPROM_CURRENT_PLAYING_ADDR 7
+
+// Reset function
+void(* resetFunc) (void) = 0;
+
+void saveQueue() {
+    for (int i = 0; i < MAX_QUEUE; i++) {
+        EEPROM.write(EEPROM_QUEUE_START + i * 2, queue[i].letter);
+        EEPROM.write(EEPROM_QUEUE_START + i * 2 + 1, queue[i].number);
+    }
+    EEPROM.write(EEPROM_QUEUE_SIZE_ADDR, queueSize);
+    EEPROM.write(EEPROM_CURRENT_PLAYING_ADDR, currentPlaying);
+}
+
+void loadQueue() {
+    for (int i = 0; i < MAX_QUEUE; i++) {
+        queue[i].letter = EEPROM.read(EEPROM_QUEUE_START + i * 2);
+        queue[i].number = EEPROM.read(EEPROM_QUEUE_START + i * 2 + 1);
+    }
+    queueSize = EEPROM.read(EEPROM_QUEUE_SIZE_ADDR);
+    currentPlaying = EEPROM.read(EEPROM_CURRENT_PLAYING_ADDR);
+}
+
 void setup()
 {
     Serial.begin(9600);
@@ -65,6 +92,17 @@ void setup()
     }
 
     pinMode(busyPin, INPUT);
+
+    // Load queue from EEPROM
+    loadQueue();
+    if (queueSize == 3 && currentPlaying < queueSize) {
+        Serial.println("Resuming playback from EEPROM.");
+        playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
+        play = true;
+        currentPlaying++;
+        saveQueue(); // Save after resuming
+        delay(2000); // brief delay to allow mp3 module to start
+    }
 
     Serial.println("Code AK Ready!");
 }
@@ -103,8 +141,11 @@ void loop()
                 Serial.println(queue[currentPlaying].letter);
                 Serial.print("Number: ");
                 Serial.println(queue[currentPlaying].number);
+                // Reset the board to clear state
+                resetFunc();
                 playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
                 currentPlaying++;
+                saveQueue(); // Save after incrementing currentPlaying
                 delay(3000); // brief delay to allow mp3 module to start
             }
             else
@@ -113,7 +154,9 @@ void loop()
                 Serial.println("max que all  leds on");
                 queueSize = 0;
                 currentPlaying = 0;
+                saveQueue(); // Save reset values
                 lightAllLEDs();
+                
             }
             donePlaying = false;
         }
@@ -174,6 +217,7 @@ void handleNumberPress(int index)
         queueSize++;
         Serial.print("Queued song ");
         Serial.println(queueSize);
+        saveQueue(); // Save after adding to queue
     }
 
     // If no song is playing, start playing
@@ -184,6 +228,7 @@ void handleNumberPress(int index)
         playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
         play = true;
         currentPlaying = 1;
+        saveQueue(); // Save currentPlaying after starting
         delay(2000); // brief delay to allow mp3 module to start
     }
     currentLetter = -1; // reset letter selection
@@ -206,16 +251,6 @@ void playSong(int letterIndex, int numberIndex)
     Serial.println(number);
     Serial.print("current playing: ");
     Serial.println(currentPlaying);
-    // Serial.println("stopping The df player");
-    // mp3.stop();
-    // Serial.println("stopped The df player");
-    //  delay(500);
-    //  mp3.reset();
-    //  Serial.println("resetting The df player");
-    //  delay(500);
-    //  mp3Serial.begin(9600);
-    //  mp3.begin(mp3Serial);
-    //  Serial.print("re initialize");
     delay(1000);
     mp3.play(trackNumber);
     Serial.print("Playing song: ");
