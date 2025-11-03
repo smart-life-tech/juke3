@@ -44,10 +44,12 @@ const unsigned long debounceDelay = 200;
 #define EEPROM_CURRENT_PLAYING_ADDR 7
 
 // Reset function
-void(* resetFunc) (void) = 0;
+void (*resetFunc)(void) = 0;
 
-void saveQueue() {
-    for (int i = 0; i < MAX_QUEUE; i++) {
+void saveQueue()
+{
+    for (int i = 0; i < MAX_QUEUE; i++)
+    {
         EEPROM.write(EEPROM_QUEUE_START + i * 2, queue[i].letter);
         EEPROM.write(EEPROM_QUEUE_START + i * 2 + 1, queue[i].number);
     }
@@ -55,13 +57,20 @@ void saveQueue() {
     EEPROM.write(EEPROM_CURRENT_PLAYING_ADDR, currentPlaying);
 }
 
-void loadQueue() {
-    for (int i = 0; i < MAX_QUEUE; i++) {
+void loadQueue()
+{
+    for (int i = 0; i < MAX_QUEUE; i++)
+    {
         queue[i].letter = EEPROM.read(EEPROM_QUEUE_START + i * 2);
         queue[i].number = EEPROM.read(EEPROM_QUEUE_START + i * 2 + 1);
     }
     queueSize = EEPROM.read(EEPROM_QUEUE_SIZE_ADDR);
     currentPlaying = EEPROM.read(EEPROM_CURRENT_PLAYING_ADDR);
+    Serial.print("Loaded queue size from EEPROM: ");
+    Serial.println(queueSize);
+    Serial.print("Loaded current playing index from EEPROM: ");
+    Serial.println(currentPlaying);
+    Serial.println();
 }
 
 void setup()
@@ -95,7 +104,8 @@ void setup()
 
     // Load queue from EEPROM
     loadQueue();
-    if (queueSize == 3 && currentPlaying < queueSize) {
+    if (queueSize == 3 && currentPlaying < queueSize)
+    {
         Serial.println("Resuming playback from EEPROM.");
         playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
         play = true;
@@ -103,7 +113,7 @@ void setup()
         saveQueue(); // Save after resuming
         delay(2000); // brief delay to allow mp3 module to start
     }
-
+    queueSize = 0;
     Serial.println("Code AK Ready!");
 }
 
@@ -156,7 +166,6 @@ void loop()
                 currentPlaying = 0;
                 saveQueue(); // Save reset values
                 lightAllLEDs();
-                
             }
             donePlaying = false;
         }
@@ -233,6 +242,7 @@ void handleNumberPress(int index)
     }
     currentLetter = -1; // reset letter selection
     currentNumber = -1; // reset number selection
+    delay(500);
 }
 
 void playSong(int letterIndex, int numberIndex)
