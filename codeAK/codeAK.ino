@@ -114,6 +114,7 @@ void setup()
         delay(2000); // brief delay to allow mp3 module to start
     }
     queueSize = 0;
+    currentPlaying = 0;
     Serial.println("Code AK Ready!");
 }
 
