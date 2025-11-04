@@ -9,8 +9,16 @@
 int currentLetter = -1;
 int currentNumber = -1;
 const int busyPin = 12;
+const int skipPin = 13;
+const int buzzLedPin = 14;
+const int popLedPin = 15;
 bool donePlaying = true;
 bool play = false;
+unsigned long buzzStartTime = 0;
+unsigned long popStartTime = 0;
+bool buzzLedOn = false;
+bool popLedOn = false;
+unsigned long lastSkipDebounce = 0;
 // Letter button pins A–K (skipping I)
 int letterPins[NUM_LETTERS] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 // Number button pins 0–9
@@ -101,6 +109,11 @@ void setup()
     }
 
     pinMode(busyPin, INPUT);
+    pinMode(skipPin, INPUT_PULLUP);
+    pinMode(buzzLedPin, OUTPUT);
+    digitalWrite(buzzLedPin, LOW);
+    pinMode(popLedPin, OUTPUT);
+    digitalWrite(popLedPin, LOW);
 
     // Load queue from EEPROM
     loadQueue();
@@ -134,6 +147,38 @@ void loop()
         lastNumberDebounce = millis();
         handleNumberPress(numberPressed);
     }
+
+    // Check skip button
+    if (digitalRead(skipPin) == LOW && millis() - lastSkipDebounce > debounceDelay)
+    {
+        lastSkipDebounce = millis();
+        if (play && currentPlaying < queueSize + 1)
+        {
+            Serial.println("Skipping to next song.");
+            // mp3.stop();
+            delay(1000);
+            if (currentPlaying < queueSize)
+            {
+                // Reset the board to clear state
+                // resetFunc();
+                // playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
+                currentPlaying++;
+                saveQueue();
+                delay(500);
+                resetFunc();
+            }
+            else
+            {
+                queueSize = 0;
+                currentPlaying = 0;
+                saveQueue();
+                lightAllLEDs();
+            }
+        }
+    }
+
+    // Update buzz/pop LEDs
+    updateBuzzPopLeds();
 
     // Check if song finished using busy pin
     if (digitalRead(busyPin) == HIGH)
@@ -228,6 +273,17 @@ void handleNumberPress(int index)
         Serial.print("Queued song ");
         Serial.println(queueSize);
         saveQueue(); // Save after adding to queue
+
+        // After 3rd selection, turn off all LEDs except the current pair
+        if (queueSize == 2)
+        {
+            for (int i = 0; i < NUM_LETTERS; i++)
+                digitalWrite(letterLEDs[i], LOW);
+            for (int i = 0; i < NUM_NUMBERS; i++)
+                digitalWrite(numberLEDs[i], LOW);
+            digitalWrite(letterLEDs[currentLetter], HIGH);
+            digitalWrite(numberLEDs[index], HIGH);
+        }
     }
 
     // If no song is playing, start playing
@@ -270,6 +326,9 @@ void playSong(int letterIndex, int numberIndex)
     Serial.print("current playing: ");
     Serial.println(currentPlaying);
 
+    // Start buzz/pop sequence
+    startBuzzPopSequence();
+
     // For the last song in queue, turn off all LEDs except this pair
     if (currentPlaying == queueSize - 1)
     {
@@ -289,4 +348,30 @@ void lightAllLEDs()
     for (int i = 0; i < NUM_NUMBERS; i++)
         digitalWrite(numberLEDs[i], HIGH);
     // Serial.println("All LEDs re-enabled for next round.");
+}
+
+void startBuzzPopSequence()
+{
+    buzzLedOn = true;
+    buzzStartTime = millis();
+    digitalWrite(buzzLedPin, HIGH);
+}
+
+void updateBuzzPopLeds()
+{
+    if (buzzLedOn && millis() - buzzStartTime >= 7000)
+    {
+        buzzLedOn = false;
+        digitalWrite(buzzLedPin, LOW);
+
+        popLedOn = true;
+        popStartTime = millis();
+        digitalWrite(popLedPin, HIGH);
+    }
+
+    if (popLedOn && millis() - popStartTime >= 1000)
+    {
+        popLedOn = false;
+        digitalWrite(popLedPin, LOW);
+    }
 }
