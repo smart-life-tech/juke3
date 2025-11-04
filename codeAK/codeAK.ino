@@ -191,7 +191,7 @@ void loop()
             Serial.println("Song done, moving to next in queue.");
             Serial.println(currentPlaying);
 
-            if (currentPlaying < queueSize)
+            if (currentPlaying < (queueSize+1))
             {
                 Serial.print("Playing next song in queue.. ");
                 Serial.println(queue[currentPlaying].letter);
