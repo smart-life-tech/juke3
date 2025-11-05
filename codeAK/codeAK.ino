@@ -29,7 +29,7 @@ int numberLEDs[NUM_NUMBERS] = {42, 43, 44, 45, 46, 47, 48, 49, 50, 51};
 
 SoftwareSerial mp3Serial(16, 17); // RX, TX
 DFRobotDFPlayerMini mp3;
-
+int oldPlay = -1;
 char letters[NUM_LETTERS] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K'};
 
 struct Song
@@ -191,7 +191,7 @@ void loop()
             Serial.println("Song done, moving to next in queue.");
             Serial.println(currentPlaying);
 
-            if (currentPlaying < (queueSize+1))
+            if (currentPlaying < (queueSize + 1))
             {
                 Serial.print("Playing next song in queue.. ");
                 Serial.println(queue[currentPlaying].letter);
@@ -220,6 +220,22 @@ void loop()
     {
         donePlaying = true;
         // Serial.println("Song playing");
+    }
+    showLed(queue[currentPlaying].letter, queue[currentPlaying].number);
+}
+
+void showLed(int letterIndex, int numberIndex)
+{
+    // For the last song in queue, turn off all LEDs except this pair
+    if (currentPlaying != oldPlay && queueSize == 2)
+    {
+        oldPlay = currentPlaying;
+        for (int i = 0; i < NUM_LETTERS; i++)
+            digitalWrite(letterLEDs[i], LOW);
+        for (int i = 0; i < NUM_NUMBERS; i++)
+            digitalWrite(numberLEDs[i], LOW);
+        digitalWrite(letterLEDs[letterIndex], HIGH);
+        digitalWrite(numberLEDs[numberIndex], HIGH);
     }
 }
 
@@ -275,15 +291,15 @@ void handleNumberPress(int index)
         saveQueue(); // Save after adding to queue
 
         // After 3rd selection, turn off all LEDs except the current pair
-        if (queueSize == 2)
-        {
-            for (int i = 0; i < NUM_LETTERS; i++)
-                digitalWrite(letterLEDs[i], LOW);
-            for (int i = 0; i < NUM_NUMBERS; i++)
-                digitalWrite(numberLEDs[i], LOW);
-            digitalWrite(letterLEDs[currentLetter], HIGH);
-            digitalWrite(numberLEDs[index], HIGH);
-        }
+        // if (queueSize == 2 )
+        // {
+        //     for (int i = 0; i < NUM_LETTERS; i++)
+        //         digitalWrite(letterLEDs[i], LOW);
+        //     for (int i = 0; i < NUM_NUMBERS; i++)
+        //         digitalWrite(numberLEDs[i], LOW);
+        //     digitalWrite(letterLEDs[currentLetter], HIGH);
+        //     digitalWrite(numberLEDs[index], HIGH);
+        // }
     }
 
     // If no song is playing, start playing
@@ -330,7 +346,7 @@ void playSong(int letterIndex, int numberIndex)
     startBuzzPopSequence();
 
     // For the last song in queue, turn off all LEDs except this pair
-    if (currentPlaying == queueSize - 1)
+    if (currentPlaying == 2)
     {
         for (int i = 0; i < NUM_LETTERS; i++)
             digitalWrite(letterLEDs[i], LOW);
