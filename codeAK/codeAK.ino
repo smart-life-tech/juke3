@@ -337,7 +337,7 @@ void handleNumberPress(int index)
         play = true;
         currentPlaying = 1;
         saveQueue(); // Save currentPlaying after starting
-        delay(2000); // brief delay to allow mp3 module to start
+        //delay(2000); // brief delay to allow mp3 module to start
     }
     currentLetter = -1; // reset letter selection
     currentNumber = -1; // reset number selection
