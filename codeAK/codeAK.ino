@@ -50,6 +50,7 @@ const unsigned long debounceDelay = 50;
 #define EEPROM_QUEUE_START 0
 #define EEPROM_QUEUE_SIZE_ADDR 6
 #define EEPROM_CURRENT_PLAYING_ADDR 7
+#define EEPROM_RESET_FLAG_ADDR 8
 
 // Reset function
 void (*resetFunc)(void) = 0;
@@ -79,6 +80,14 @@ void loadQueue()
     Serial.print("Loaded current playing index from EEPROM: ");
     Serial.println(currentPlaying);
     Serial.println();
+}
+
+void clearEEPROM()
+{
+    for (int i = 0; i < EEPROM.length(); i++)
+    {
+        EEPROM.write(i, 0);
+    }
 }
 
 void setup()
@@ -114,6 +123,21 @@ void setup()
     digitalWrite(buzzLedPin, LOW);
     pinMode(popLedPin, OUTPUT);
     digitalWrite(popLedPin, LOW);
+
+    // Check reset flag
+    int resetFlag = EEPROM.read(EEPROM_RESET_FLAG_ADDR);
+    if (resetFlag == 1)
+    {
+        // Software reset: clear flag and proceed normally
+        EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+        Serial.println("Software reset detected, clearing flag.");
+    }
+    else
+    {
+        // Hardware reset: clear EEPROM
+        clearEEPROM();
+        Serial.println("Hardware reset detected, clearing EEPROM.");
+    }
 
     // Load queue from EEPROM
     loadQueue();
@@ -165,6 +189,7 @@ void loop()
                 currentPlaying++;
                 saveQueue();
                 delay(500);
+                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
                 resetFunc();
             }
             else
@@ -198,6 +223,7 @@ void loop()
                 Serial.print("Number: ");
                 Serial.println(queue[currentPlaying].number);
                 // Reset the board to clear state
+                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
                 resetFunc();
                 playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
                 currentPlaying++;
