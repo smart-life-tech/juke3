@@ -341,7 +341,6 @@ void handleNumberPress(int index)
     }
     currentLetter = -1; // reset letter selection
     currentNumber = -1; // reset number selection
-    delay(500);
 }
 
 void playSong(int letterIndex, int numberIndex)
