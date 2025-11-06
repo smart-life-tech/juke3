@@ -261,7 +261,7 @@ void handleLetterPress(int index)
     // Store selected letter
     currentLetter = index;
     digitalWrite(letterLEDs[index], HIGH); // keep LED on
-    delay(500);
+    //delay(500);
 }
 
 void handleNumberPress(int index)
