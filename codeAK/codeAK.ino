@@ -44,7 +44,7 @@ int currentPlaying = 0;
 
 unsigned long lastLetterDebounce = 0;
 unsigned long lastNumberDebounce = 0;
-const unsigned long debounceDelay = 200;
+const unsigned long debounceDelay = 50;
 
 // EEPROM addresses
 #define EEPROM_QUEUE_START 0
@@ -334,7 +334,7 @@ void playSong(int letterIndex, int numberIndex)
     Serial.println(number);
     Serial.print("current playing: ");
     Serial.println(currentPlaying);
-    delay(1000);
+    //delay(1000);
     mp3.play(trackNumber);
     Serial.print("Playing song: ");
     Serial.println(letters[letterIndex]);
