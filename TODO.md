@@ -1,10 +1,7 @@
-# TODO for EEPROM Queue Persistence in codeAK.ino
+# TODO for Reducing Delays in codeAK.ino
 
-1. Add #include <EEPROM.h> at the top of the file. ✓
-2. Define EEPROM addresses: queue at 0 (6 bytes for 3 Songs), queueSize at 6 (1 byte), currentPlaying at 7 (1 byte). ✓
-3. Create saveQueue() function to write queue, queueSize, and currentPlaying to EEPROM. ✓
-4. Create loadQueue() function to read queue, queueSize, and currentPlaying from EEPROM. ✓
-5. In handleNumberPress(), after adding to queue, call saveQueue(). ✓
-6. In loop(), after incrementing currentPlaying when song finishes, call saveQueue(). ✓
-7. In setup(), after initialization, call loadQueue(); if queueSize == 3 and currentPlaying < queueSize, play the next song and set play=true (skip LED logic for resume). ✓
-8. When queue finishes, reset queueSize=0, currentPlaying=0, call saveQueue(), and lightAllLEDs(). ✓
+- [x] Reduce delay(2000) to delay(500) in setup() after resuming playback from EEPROM.
+- [x] Reduce delay(3000) to delay(1000) in loop() after song finishes and before resetting.
+- [x] Reduce delay(500) to delay(200) in handleNumberPress() after starting playback.
+- [x] Reduce delay(1000) to delay(500) in skip button handling in loop().
+- [x] Reduce delay(500) to delay(200) in skip button handling after incrementing currentPlaying.

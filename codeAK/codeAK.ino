@@ -148,7 +148,7 @@ void setup()
         play = true;
         currentPlaying++;
         saveQueue(); // Save after resuming
-        delay(2000); // brief delay to allow mp3 module to start
+        delay(500); // brief delay to allow mp3 module to start
     }
     queueSize = 0;
     currentPlaying = 0;
@@ -180,7 +180,7 @@ void loop()
         {
             Serial.println("Skipping to next song.");
             // mp3.stop();
-            delay(1000);
+            delay(500);
             if (currentPlaying < queueSize)
             {
                 // Reset the board to clear state
@@ -188,7 +188,7 @@ void loop()
                 // playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
                 currentPlaying++;
                 saveQueue();
-                delay(500);
+                delay(200);
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
                 resetFunc();
             }
@@ -228,7 +228,7 @@ void loop()
                 playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
                 currentPlaying++;
                 saveQueue(); // Save after incrementing currentPlaying
-                delay(3000); // brief delay to allow mp3 module to start
+                delay(500); // brief delay to allow mp3 module to start
             }
             else
             {
@@ -337,7 +337,7 @@ void handleNumberPress(int index)
         play = true;
         currentPlaying = 1;
         saveQueue(); // Save currentPlaying after starting
-        delay(500); // brief delay to allow mp3 module to start
+        delay(200); // brief delay to allow mp3 module to start
     }
     currentLetter = -1; // reset letter selection
     currentNumber = -1; // reset number selection
