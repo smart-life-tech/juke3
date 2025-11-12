@@ -150,8 +150,8 @@ void setup()
         saveQueue(); // Save after resuming
         delay(500);  // brief delay to allow mp3 module to start
     }
-    queueSize = 0;
-    currentPlaying = 0;
+    // queueSize = 0;
+    // currentPlaying = 0;
     Serial.println("Code AK Ready!");
 }
 
@@ -186,7 +186,9 @@ void loop()
                 // Reset the board to clear state
                 // resetFunc();
                 // playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
-                currentPlaying++;
+                Serial.print("current play: ");
+                Serial.println(currentPlaying);
+                currentPlaying--;
                 saveQueue();
                 delay(200);
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
@@ -339,7 +341,7 @@ void handleNumberPress(int index)
         Serial.println("Starting playback from queue immediately after number entered.");
         playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
         play = true;
-        //currentPlaying = 1;
+        // currentPlaying = 1;
         saveQueue(); // Save currentPlaying after starting
         delay(200);  // brief delay to allow mp3 module to start
     }
