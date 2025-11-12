@@ -148,7 +148,7 @@ void setup()
         play = true;
         currentPlaying++;
         saveQueue(); // Save after resuming
-        delay(500); // brief delay to allow mp3 module to start
+        delay(500);  // brief delay to allow mp3 module to start
     }
     queueSize = 0;
     currentPlaying = 0;
@@ -181,7 +181,7 @@ void loop()
             Serial.println("Skipping to next song.");
             // mp3.stop();
             delay(500);
-            if (currentPlaying < queueSize)
+            if (currentPlaying < queueSize + 1)
             {
                 // Reset the board to clear state
                 // resetFunc();
@@ -198,6 +198,8 @@ void loop()
                 currentPlaying = 0;
                 saveQueue();
                 lightAllLEDs();
+                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+                resetFunc();
             }
         }
     }
@@ -228,7 +230,7 @@ void loop()
                 playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
                 currentPlaying++;
                 saveQueue(); // Save after incrementing currentPlaying
-                delay(500); // brief delay to allow mp3 module to start
+                delay(500);  // brief delay to allow mp3 module to start
             }
             else
             {
@@ -238,6 +240,8 @@ void loop()
                 currentPlaying = 0;
                 saveQueue(); // Save reset values
                 lightAllLEDs();
+                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+                resetFunc();
             }
             donePlaying = false;
         }
@@ -287,7 +291,7 @@ void handleLetterPress(int index)
     // Store selected letter
     currentLetter = index;
     digitalWrite(letterLEDs[index], HIGH); // keep LED on
-    //delay(500);
+    // delay(500);
 }
 
 void handleNumberPress(int index)
@@ -337,7 +341,7 @@ void handleNumberPress(int index)
         play = true;
         currentPlaying = 1;
         saveQueue(); // Save currentPlaying after starting
-        delay(200); // brief delay to allow mp3 module to start
+        delay(200);  // brief delay to allow mp3 module to start
     }
     currentLetter = -1; // reset letter selection
     currentNumber = -1; // reset number selection
@@ -359,7 +363,7 @@ void playSong(int letterIndex, int numberIndex)
     Serial.println(number);
     Serial.print("current playing: ");
     Serial.println(currentPlaying);
-    //delay(1000);
+    // delay(1000);
     mp3.play(trackNumber);
     Serial.print("Playing song: ");
     Serial.println(letters[letterIndex]);
@@ -388,7 +392,7 @@ void lightAllLEDs()
         digitalWrite(letterLEDs[i], HIGH);
     for (int i = 0; i < NUM_NUMBERS; i++)
         digitalWrite(numberLEDs[i], HIGH);
-    // Serial.println("All LEDs re-enabled for next round.");
+    Serial.println("All LEDs re-enabled for next round.");
 }
 
 void startBuzzPopSequence()
