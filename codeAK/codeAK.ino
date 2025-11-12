@@ -84,7 +84,7 @@ void loadQueue()
 
 void clearEEPROM()
 {
-    for (int i = 0; i < EEPROM.length(); i++)
+    for (int i = 0; i < 9; i++)
     {
         EEPROM.write(i, 0);
     }
@@ -96,13 +96,13 @@ void setup()
     mp3Serial.begin(9600);
     if (!mp3.begin(mp3Serial))
     {
-        Serial.println("DFPlayer Mini not found!, proceeding regardless");
+        Serial.println("DFPlayer Mini not found!, proceeding regardless, no effect");
         // while (true)
         //     ;
         // mp3.play(1);
     }
-    // mp3.setTimeOut(50); // Set timeout to prevent hangs
-    // mp3.volume(20);     // Set volume
+    mp3.setTimeOut(50); // Set timeout to prevent hangs
+    mp3.volume(20);     // Set volume
 
     for (int i = 0; i < NUM_LETTERS; i++)
     {
