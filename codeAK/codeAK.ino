@@ -186,7 +186,7 @@ void loop()
                 // Reset the board to clear state
                 // resetFunc();
                 // playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
-                currentPlaying++;
+                //currentPlaying++;
                 saveQueue();
                 delay(200);
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
