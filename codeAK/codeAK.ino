@@ -152,7 +152,7 @@ void setup()
     }
     // queueSize = 0;
     // currentPlaying = 0;
-    Serial.println("Code AK Ready!");
+    Serial.println("Code AK Ready! v1.2");
 }
 
 void loop()
@@ -341,7 +341,7 @@ void handleNumberPress(int index)
         Serial.println("Starting playback from queue immediately after number entered.");
         playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
         play = true;
-        // currentPlaying = 1;
+        currentPlaying = 1;
         saveQueue(); // Save currentPlaying after starting
         delay(200);  // brief delay to allow mp3 module to start
     }
