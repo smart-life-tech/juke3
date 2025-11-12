@@ -178,7 +178,7 @@ void loop()
         lastSkipDebounce = millis();
         if (play && currentPlaying < queueSize + 1)
         {
-            Serial.println("Skipping to next song.");
+            Serial.println("Skipping to next song now.");
             // mp3.stop();
             delay(500);
             if (currentPlaying < queueSize + 1)
@@ -186,7 +186,7 @@ void loop()
                 // Reset the board to clear state
                 // resetFunc();
                 // playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
-                //currentPlaying++;
+                currentPlaying++;
                 saveQueue();
                 delay(200);
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
@@ -339,7 +339,7 @@ void handleNumberPress(int index)
         Serial.println("Starting playback from queue immediately after number entered.");
         playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
         play = true;
-        currentPlaying = 1;
+        //currentPlaying = 1;
         saveQueue(); // Save currentPlaying after starting
         delay(200);  // brief delay to allow mp3 module to start
     }
