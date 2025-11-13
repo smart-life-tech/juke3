@@ -153,7 +153,7 @@ void setup()
     }
     // queueSize = 0;
     // currentPlaying = 0;
-    Serial.println("Code AK Ready! v1.12");
+    Serial.println("Code AK Ready! v1.14");
 }
 
 void loop()
@@ -230,6 +230,7 @@ void loop()
                 Serial.println(queue[currentPlaying].number);
                 // Reset the board to clear state
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+                delay(500);
                 resetFunc();
                 playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
                 currentPlaying++;
