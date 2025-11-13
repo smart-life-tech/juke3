@@ -12,7 +12,7 @@ const int busyPin = 12;
 const int skipPin = 13;
 const int buzzLedPin = 14;
 const int popLedPin = 15;
-bool skip  = false;
+bool skip = false;
 bool donePlaying = true;
 bool play = false;
 unsigned long buzzStartTime = 0;
@@ -153,6 +153,12 @@ void setup()
     }
     // queueSize = 0;
     // currentPlaying = 0;
+    if (currentPlaying == 3)
+    {
+        EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+        Serial.println("Queue finished, resetting.");
+        resetFunc();
+    }
     Serial.println("Code AK Ready! v1.14");
 }
 
@@ -189,8 +195,8 @@ void loop()
                 // playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
                 Serial.print("current play: ");
                 Serial.println(currentPlaying);
-                //if (currentPlaying != 1) 
-                   // currentPlaying++;
+                // if (currentPlaying != 1)
+                //  currentPlaying++;
                 saveQueue();
                 delay(200);
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
