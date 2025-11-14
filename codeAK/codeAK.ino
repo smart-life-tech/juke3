@@ -142,6 +142,13 @@ void setup()
 
     // Load queue from EEPROM
     loadQueue();
+     if (currentPlaying == 4)
+    {
+        EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+        Serial.println("Queue finished, resetting.");
+        delay(500);
+        resetFunc();
+    }
     if (queueSize == 3 && currentPlaying < queueSize)
     {
         Serial.println("Resuming playback from EEPROM.");
@@ -153,12 +160,7 @@ void setup()
     }
     // queueSize = 0;
     // currentPlaying = 0;
-    if (currentPlaying == 3)
-    {
-        EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
-        Serial.println("Queue finished, resetting.");
-        resetFunc();
-    }
+   
     Serial.println("Code AK Ready! v1.14");
 }
 
