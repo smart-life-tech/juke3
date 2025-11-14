@@ -270,7 +270,7 @@ void loop()
 void showLed(int letterIndex, int numberIndex)
 {
     // For the last song in queue, turn off all LEDs except this pair
-    if (currentPlaying != oldPlay && queueSize == 2)
+    if ( queueSize == 3)
     {
         oldPlay = currentPlaying;
         for (int i = 0; i < NUM_LETTERS; i++)
