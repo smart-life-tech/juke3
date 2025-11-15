@@ -142,7 +142,7 @@ void setup()
 
     // Load queue from EEPROM
     loadQueue();
-     if (currentPlaying == 3)
+    if (currentPlaying == 3)
     {
         EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
         Serial.println("Queue finished, resetting.");
@@ -160,7 +160,7 @@ void setup()
     }
     // queueSize = 0;
     // currentPlaying = 0;
-   
+
     Serial.println("Code AK Ready! v1.14");
 }
 
@@ -270,15 +270,23 @@ void loop()
 void showLed(int letterIndex, int numberIndex)
 {
     // For the last song in queue, turn off all LEDs except this pair
-    if ( queueSize == 3)
+    if (queueSize == 3)
     {
         oldPlay = currentPlaying;
         for (int i = 0; i < NUM_LETTERS; i++)
             digitalWrite(letterLEDs[i], LOW);
         for (int i = 0; i < NUM_NUMBERS; i++)
             digitalWrite(numberLEDs[i], LOW);
-        digitalWrite(letterLEDs[letterIndex], HIGH);
-        digitalWrite(numberLEDs[numberIndex], HIGH);
+        digitalWrite(letterLEDs[letterIndex - 1], HIGH);
+        digitalWrite(numberLEDs[numberIndex - 1], HIGH);
+    }
+    else
+    {
+        // Reset LEDs when moving to next song
+        for (int i = 0; i < NUM_LETTERS; i++)
+            digitalWrite(letterLEDs[i], HIGH);
+        for (int i = 0; i < NUM_NUMBERS; i++)
+            digitalWrite(numberLEDs[i], HIGH);
     }
 }
 
