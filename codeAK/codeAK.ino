@@ -219,6 +219,17 @@ void loop()
     // Update buzz/pop LEDs
     updateBuzzPopLeds();
 
+    // Update LED display only when actively playing and within valid bounds
+    if (play && currentPlaying > 0 && currentPlaying <= queueSize)
+    {
+        // currentPlaying is 1-indexed during playback, so subtract 1 for array access
+        int playingIndex = currentPlaying - 1;
+        if (playingIndex >= 0 && playingIndex < MAX_QUEUE)
+        {
+            showLed(queue[playingIndex].letter, queue[playingIndex].number);
+        }
+    }
+
     // Check if song finished using busy pin
     if (digitalRead(busyPin) == HIGH)
     {
@@ -264,25 +275,42 @@ void loop()
         donePlaying = true;
         // Serial.println("Song playing");
     }
-    showLed(queue[currentPlaying].letter, queue[currentPlaying].number);
 }
 
 void showLed(int letterIndex, int numberIndex)
 {
-    // For the last song in queue, turn off all LEDs except this pair
-    if (queueSize == 3)
+    // Validate indices to prevent out-of-bounds access
+    if (letterIndex < 0 || letterIndex >= NUM_LETTERS || 
+        numberIndex < 0 || numberIndex >= NUM_NUMBERS)
+    {
+        Serial.print("Invalid LED indices: letter=");
+        Serial.print(letterIndex);
+        Serial.print(", number=");
+        Serial.println(numberIndex);
+        return;
+    }
+
+    // When queue is full and playing, show only the current song's LEDs
+    if (queueSize == 3 && play)
     {
         oldPlay = currentPlaying;
+        // Turn off all LEDs
         for (int i = 0; i < NUM_LETTERS; i++)
             digitalWrite(letterLEDs[i], LOW);
         for (int i = 0; i < NUM_NUMBERS; i++)
             digitalWrite(numberLEDs[i], LOW);
-        digitalWrite(letterLEDs[letterIndex - 1], HIGH);
-        digitalWrite(numberLEDs[numberIndex - 1], HIGH);
+        
+        // Turn on only the current song's LEDs (indices are already 0-based)
+        digitalWrite(letterLEDs[letterIndex], HIGH);
+        digitalWrite(numberLEDs[numberIndex], HIGH);
+        
+        Serial.print("LED Display: ");
+        Serial.print(letters[letterIndex]);
+        Serial.println(numberIndex + 1);
     }
     else
     {
-        // Reset LEDs when moving to next song
+        // Reset LEDs when not playing or queue not full
         for (int i = 0; i < NUM_LETTERS; i++)
             digitalWrite(letterLEDs[i], HIGH);
         for (int i = 0; i < NUM_NUMBERS; i++)
