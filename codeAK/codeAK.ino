@@ -210,7 +210,7 @@ void loop()
     else if (letterPressed == -1 && isLetterPressed)
     {
         unsigned long pressDuration = millis() - pressStartTime;
-        Serial.println("long letter pressed");
+        Serial.println("long letter pressed now");
         if (pressDuration > 1500) //&& currentLetter != -1 && currentNumber != -1)
         {
             // Longpress: start continuous play
@@ -272,8 +272,9 @@ void loop()
     // Blink all LEDs if in continuous play mode
     if (continuousPlay)
     {
-        if (millis() - blinkStart >= 500)
+        if (millis() - blinkStart >= 1000)
         {
+            Serial.println("long letter pressed");
             blinkStart = millis();
             ledsOn = !ledsOn;
             for (int i = 0; i < NUM_LETTERS; i++)
@@ -497,7 +498,7 @@ void playSong(int letterIndex, int numberIndex)
     startBuzzPopSequence();
 
     // For the last song in queue, turn off all LEDs except this pair
-    if (currentPlaying == 2)
+    if (currentPlaying == 2 && !continuousPlay)
     {
         for (int i = 0; i < NUM_LETTERS; i++)
             digitalWrite(letterLEDs[i], LOW);
