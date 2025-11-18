@@ -210,7 +210,8 @@ void loop()
     else if (letterPressed == -1 && isLetterPressed)
     {
         unsigned long pressDuration = millis() - pressStartTime;
-        if (pressDuration > 1000 && currentLetter != -1 && currentNumber != -1)
+        Serial.println("long letter pressed");
+        if (pressDuration > 1500) //&& currentLetter != -1 && currentNumber != -1)
         {
             // Longpress: start continuous play
             startContinuousPlay(currentLetter, currentNumber);
