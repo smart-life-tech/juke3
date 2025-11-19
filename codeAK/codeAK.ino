@@ -8,6 +8,8 @@
 #define MAX_QUEUE 3
 int currentLetter = -1;
 int currentNumber = -1;
+int lastPlayedLetter = -1;
+int lastPlayedNumber = -1;
 bool continuousPlay = false;
 int startLetter = -1;
 int startNumber = -1;
@@ -210,11 +212,21 @@ void loop()
     else if (letterPressed == -1 && isLetterPressed)
     {
         unsigned long pressDuration = millis() - pressStartTime;
-        Serial.println("long letter pressed now");
-        if (pressDuration > 1500) //&& currentLetter != -1 && currentNumber != -1)
+        if (pressDuration > 1500)
         {
-            // Longpress: start continuous play
-            startContinuousPlay(currentLetter, currentNumber);
+            Serial.println("Long letter press detected");
+            // Longpress: start continuous play from currently playing song
+            if (play && lastPlayedLetter != -1 && lastPlayedNumber != -1)
+            {
+                Serial.print("Starting continuous play from last played: ");
+                Serial.print(letters[lastPlayedLetter]);
+                Serial.println(lastPlayedNumber);
+                startContinuousPlay(lastPlayedLetter, lastPlayedNumber);
+            }
+            else
+            {
+                Serial.println("Cannot start continuous play - no song playing");
+            }
         }
         else if (pressDuration <= 1000 && millis() - lastLetterDebounce > debounceDelay)
         {
@@ -472,6 +484,10 @@ void handleNumberPress(int index)
 
 void playSong(int letterIndex, int numberIndex)
 {
+    // Store the currently playing song
+    lastPlayedLetter = letterIndex;
+    lastPlayedNumber = numberIndex;
+    
     int number = ((numberIndex + 1) % 10);
     if (number == 0)
         number = 10;
@@ -550,7 +566,7 @@ void startContinuousPlay(int letter, int number)
     Serial.print("Letter: ");
     Serial.println(letters[letter]);
     Serial.print("Number: ");
-    Serial.println(number + 1);
+    Serial.println(number);
 
     continuousPlay = true;
     startLetter = letter;
@@ -558,12 +574,23 @@ void startContinuousPlay(int letter, int number)
     contLetter = letter;
     contNumber = number;
     play = true;
+    
+    // Clear the queue when starting continuous play
+    queueSize = 0;
+    currentPlaying = 0;
+    
+    // Initialize blink timing
+    blinkStart = millis();
+    
     // Save continuous play state to EEPROM
     EEPROM.write(EEPROM_CONTINUOUS_PLAY_ADDR, 1);
     EEPROM.write(EEPROM_START_LETTER_ADDR, startLetter);
     EEPROM.write(EEPROM_START_NUMBER_ADDR, startNumber);
     EEPROM.write(EEPROM_CONT_LETTER_ADDR, contLetter);
     EEPROM.write(EEPROM_CONT_NUMBER_ADDR, contNumber);
+    EEPROM.write(EEPROM_QUEUE_SIZE_ADDR, 0);
+    EEPROM.write(EEPROM_CURRENT_PLAYING_ADDR, 0);
+    
     // Reset to play the song
     EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
     resetFunc();
