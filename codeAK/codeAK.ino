@@ -157,8 +157,6 @@ void setup()
         Serial.println("Hardware reset detected, clearing EEPROM.");
     }
 
-    // Load queue from EEPROM
-    loadQueue();
     // Load continuous play state
     continuousPlay = EEPROM.read(EEPROM_CONTINUOUS_PLAY_ADDR);
     if (continuousPlay)
@@ -173,8 +171,9 @@ void setup()
         delay(500);
     }
     else
-    {
-        if (currentPlaying == 3)
+    { // Load queue from EEPROM
+        loadQueue();
+        if (currentPlaying == 3 && currentPlaying > queueSize)
         {
             EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
             Serial.println("Queue finished, resetting.");
@@ -194,7 +193,7 @@ void setup()
     // queueSize = 0;
     // currentPlaying = 0;
 
-    Serial.println("Code AK Ready! v1.14");
+    Serial.println("Code AK Ready! v1.18");
 }
 
 void loop()
@@ -221,6 +220,8 @@ void loop()
                 Serial.print("Starting continuous play from last played: ");
                 Serial.print(letters[lastPlayedLetter]);
                 Serial.println(lastPlayedNumber);
+                delay(1000);
+
                 startContinuousPlay(lastPlayedLetter, lastPlayedNumber);
             }
             else
@@ -286,7 +287,7 @@ void loop()
     {
         if (millis() - blinkStart >= 1000)
         {
-            Serial.println("long letter pressed");
+            // Serial.println("long letter pressed");
             blinkStart = millis();
             ledsOn = !ledsOn;
             for (int i = 0; i < NUM_LETTERS; i++)
@@ -487,7 +488,7 @@ void playSong(int letterIndex, int numberIndex)
     // Store the currently playing song
     lastPlayedLetter = letterIndex;
     lastPlayedNumber = numberIndex;
-    
+
     int number = ((numberIndex + 1) % 10);
     if (number == 0)
         number = 10;
@@ -514,15 +515,15 @@ void playSong(int letterIndex, int numberIndex)
     startBuzzPopSequence();
 
     // For the last song in queue, turn off all LEDs except this pair
-    if (currentPlaying == 2 && !continuousPlay)
-    {
-        for (int i = 0; i < NUM_LETTERS; i++)
-            digitalWrite(letterLEDs[i], LOW);
-        for (int i = 0; i < NUM_NUMBERS; i++)
-            digitalWrite(numberLEDs[i], LOW);
-        digitalWrite(letterLEDs[letterIndex], HIGH);
-        digitalWrite(numberLEDs[numberIndex], HIGH);
-    }
+    // if (currentPlaying == 2 && !continuousPlay)
+    // {
+    //     for (int i = 0; i < NUM_LETTERS; i++)
+    //         digitalWrite(letterLEDs[i], LOW);
+    //     for (int i = 0; i < NUM_NUMBERS; i++)
+    //         digitalWrite(numberLEDs[i], LOW);
+    //     digitalWrite(letterLEDs[letterIndex], HIGH);
+    //     digitalWrite(numberLEDs[numberIndex], HIGH);
+    // }
 }
 
 void lightAllLEDs()
@@ -574,14 +575,14 @@ void startContinuousPlay(int letter, int number)
     contLetter = letter;
     contNumber = number;
     play = true;
-    
+
     // Clear the queue when starting continuous play
     queueSize = 0;
     currentPlaying = 0;
-    
+
     // Initialize blink timing
     blinkStart = millis();
-    
+
     // Save continuous play state to EEPROM
     EEPROM.write(EEPROM_CONTINUOUS_PLAY_ADDR, 1);
     EEPROM.write(EEPROM_START_LETTER_ADDR, startLetter);
@@ -590,9 +591,10 @@ void startContinuousPlay(int letter, int number)
     EEPROM.write(EEPROM_CONT_NUMBER_ADDR, contNumber);
     EEPROM.write(EEPROM_QUEUE_SIZE_ADDR, 0);
     EEPROM.write(EEPROM_CURRENT_PLAYING_ADDR, 0);
-    
+
     // Reset to play the song
     EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+    delay(500);
     resetFunc();
 }
 
@@ -621,5 +623,6 @@ void playNextContinuous()
     EEPROM.write(EEPROM_CONT_NUMBER_ADDR, contNumber);
     // Reset to play the next song
     EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+    delay(1000);
     resetFunc();
 }
