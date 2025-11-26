@@ -248,7 +248,7 @@ void loop()
     if (digitalRead(skipPin) == LOW && millis() - lastSkipDebounce > debounceDelay)
     {
         lastSkipDebounce = millis();
-        if (play && currentPlaying < queueSize + 1)
+        if (!continuousPlay && play && currentPlaying < queueSize + 1)
         {
             Serial.println("Skipping to next song now.");
             // mp3.stop();
@@ -276,6 +276,11 @@ void loop()
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
                 resetFunc();
             }
+        }
+        else if (continuousPlay)
+        {
+            Serial.println("Skipping to next song in continuous mode.");
+            playNextContinuous();
         }
     }
 
@@ -592,10 +597,14 @@ void startContinuousPlay(int letter, int number)
     EEPROM.write(EEPROM_QUEUE_SIZE_ADDR, 0);
     EEPROM.write(EEPROM_CURRENT_PLAYING_ADDR, 0);
 
-    // Reset to play the song
-    EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
-    delay(500);
-    resetFunc();
+    // Only reset if not already playing (to avoid restarting current song)
+    if (!play)
+    {
+        // Reset to play the song
+        EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+        delay(500);
+        resetFunc();
+    }
 }
 
 void playNextContinuous()
