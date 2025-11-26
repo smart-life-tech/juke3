@@ -253,6 +253,18 @@ void loop()
             Serial.println("Skipping to next song now.");
             // mp3.stop();
             delay(500);
+            if (currentPlaying >= 3)
+            {
+                // Queue finished
+                Serial.println("max que all  leds on");
+                queueSize = 0;
+                currentPlaying = 0;
+                saveQueue(); // Save reset values
+                lightAllLEDs();
+                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+                delay(1000);
+                resetFunc();
+            }
             if (currentPlaying < queueSize + 1)
             {
                 // Reset the board to clear state
@@ -335,6 +347,7 @@ void loop()
                     saveQueue(); // Save reset values
                     lightAllLEDs();
                     EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+                    delay(1000);
                     resetFunc();
                 }
 
