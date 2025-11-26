@@ -173,15 +173,14 @@ void setup()
     else
     { // Load queue from EEPROM
         loadQueue();
-        if (currentPlaying >= queueSize && queueSize > 0)
+        if (currentPlaying == 3 && currentPlaying > queueSize)
         {
-            Serial.println("Queue finished, ready for new selections.");
-            queueSize = 0;
-            currentPlaying = 0;
-            play = false;
-            saveQueue();
+            EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+            Serial.println("Queue finished, resetting.");
+            delay(500);
+            resetFunc();
         }
-        else if (queueSize == 3 && currentPlaying < queueSize)
+        if (queueSize == 3 && currentPlaying < queueSize)
         {
             Serial.println("Resuming playback from EEPROM.");
             playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
@@ -249,24 +248,33 @@ void loop()
     if (digitalRead(skipPin) == LOW && millis() - lastSkipDebounce > debounceDelay)
     {
         lastSkipDebounce = millis();
-        if (!continuousPlay && play)
+        if (!continuousPlay && play && currentPlaying < queueSize + 1)
         {
-            if (currentPlaying < queueSize)
+            Serial.println("Skipping to next song now.");
+            // mp3.stop();
+            delay(500);
+            if (currentPlaying < queueSize + 1)
             {
-                Serial.println("Skipping to next song now.");
-                currentPlaying++;
-                playSong(queue[currentPlaying - 1].letter, queue[currentPlaying - 1].number);
+                // Reset the board to clear state
+                // resetFunc();
+                // playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
+                Serial.print("current play: ");
+                Serial.println(currentPlaying);
+                // if (currentPlaying != 1)
+                //  currentPlaying++;
                 saveQueue();
-                delay(500);
+                delay(200);
+                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+                resetFunc();
             }
             else
             {
-                Serial.println("Queue finished, ready for new selections.");
                 queueSize = 0;
                 currentPlaying = 0;
-                play = false;
                 saveQueue();
                 lightAllLEDs();
+                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+                resetFunc();
             }
         }
         else if (continuousPlay)
@@ -317,13 +325,18 @@ void loop()
             if (!continuousPlay)
             {
                 Serial.println("Song done, moving to next in queue.");
+                Serial.println(currentPlaying);
 
-                if (currentPlaying < queueSize)
+                if (currentPlaying < (queueSize + 1))
                 {
                     Serial.print("Playing next song in queue.. ");
                     Serial.println(queue[currentPlaying].letter);
                     Serial.print("Number: ");
                     Serial.println(queue[currentPlaying].number);
+                    // Reset the board to clear state
+                    EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+                    delay(500);
+                    resetFunc();
                     playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
                     currentPlaying++;
                     saveQueue(); // Save after incrementing currentPlaying
@@ -332,12 +345,13 @@ void loop()
                 else
                 {
                     // Queue finished
-                    Serial.println("Queue finished, ready for new selections.");
+                    Serial.println("max que all  leds on");
                     queueSize = 0;
                     currentPlaying = 0;
-                    play = false;
                     saveQueue(); // Save reset values
                     lightAllLEDs();
+                    EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+                    resetFunc();
                 }
             }
             else
