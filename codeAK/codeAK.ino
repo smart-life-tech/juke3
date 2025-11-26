@@ -326,6 +326,17 @@ void loop()
             {
                 Serial.println("Song done, moving to next in queue.");
                 Serial.println(currentPlaying);
+                if (currentPlaying == 3)
+                {
+                    // Queue finished
+                    Serial.println("max que all  leds on");
+                    queueSize = 0;
+                    currentPlaying = 0;
+                    saveQueue(); // Save reset values
+                    lightAllLEDs();
+                    EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+                    resetFunc();
+                }
 
                 if (currentPlaying < (queueSize + 1))
                 {
