@@ -350,7 +350,7 @@ void loop()
                     currentPlaying = 0;
                     saveQueue(); // Save reset values
                     lightAllLEDs();
-                    EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+                    EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
                     resetFunc();
                 }
             }
