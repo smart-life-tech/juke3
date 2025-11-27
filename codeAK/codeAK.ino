@@ -182,7 +182,7 @@ void setup()
             delay(500);
             resetFunc();
         }
-        if (queueSize == 3 && currentPlaying < queueSize)
+        if (queueSize == 3 || queueSize == 2 && currentPlaying < queueSize)
         {
             Serial.println("Resuming playback from EEPROM.");
             playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
