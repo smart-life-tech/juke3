@@ -120,7 +120,7 @@ void setup()
         // mp3.play(1);
     }
     mp3.setTimeOut(50); // Set timeout to prevent hangs
-    mp3.volume(20);     // Set volume
+    mp3.volume(30);     // Set volume
 
     for (int i = 0; i < NUM_LETTERS; i++)
     {
