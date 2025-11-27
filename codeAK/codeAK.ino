@@ -32,6 +32,8 @@ unsigned long popStartTime = 0;
 bool buzzLedOn = false;
 bool popLedOn = false;
 unsigned long lastSkipDebounce = 0;
+unsigned long busyHighStart = 0;
+bool busyWasLow = true;
 // Letter button pins A–K (skipping I)
 int letterPins[NUM_LETTERS] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 // Number button pins 0–9
@@ -390,6 +392,27 @@ void loop()
     {
         donePlaying = true;
         // Serial.println("Song playing");
+    }
+
+    // Watchdog for busyPin stuck HIGH
+    if (digitalRead(busyPin) == HIGH && currentPlaying > 0 )
+    {
+        if (busyWasLow)
+        {
+            busyHighStart = millis();
+            busyWasLow = false;
+        }
+        else if (millis() - busyHighStart >= 30000)
+        {
+            Serial.println("Busy pin stuck HIGH for 30 seconds, resetting board.");
+            EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+            delay(500);
+            resetFunc();
+        }
+    }
+    else
+    {
+        busyWasLow = true;
     }
 }
 
