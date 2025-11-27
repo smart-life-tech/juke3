@@ -395,7 +395,7 @@ void loop()
     }
 
     // Watchdog for busyPin stuck HIGH
-    if (digitalRead(busyPin) == HIGH && currentPlaying > 0)
+    if (digitalRead(busyPin) == HIGH && currentPlaying >= queueSize && play)
     {
         if (busyWasLow)
         {
