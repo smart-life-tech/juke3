@@ -395,7 +395,7 @@ void loop()
     }
 
     // Watchdog for busyPin stuck HIGH
-    if (digitalRead(busyPin) == HIGH && currentPlaying > 0 )
+    if (digitalRead(busyPin) == HIGH && currentPlaying > 0)
     {
         if (busyWasLow)
         {
@@ -410,7 +410,7 @@ void loop()
             resetFunc();
         }
     }
-    else
+    else if (digitalRead(busyPin) == LOW)
     {
         busyWasLow = true;
     }
