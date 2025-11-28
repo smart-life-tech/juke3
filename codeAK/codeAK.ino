@@ -175,7 +175,7 @@ void setup()
     else
     { // Load queue from EEPROM
         loadQueue();
-        if (currentPlaying == 3 && currentPlaying > queueSize)
+        if (currentPlaying > queueSize)
         {
             EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
             Serial.println("Queue finished, resetting.");
