@@ -76,6 +76,9 @@ const unsigned long debounceDelay = 50;
 #define EEPROM_START_NUMBER_ADDR 11
 #define EEPROM_CONT_LETTER_ADDR 12
 #define EEPROM_CONT_NUMBER_ADDR 13
+#define EEPROM_BECKON_FLAG_ADDR 14
+#define EEPROM_BECKON_LETTER_ADDR 15
+#define EEPROM_BECKON_NUMBER_ADDR 16
 
 // Reset function
 void (*resetFunc)(void) = 0;
@@ -109,7 +112,7 @@ void loadQueue()
 
 void clearEEPROM()
 {
-    for (int i = 0; i < 14; i++)
+    for (int i = 0; i < 17; i++)
     {
         EEPROM.write(i, 0);
     }
@@ -164,37 +167,54 @@ void setup()
         Serial.println("Hardware reset detected, clearing EEPROM.");
     }
 
-    // Load continuous play state
-    continuousPlay = EEPROM.read(EEPROM_CONTINUOUS_PLAY_ADDR);
-    if (continuousPlay)
+    // Check beckon flag
+    int beckonFlag = EEPROM.read(EEPROM_BECKON_FLAG_ADDR);
+    if (beckonFlag == 1)
     {
-        startLetter = EEPROM.read(EEPROM_START_LETTER_ADDR);
-        startNumber = EEPROM.read(EEPROM_START_NUMBER_ADDR);
-        contLetter = EEPROM.read(EEPROM_CONT_LETTER_ADDR);
-        contNumber = EEPROM.read(EEPROM_CONT_NUMBER_ADDR);
-        Serial.println("Resuming continuous play from EEPROM.");
-        playSong(contLetter, contNumber);
+        // Beckon reset: play beckon song and clear flag
+        int beckonLetter = EEPROM.read(EEPROM_BECKON_LETTER_ADDR);
+        int beckonNumber = EEPROM.read(EEPROM_BECKON_NUMBER_ADDR);
+        Serial.println("Beckon reset detected, playing beckon song.");
+        playSong(beckonLetter, beckonNumber);
+        beckonPlaying = true;
         play = true;
+        EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 0);
         delay(500);
     }
     else
-    { // Load queue from EEPROM
-        loadQueue();
-        if (currentPlaying > queueSize)
+    {
+        // Load continuous play state
+        continuousPlay = EEPROM.read(EEPROM_CONTINUOUS_PLAY_ADDR);
+        if (continuousPlay)
         {
-            EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
-            Serial.println("Queue finished, resetting.");
-            delay(500);
-            resetFunc();
-        }
-        if (queueSize == 3 || queueSize == 2 && currentPlaying < queueSize)
-        {
-            Serial.println("Resuming playback from EEPROM.");
-            playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
+            startLetter = EEPROM.read(EEPROM_START_LETTER_ADDR);
+            startNumber = EEPROM.read(EEPROM_START_NUMBER_ADDR);
+            contLetter = EEPROM.read(EEPROM_CONT_LETTER_ADDR);
+            contNumber = EEPROM.read(EEPROM_CONT_NUMBER_ADDR);
+            Serial.println("Resuming continuous play from EEPROM.");
+            playSong(contLetter, contNumber);
             play = true;
-            currentPlaying++;
-            saveQueue(); // Save after resuming
-            delay(500);  // brief delay to allow mp3 module to start
+            delay(500);
+        }
+        else
+        { // Load queue from EEPROM
+            loadQueue();
+            if (currentPlaying > queueSize)
+            {
+                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+                Serial.println("Queue finished, resetting.");
+                delay(500);
+                resetFunc();
+            }
+            if (queueSize == 3 || queueSize == 2 && currentPlaying < queueSize)
+            {
+                Serial.println("Resuming playback from EEPROM.");
+                playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
+                play = true;
+                currentPlaying++;
+                saveQueue(); // Save after resuming
+                delay(500);  // brief delay to allow mp3 module to start
+            }
         }
     }
     // queueSize = 0;
@@ -442,14 +462,16 @@ void loop()
     // Beckon function: play a song every 8 minutes if no activity and not playing
     if (!play && !continuousPlay && digitalRead(busyPin) == HIGH && millis() - lastBeckonTime >= beckonInterval && millis() - lastActivityTime >= beckonInterval)
     {
-        Serial.println("Beckon: Playing a random song to attract attention.");
+        Serial.println("Beckon: Saving beckon song to EEPROM and resetting.");
         int beckonLetter = beckonIndex / 10;
         int beckonNumber = beckonIndex % 10;
-        playSong(beckonLetter, beckonNumber);
-        beckonPlaying = true;
-        play = true;
+        EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 1);
+        EEPROM.write(EEPROM_BECKON_LETTER_ADDR, beckonLetter);
+        EEPROM.write(EEPROM_BECKON_NUMBER_ADDR, beckonNumber);
         lastBeckonTime = millis();
         beckonIndex = (beckonIndex + 1) % 100; // Cycle through all 100 songs
+        delay(500);
+        resetFunc();
     }
 }
 
