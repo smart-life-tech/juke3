@@ -34,6 +34,11 @@ bool popLedOn = false;
 unsigned long lastSkipDebounce = 0;
 unsigned long busyHighStart = 0;
 bool busyWasLow = true;
+unsigned long lastBeckonTime = 0;
+unsigned long lastActivityTime = 0;
+int beckonIndex = 0;
+bool beckonPlaying = false;
+const unsigned long beckonInterval = 480000; // 8 minutes in ms
 // Letter button pins A–K (skipping I)
 int letterPins[NUM_LETTERS] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 // Number button pins 0–9
@@ -433,6 +438,19 @@ void loop()
     {
         busyWasLow = true;
     }
+
+    // Beckon function: play a song every 8 minutes if no activity and not playing
+    if (!play && !continuousPlay && digitalRead(busyPin) == HIGH && millis() - lastBeckonTime >= beckonInterval && millis() - lastActivityTime >= beckonInterval)
+    {
+        Serial.println("Beckon: Playing a random song to attract attention.");
+        int beckonLetter = beckonIndex / 10;
+        int beckonNumber = beckonIndex % 10;
+        playSong(beckonLetter, beckonNumber);
+        beckonPlaying = true;
+        play = true;
+        lastBeckonTime = millis();
+        beckonIndex = (beckonIndex + 1) % 100; // Cycle through all 100 songs
+    }
 }
 
 void showLed(int letterIndex, int numberIndex)
@@ -495,6 +513,9 @@ void handleLetterPress(int index)
     Serial.print("Letter pressed: ");
     Serial.println(letters[index]);
 
+    // Update activity time to override beckon
+    lastActivityTime = millis();
+
     // Store selected letter
     currentLetter = index;
     digitalWrite(letterLEDs[index], HIGH); // keep LED on
@@ -509,6 +530,9 @@ void handleNumberPress(int index)
         Serial.println("Ignored: Number pressed without letter.");
         return;
     }
+
+    // Update activity time to override beckon
+    lastActivityTime = millis();
 
     int number = (index == 9) ? 0 : (index + 1);
     currentNumber = number;
