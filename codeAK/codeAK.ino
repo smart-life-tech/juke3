@@ -195,7 +195,7 @@ void setup()
     // queueSize = 0;
     // currentPlaying = 0;
 
-    Serial.println("Code AK Ready! v1.19");
+    Serial.println("Code AK Ready! v1.29");
 }
 
 void loop()
@@ -253,6 +253,10 @@ void loop()
         if (!continuousPlay && play && currentPlaying < queueSize + 1)
         {
             Serial.println("Skipping to next song now.");
+            Serial.print("Current playing: ");
+            Serial.println(currentPlaying);
+            Serial.print("Queue size: ");
+            Serial.println(queueSize);
             // mp3.stop();
             delay(500);
             if (currentPlaying >= 3)
@@ -264,6 +268,13 @@ void loop()
                 saveQueue(); // Save reset values
                 lightAllLEDs();
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+                delay(1000);
+                resetFunc();
+            }
+            if (currentPlaying >= queueSize)
+            {
+                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+                Serial.println("Queue finished, resetting.");
                 delay(1000);
                 resetFunc();
             }
