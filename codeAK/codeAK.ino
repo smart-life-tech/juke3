@@ -206,7 +206,7 @@ void setup()
                 delay(500);
                 resetFunc();
             }
-            if (queueSize == 3 || queueSize == 2 && currentPlaying < queueSize)
+            if (queueSize == 3 || queueSize == 2 || queueSize == 1 && currentPlaying < queueSize)
             {
                 Serial.println("Resuming playback from EEPROM.");
                 playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
@@ -591,11 +591,13 @@ void handleNumberPress(int index)
     {
 
         Serial.println("Starting playback from queue immediately after number entered.");
-        playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
+        // playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
         play = true;
-        currentPlaying = 1;
+        //currentPlaying = 1;
+        EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 0);
         saveQueue(); // Save currentPlaying after starting
-        delay(200);  // brief delay to allow mp3 module to start
+        delay(500);  // brief delay to allow mp3 module to start
+        resetFunc();
     }
     currentLetter = -1; // reset letter selection
     currentNumber = -1; // reset number selection
