@@ -468,6 +468,7 @@ void loop()
         EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 1);
         EEPROM.write(EEPROM_BECKON_LETTER_ADDR, beckonLetter);
         EEPROM.write(EEPROM_BECKON_NUMBER_ADDR, beckonNumber);
+        EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
         lastBeckonTime = millis();
         beckonIndex = (beckonIndex + 1) % 100; // Cycle through all 100 songs
         delay(500);
