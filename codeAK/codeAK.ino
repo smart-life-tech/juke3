@@ -79,6 +79,7 @@ const unsigned long debounceDelay = 50;
 #define EEPROM_BECKON_FLAG_ADDR 14
 #define EEPROM_BECKON_LETTER_ADDR 15
 #define EEPROM_BECKON_NUMBER_ADDR 16
+#define EEPROM_BECKON_NUMBER_PLAYING 17
 
 // Reset function
 void (*resetFunc)(void) = 0;
@@ -112,7 +113,7 @@ void loadQueue()
 
 void clearEEPROM()
 {
-    for (int i = 0; i < 17; i++)
+    for (int i = 0; i < 18; i++)
     {
         EEPROM.write(i, 0);
     }
@@ -463,6 +464,11 @@ void loop()
     if (!play && !continuousPlay && digitalRead(busyPin) == HIGH && millis() - lastBeckonTime >= beckonInterval && millis() - lastActivityTime >= beckonInterval)
     {
         Serial.println("Beckon: Saving beckon song to EEPROM and resetting.");
+        beckonIndex = EEPROM.read(EEPROM_BECKON_NUMBER_PLAYING);
+        Serial.print("beckon index = ");
+        Serial.println(beckonIndex);
+        if (beckonIndex > 254)
+            EEPROM.write(EEPROM_BECKON_NUMBER_PLAYING, 0);
         int beckonLetter = beckonIndex / 10;
         int beckonNumber = beckonIndex % 10;
         EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 1);
@@ -471,6 +477,9 @@ void loop()
         EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
         lastBeckonTime = millis();
         beckonIndex = (beckonIndex + 1) % 100; // Cycle through all 100 songs
+        Serial.print("beckon index now = ");
+        Serial.println(beckonIndex);
+        EEPROM.write(EEPROM_BECKON_NUMBER_PLAYING, beckonIndex);
         delay(500);
         resetFunc();
     }
@@ -593,8 +602,9 @@ void handleNumberPress(int index)
         Serial.println("Starting playback from queue immediately after number entered.");
         // playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
         play = true;
-        //currentPlaying = 1;
+        // currentPlaying = 1;
         EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 0);
+        EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
         saveQueue(); // Save currentPlaying after starting
         delay(500);  // brief delay to allow mp3 module to start
         resetFunc();
