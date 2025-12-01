@@ -607,7 +607,7 @@ void handleNumberPress(int index)
         EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 0);
         EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
         saveQueue(); // Save currentPlaying after starting
-        //delay(500);  // brief delay to allow mp3 module to start
+        delay(500);  // brief delay to allow mp3 module to start
         resetFunc();
     }
     currentLetter = -1; // reset letter selection
