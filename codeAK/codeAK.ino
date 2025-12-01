@@ -603,6 +603,9 @@ void handleNumberPress(int index)
         Serial.println("Starting playback from queue immediately after number entered.");
         // playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
         play = true;
+        mp3Serial.end();
+        mp3Serial=NULL;
+        
         // currentPlaying = 1;
         EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 0);
         EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
