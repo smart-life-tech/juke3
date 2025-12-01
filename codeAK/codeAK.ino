@@ -222,7 +222,7 @@ void setup()
     // queueSize = 0;
     // currentPlaying = 0;
 
-    Serial.println("Code AK Ready! v1.29");
+    Serial.println("Code AK Ready! v2.29");
 }
 
 void loop()
