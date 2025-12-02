@@ -603,7 +603,6 @@ void handleNumberPress(int index)
         Serial.println("Starting playback from queue immediately after number entered.");
         // playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
         play = true;
-        
         mp3Serial.flush();
         mp3Serial.end();
         // currentPlaying = 1;
