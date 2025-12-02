@@ -125,19 +125,6 @@ void setup()
     Serial.println("code started");
     Serial.begin(9600);
     mp3Serial.begin(9600);
-    int resetFlag = EEPROM.read(EEPROM_RESET_FLAG_ADDR);
-    if (resetFlag == 0)
-    {
-        if (!mp3.begin(mp3Serial))
-        {
-            Serial.println("DFPlayer Mini not found!, proceeding regardless, no effect");
-            // while (true)
-            //     ;
-            // mp3.play(1);
-        }
-    }
-    mp3.setTimeOut(50); // Set timeout to prevent hangs
-    mp3.volume(30);     // Set volume
 
     for (int i = 0; i < NUM_LETTERS; i++)
     {
@@ -160,19 +147,37 @@ void setup()
     digitalWrite(popLedPin, LOW);
 
     // Check reset flag
-    resetFlag = EEPROM.read(EEPROM_RESET_FLAG_ADDR);
+    int resetFlag = EEPROM.read(EEPROM_RESET_FLAG_ADDR);
     if (resetFlag == 1)
     {
         Serial.println("Software reset detected, clearing flag.");
         // Software reset: clear flag and proceed normally
         EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
         Serial.println("Software reset detected, clearED flag.");
+        if (!mp3.begin(mp3Serial, false, false))
+        {
+            Serial.println("DFPlayer Mini not found!, proceeding regardless, no effect");
+            // while (true)
+            //     ;
+            // mp3.play(1);
+        }
+        mp3.setTimeOut(50); // Set timeout to prevent hangs
+        mp3.volume(30);     // Set volume
     }
     else
     {
         // Hardware reset: clear EEPROM
         clearEEPROM();
         Serial.println("Hardware reset detected, clearing EEPROM.");
+        if (!mp3.begin(mp3Serial, true, true))
+        {
+            Serial.println("DFPlayer Mini not found!, proceeding regardless, no effect");
+            // while (true)
+            //     ;
+            // mp3.play(1);
+        }
+        mp3.setTimeOut(50); // Set timeout to prevent hangs
+        mp3.volume(30);     // Set volume
     }
 
     // Check beckon flag
