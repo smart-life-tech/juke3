@@ -160,7 +160,7 @@ void setup()
     digitalWrite(popLedPin, LOW);
 
     // Check reset flag
-    int resetFlag = EEPROM.read(EEPROM_RESET_FLAG_ADDR);
+    resetFlag = EEPROM.read(EEPROM_RESET_FLAG_ADDR);
     if (resetFlag == 1)
     {
         Serial.println("Software reset detected, clearing flag.");
