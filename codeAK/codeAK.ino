@@ -39,6 +39,16 @@ unsigned long lastActivityTime = 0;
 int beckonIndex = 0;
 bool beckonPlaying = false;
 const unsigned long beckonInterval = 480000; // 8 minutes in ms
+// Selection mode state
+bool selectionModeEnabled = true; // true = user is in selection mode to pick up to 3 songs
+int selectionCount = 0;          // confirmed selections so far (0..3)
+int pendingLetter = -1;         // letter index currently selected (LED off) until number confirmed
+// Light show state
+bool lightShowRunning = false;
+unsigned long lightShowEnd = 0;
+int lightShowIndex = 0;
+unsigned long lastLightShowStep = 0;
+const unsigned long lightShowStepDelay = 80; // ms between chaser steps
 // Letter button pins A–K (skipping I)
 int letterPins[NUM_LETTERS] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 // Number button pins 0–9
@@ -46,6 +56,7 @@ int numberPins[NUM_NUMBERS] = {22, 23, 24, 25, 26, 27, 28, 29, 30, 31};
 // LED pins for letters and numbers
 int letterLEDs[NUM_LETTERS] = {32, 33, 34, 35, 36, 37, 38, 39, 40, 41};
 int numberLEDs[NUM_NUMBERS] = {42, 43, 44, 45, 46, 47, 48, 49, 50, 51};
+int allLEDs[NUM_LETTERS + NUM_NUMBERS];
 
 SoftwareSerial mp3Serial(16, 17); // RX, TX
 DFRobotDFPlayerMini mp3;
@@ -138,6 +149,12 @@ void setup()
         pinMode(numberLEDs[i], OUTPUT);
         digitalWrite(numberLEDs[i], HIGH);
     }
+
+    // build flat LED array for the 20-LED chaser: letters then numbers
+    for (int i = 0; i < NUM_LETTERS; i++)
+        allLEDs[i] = letterLEDs[i];
+    for (int i = 0; i < NUM_NUMBERS; i++)
+        allLEDs[NUM_LETTERS + i] = numberLEDs[i];
 
     pinMode(busyPin, INPUT);
     pinMode(skipPin, INPUT_PULLUP);
@@ -240,6 +257,60 @@ void loop()
 {
     int letterPressed = getPressedKey(letterPins, NUM_LETTERS);
     int numberPressed = getPressedKey(numberPins, NUM_NUMBERS);
+
+    // If a light show is running, drive chaser frames and skip selection/playback updates
+    if (lightShowRunning)
+    {
+        unsigned long now = millis();
+        if (now - lastLightShowStep >= lightShowStepDelay)
+        {
+            // turn all LEDs off
+            for (int i = 0; i < NUM_LETTERS + NUM_NUMBERS; i++)
+                digitalWrite(allLEDs[i], LOW);
+
+            // light the current index
+            digitalWrite(allLEDs[lightShowIndex], HIGH);
+
+            lightShowIndex = (lightShowIndex + 1) % (NUM_LETTERS + NUM_NUMBERS);
+            lastLightShowStep = now;
+        }
+
+        // end the show when time's up
+        if (millis() >= lightShowEnd)
+        {
+            lightShowRunning = false;
+            // restore LEDs for current song or default
+            if (play && currentPlaying > 0 && currentPlaying <= queueSize)
+            {
+                int playingIndex = currentPlaying - 1;
+                showLed(queue[playingIndex].letter, queue[playingIndex].number);
+            }
+            else if (lastPlayedLetter != -1 && lastPlayedNumber != -1)
+            {
+                showLed(lastPlayedLetter, lastPlayedNumber);
+            }
+            else
+            {
+                lightAllLEDs();
+            }
+            // If selection mode finished and there is a queued playlist ready, start playback now
+            if (!selectionModeEnabled && queueSize > 0 && currentPlaying == 0)
+            {
+                Serial.println("Light show finished — starting playback from queue.");
+                play = true;
+                mp3Serial.flush();
+                mp3Serial.end();
+                EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 0);
+                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+                saveQueue();
+                delay(200);
+                resetFunc();
+            }
+        }
+
+        // while the light show runs, do not process further selection events
+        return;
+    }
 
     // Handle letter press for longpress detection
     if (letterPressed != -1 && !isLetterPressed)
@@ -560,10 +631,27 @@ void handleLetterPress(int index)
     // Update activity time to override beckon
     lastActivityTime = millis();
 
-    // Store selected letter
+    // Selection-mode behavior: toggle pending letter LED off to indicate pending selection
+    if (selectionModeEnabled)
+    {
+        // If there was a previous pending letter, re-enable its LED
+        if (pendingLetter != -1 && pendingLetter != index)
+        {
+            digitalWrite(letterLEDs[pendingLetter], HIGH);
+        }
+
+        // Set new pending letter and turn its LED off until number confirmed
+        pendingLetter = index;
+        currentLetter = index;
+        digitalWrite(letterLEDs[index], LOW); // show as selected/pending
+        Serial.print("Pending letter set: ");
+        Serial.println(letters[index]);
+        return;
+    }
+
+    // Normal (non-selection-mode) behavior: store selected letter and leave LED ON
     currentLetter = index;
-    digitalWrite(letterLEDs[index], HIGH); // keep LED on
-    // delay(500);
+    digitalWrite(letterLEDs[index], HIGH);
 }
 
 void handleNumberPress(int index)
@@ -591,44 +679,85 @@ void handleNumberPress(int index)
         queue[queueSize].letter = currentLetter;
         queue[queueSize].number = index;
         queueSize++;
+        selectionCount = queueSize; // track confirmed selections
         Serial.print("Queued song ");
         Serial.println(queueSize);
         saveQueue(); // Save after adding to queue
 
-        // After 3rd selection, turn off all LEDs except the current pair
-        // if (queueSize == 2 )
-        // {
-        //     for (int i = 0; i < NUM_LETTERS; i++)
-        //         digitalWrite(letterLEDs[i], LOW);
-        //     for (int i = 0; i < NUM_NUMBERS; i++)
-        //         digitalWrite(numberLEDs[i], LOW);
-        //     digitalWrite(letterLEDs[currentLetter], HIGH);
-        //     digitalWrite(numberLEDs[index], HIGH);
-        // }
+        // If there was a pending letter, re-enable its LED now that number chosen
+        if (pendingLetter != -1)
+        {
+            digitalWrite(letterLEDs[pendingLetter], HIGH);
+            pendingLetter = -1;
+        }
+
+        // If selection mode and we have reached 3 selections, finish selection mode
+        if (selectionModeEnabled && selectionCount >= 3)
+        {
+            selectionModeEnabled = false;
+            Serial.println("Selection mode complete (3 selections). Starting light show.");
+            startLightShow();
+
+            // After light show completes, allow playback to start by triggering reset as before
+            // We will set flags now; the actual reset will occur after show ends because the
+            // chaser logic returns early during the show. When the show finishes the loop will
+            // resume and playback logic (queueSize>0 && currentPlaying==0) will trigger normally.
+            EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 0);
+            EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+            saveQueue();
+        }
     }
 
-    // If no song is playing, start playing
-    if (queueSize > 0 && currentPlaying == 0)
+    // If not in selection mode, and no song is playing, start playing immediately
+    if (!selectionModeEnabled && queueSize > 0 && currentPlaying == 0)
     {
-
-        Serial.println("Starting playback from queue immediately after number entered.");
-        // playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
+        Serial.println("Starting playback from queue after selection.");
         play = true;
         mp3Serial.flush();
         mp3Serial.end();
-        // currentPlaying = 1;
         EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 0);
         EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
         saveQueue(); // Save currentPlaying after starting
         delay(500);  // brief delay to allow mp3 module to start
         resetFunc();
     }
+
     currentLetter = -1; // reset letter selection
     currentNumber = -1; // reset number selection
 }
 
+void startLightShow()
+{
+    // Initialize non-blocking light show (20-LED chaser) for 7 seconds
+    Serial.println("Starting 7s light show (20-LED chaser)");
+    lightShowRunning = true;
+    lightShowEnd = millis() + 7000;
+    lightShowIndex = 0;
+    lastLightShowStep = 0;
+    // ensure all LEDs are off to start
+    for (int i = 0; i < NUM_LETTERS + NUM_NUMBERS; i++)
+        digitalWrite(allLEDs[i], LOW);
+}
+
 void playSong(int letterIndex, int numberIndex)
 {
+    // If this play corresponds to the 2nd or 3rd queued song, trigger the 7s light show
+    if (!selectionModeEnabled && queueSize > 0)
+    {
+        for (int i = 0; i < queueSize; i++)
+        {
+            if (queue[i].letter == letterIndex && queue[i].number == numberIndex)
+            {
+                if ((i == 1 || i == 2) && !lightShowRunning)
+                {
+                    Serial.println("Triggering light show for start of 2nd/3rd song.");
+                    startLightShow();
+                    // let the show run; playback will continue regardless (this call is non-blocking)
+                }
+                break;
+            }
+        }
+    }
     // Store the currently playing song
     lastPlayedLetter = letterIndex;
     lastPlayedNumber = numberIndex;
