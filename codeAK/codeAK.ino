@@ -49,6 +49,8 @@ unsigned long lightShowEnd = 0;
 int lightShowIndex = 0;
 unsigned long lastLightShowStep = 0;
 const unsigned long lightShowStepDelay = 80; // ms between chaser steps
+// Playback pending flag: when true, start playback after light show ends
+bool pendingPlayAfterShow = false;
 // Letter button pins A–K (skipping I)
 int letterPins[NUM_LETTERS] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 // Number button pins 0–9
@@ -293,16 +295,17 @@ void loop()
             {
                 lightAllLEDs();
             }
-            // If selection mode finished and there is a queued playlist ready, start playback now
-            if (!selectionModeEnabled && queueSize > 0 && currentPlaying == 0)
+            // If a playback-after-show was requested, start playback now
+            if (pendingPlayAfterShow && queueSize > 0 && currentPlaying == 0)
             {
-                Serial.println("Light show finished — starting playback from queue.");
+                Serial.println("Light show finished — starting playback from queue (pending start).");
                 play = true;
                 mp3Serial.flush();
                 mp3Serial.end();
                 EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 0);
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
                 saveQueue();
+                pendingPlayAfterShow = false;
                 delay(200);
                 resetFunc();
             }
@@ -703,13 +706,15 @@ void handleNumberPress(int index)
             // chaser logic returns early during the show. When the show finishes the loop will
             // resume and playback logic (queueSize>0 && currentPlaying==0) will trigger normally.
             EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 0);
-            EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+            // mark that playback should start only after the show ends
+            pendingPlayAfterShow = true;
             saveQueue();
         }
     }
 
     // If not in selection mode, and no song is playing, start playing immediately
-    if (!selectionModeEnabled && queueSize > 0 && currentPlaying == 0)
+    // but do NOT start if a play-after-show is pending (we'll start after the show)
+    if (!selectionModeEnabled && !pendingPlayAfterShow && queueSize > 0 && currentPlaying == 0)
     {
         Serial.println("Starting playback from queue after selection.");
         play = true;
