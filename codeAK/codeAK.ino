@@ -746,22 +746,13 @@ void startLightShow()
 
 void playSong(int letterIndex, int numberIndex)
 {
-    // If this play corresponds to the 2nd or 3rd queued song, trigger the 7s light show
-    if (!selectionModeEnabled && queueSize > 0)
+    // If this play corresponds to the 2nd or 3rd song in playback order, trigger the 7s light show
+    // currentPlaying is 1-indexed (1 = 1st song, 2 = 2nd song, 3 = 3rd song)
+    if (!selectionModeEnabled && !lightShowRunning && (currentPlaying == 2 || currentPlaying == 3))
     {
-        for (int i = 0; i < queueSize; i++)
-        {
-            if (queue[i].letter == letterIndex && queue[i].number == numberIndex)
-            {
-                if ((i == 1 || i == 2) && !lightShowRunning)
-                {
-                    Serial.println("Triggering light show for start of 2nd/3rd song.");
-                    startLightShow();
-                    // let the show run; playback will continue regardless (this call is non-blocking)
-                }
-                break;
-            }
-        }
+        Serial.print("Triggering light show for song #");
+        Serial.println(currentPlaying);
+        startLightShow();
     }
     // Store the currently playing song
     lastPlayedLetter = letterIndex;
