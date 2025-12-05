@@ -698,23 +698,24 @@ void handleNumberPress(int index)
         if (selectionModeEnabled && selectionCount >= 3)
         {
             selectionModeEnabled = false;
-            Serial.println("Selection mode complete (3 selections). Starting light show.");
+            Serial.println("Selection mode complete (3 selections). Starting light show and starting playback.");
+            // Start the light show (non-blocking)
             startLightShow();
 
-            // After light show completes, allow playback to start by triggering reset as before
-            // We will set flags now; the actual reset will occur after show ends because the
-            // chaser logic returns early during the show. When the show finishes the loop will
-            // resume and playback logic (queueSize>0 && currentPlaying==0) will trigger normally.
-            EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 0);
-            // mark that playback should start only after the show ends
-            pendingPlayAfterShow = true;
-            saveQueue();
+            // Immediately start playback of the first queued song so the lightshow and music run together.
+            if (queueSize > 0 && currentPlaying == 0)
+            {
+                play = true;
+                // Play first queued song directly without forcing a reset
+                playSong(queue[0].letter, queue[0].number);
+                currentPlaying = 1; // mark that first song is now playing (1-based count of songs played)
+                saveQueue();
+            }
         }
     }
 
     // If not in selection mode, and no song is playing, start playing immediately
-    // but do NOT start if a play-after-show is pending (we'll start after the show)
-    if (!selectionModeEnabled && !pendingPlayAfterShow && queueSize > 0 && currentPlaying == 0)
+    if (!selectionModeEnabled && queueSize > 0 && currentPlaying == 0)
     {
         Serial.println("Starting playback from queue after selection.");
         play = true;
@@ -746,9 +747,10 @@ void startLightShow()
 
 void playSong(int letterIndex, int numberIndex)
 {
-    // If this play corresponds to the 2nd or 3rd song in playback order, trigger the 7s light show
-    // currentPlaying is 1-indexed (1 = 1st song, 2 = 2nd song, 3 = 3rd song)
-    if (!selectionModeEnabled && !lightShowRunning && (currentPlaying == 2 || currentPlaying == 3))
+    // If this play corresponds to the 2nd or 3rd song in playback order (0-based indices 1 or 2),
+    // trigger the 7s light show. When `playSong` is called during playback, `currentPlaying`
+    // holds the 0-based index of the song to play (0 = first, 1 = second, 2 = third).
+    if (!selectionModeEnabled && !lightShowRunning && (currentPlaying == 1 || currentPlaying == 2))
     {
         Serial.print("Triggering light show for song #");
         Serial.println(currentPlaying);
