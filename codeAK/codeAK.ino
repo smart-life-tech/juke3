@@ -71,6 +71,9 @@ struct Song
     int number;
 };
 
+// Forward declaration for playSong with optional queueIndex (0-based).
+void playSong(int letterIndex, int numberIndex, int queueIndex = -1);
+
 Song queue[MAX_QUEUE];
 int queueSize = 0;
 int currentPlaying = 0;
