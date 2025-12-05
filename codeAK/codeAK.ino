@@ -93,6 +93,8 @@ const unsigned long debounceDelay = 50;
 #define EEPROM_BECKON_LETTER_ADDR 15
 #define EEPROM_BECKON_NUMBER_ADDR 16
 #define EEPROM_BECKON_NUMBER_PLAYING 17
+// EEPROM address to store whether selection mode is enabled (1 = enabled, 0 = disabled)
+#define EEPROM_SELECTION_MODE_ADDR 18
 
 // Reset function
 void (*resetFunc)(void) = 0;
@@ -199,6 +201,15 @@ void setup()
         mp3.volume(30);     // Set volume
     }
 
+    // Load persisted selection mode state (1 = enabled, 0 = disabled)
+    int selModeVal = EEPROM.read(EEPROM_SELECTION_MODE_ADDR);
+    // EEPROM value 1 indicates selection mode has been explicitly DISABLED.
+    // Any other value (including 0 after a hardware reset) means selection mode defaults to enabled.
+    if (selModeVal == 1)
+        selectionModeEnabled = false;
+    else
+        selectionModeEnabled = true;
+
     // Check beckon flag
     int beckonFlag = EEPROM.read(EEPROM_BECKON_FLAG_ADDR);
     if (beckonFlag == 1)
@@ -241,7 +252,7 @@ void setup()
             if (queueSize == 3 || queueSize == 2 || queueSize == 1 && currentPlaying < queueSize)
             {
                 Serial.println("Resuming playback from EEPROM.");
-                playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
+                playSong(queue[currentPlaying].letter, queue[currentPlaying].number, currentPlaying);
                 play = true;
                 currentPlaying++;
                 saveQueue(); // Save after resuming
@@ -253,6 +264,21 @@ void setup()
     // currentPlaying = 0;
 
     Serial.println("Code AK Ready! v2.29");
+
+    // Debug: print queue and playback state on startup
+    Serial.print("DEBUG: queueSize=");
+    Serial.print(queueSize);
+    Serial.print(", currentPlaying=");
+    Serial.println(currentPlaying);
+    for (int i = 0; i < queueSize; i++)
+    {
+        Serial.print("DEBUG: queue[");
+        Serial.print(i);
+        Serial.print("] = ");
+        Serial.print(letters[queue[i].letter]);
+        Serial.print(queue[i].number + 1);
+        Serial.println();
+    }
 }
 
 void loop()
@@ -378,6 +404,8 @@ void loop()
                 queueSize = 0;
                 currentPlaying = 0;
                 saveQueue(); // Save reset values
+                // Re-enable selection mode on next boot
+                EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
                 lightAllLEDs();
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
                 delay(1000);
@@ -494,7 +522,7 @@ void loop()
                     EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
                     delay(500);
                     resetFunc();
-                    playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
+                    playSong(queue[currentPlaying].letter, queue[currentPlaying].number, currentPlaying);
                     currentPlaying++;
                     saveQueue(); // Save after incrementing currentPlaying
                     delay(500);  // brief delay to allow mp3 module to start
@@ -506,6 +534,8 @@ void loop()
                     queueSize = 0;
                     currentPlaying = 0;
                     saveQueue(); // Save reset values
+                    // Re-enable selection mode on next boot
+                    EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
                     lightAllLEDs();
                     EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
                     resetFunc();
@@ -698,6 +728,8 @@ void handleNumberPress(int index)
         if (selectionModeEnabled && selectionCount >= 3)
         {
             selectionModeEnabled = false;
+            // Persist selection mode disabled so it survives reset cycles between songs
+            EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 1);
             Serial.println("Selection mode complete (3 selections). Starting light show and starting playback.");
             // Start the light show (non-blocking)
             startLightShow();
@@ -707,7 +739,7 @@ void handleNumberPress(int index)
             {
                 play = true;
                 // Play first queued song directly without forcing a reset
-                playSong(queue[0].letter, queue[0].number);
+                playSong(queue[0].letter, queue[0].number, 0);
                 currentPlaying = 1; // mark that first song is now playing (1-based count of songs played)
                 saveQueue();
             }
@@ -745,16 +777,24 @@ void startLightShow()
         digitalWrite(allLEDs[i], LOW);
 }
 
-void playSong(int letterIndex, int numberIndex)
+void playSong(int letterIndex, int numberIndex, int queueIndex = -1)
 {
-    // If this play corresponds to the 2nd or 3rd song in playback order (0-based indices 1 or 2),
-    // trigger the 7s light show. When `playSong` is called during playback, `currentPlaying`
-    // holds the 0-based index of the song to play (0 = first, 1 = second, 2 = third).
-    if (!selectionModeEnabled && !lightShowRunning && (currentPlaying == 1 || currentPlaying == 2))
+    // Debug: print when playSong is called with index information
+    Serial.print("DEBUG playSong called. queueIndex=");
+    Serial.print(queueIndex);
+    Serial.print(", currentPlaying=");
+    Serial.println(currentPlaying);
+    // Determine whether to trigger the 7s light show for this playback.
+    // If `queueIndex` is provided (0-based index into the queued songs), trigger show
+    // for the 2nd or 3rd queued song (indices 1 and 2).
+    if (!selectionModeEnabled && !lightShowRunning && queueIndex >= 0)
     {
-        Serial.print("Triggering light show for song #");
-        Serial.println(currentPlaying);
-        startLightShow();
+        if (queueIndex == 1 || queueIndex == 2)
+        {
+            Serial.print("Triggering light show for queued song index: ");
+            Serial.println(queueIndex);
+            startLightShow();
+        }
     }
     // Store the currently playing song
     lastPlayedLetter = letterIndex;
