@@ -98,6 +98,10 @@ const unsigned long debounceDelay = 50;
 #define EEPROM_BECKON_NUMBER_PLAYING 17
 // EEPROM address to store whether selection mode is enabled (1 = enabled, 0 = disabled)
 #define EEPROM_SELECTION_MODE_ADDR 18
+// EEPROM flag to request a light show on the next resumed queued song (set before reset)
+#define EEPROM_LIGHTSHOW_NEXT_ADDR 19
+// EEPROM address to store the queued index (0-based) for which the light show should run
+#define EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR 20
 
 // Reset function
 void (*resetFunc)(void) = 0;
@@ -132,7 +136,7 @@ void loadQueue()
 
 void clearEEPROM()
 {
-    for (int i = 0; i < 18; i++)
+    for (int i = 0; i < 21; i++)
     {
         EEPROM.write(i, 0);
     }
@@ -245,6 +249,27 @@ void setup()
         else
         { // Load queue from EEPROM
             loadQueue();
+            // If a lightshow-on-next was requested before reset, run the show and start that queued song now
+            int lsFlag = EEPROM.read(EEPROM_LIGHTSHOW_NEXT_ADDR);
+            if (lsFlag == 1)
+            {
+                int lsIndex = EEPROM.read(EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR);
+                Serial.print("Lightshow-on-next detected for queue index: ");
+                Serial.println(lsIndex);
+                // Clear the request so it doesn't run again
+                EEPROM.write(EEPROM_LIGHTSHOW_NEXT_ADDR, 0);
+                // Validate index
+                if (lsIndex >= 0 && lsIndex < MAX_QUEUE && lsIndex < queueSize)
+                {
+                    // Start chaser and play the queued song immediately (they run together)
+                    startLightShow();
+                    playSong(queue[lsIndex].letter, queue[lsIndex].number, lsIndex);
+                    play = true;
+                    currentPlaying = lsIndex + 1;
+                    saveQueue();
+                    delay(500);
+                }
+            }
             if (currentPlaying > queueSize)
             {
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
@@ -432,6 +457,9 @@ void loop()
                 //  currentPlaying++;
                 saveQueue();
                 delay(200);
+                // Request lightshow on next resume for this queued index
+                EEPROM.write(EEPROM_LIGHTSHOW_NEXT_ADDR, 1);
+                EEPROM.write(EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR, currentPlaying);
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
                 resetFunc();
             }
@@ -522,6 +550,9 @@ void loop()
                     Serial.print("Number: ");
                     Serial.println(queue[currentPlaying].number);
                     // Reset the board to clear state
+                    // Request lightshow on next resume for this queued index
+                    EEPROM.write(EEPROM_LIGHTSHOW_NEXT_ADDR, 1);
+                    EEPROM.write(EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR, currentPlaying);
                     EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
                     delay(500);
                     resetFunc();
