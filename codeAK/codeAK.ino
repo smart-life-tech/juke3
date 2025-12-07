@@ -38,18 +38,17 @@ unsigned long lastBeckonTime = 0;
 unsigned long lastActivityTime = 0;
 int beckonIndex = 0;
 bool beckonPlaying = false;
-const unsigned long beckonInterval = 480000; // 8 minutes in ms
+const unsigned long beckonInterval = 480000; // 8 minutes
 // Selection mode state
-bool selectionModeEnabled = true; // true = user is in selection mode to pick up to 3 songs
-int selectionCount = 0;          // confirmed selections so far (0..3)
-int pendingLetter = -1;         // letter index currently selected (LED off) until number confirmed
+bool selectionModeEnabled = true;
+int selectionCount = 0;
+int pendingLetter = -1;
 // Light show state
 bool lightShowRunning = false;
 unsigned long lightShowEnd = 0;
 int lightShowIndex = 0;
 unsigned long lastLightShowStep = 0;
-const unsigned long lightShowStepDelay = 80; // ms between chaser steps
-// Playback pending flag: when true, start playback after light show ends
+const unsigned long lightShowStepDelay = 80;
 bool pendingPlayAfterShow = false;
 // Letter button pins A–K (skipping I)
 int letterPins[NUM_LETTERS] = {2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
@@ -446,21 +445,14 @@ void loop()
                 delay(1000);
                 resetFunc();
             }
-            if (currentPlaying < queueSize + 1)
+            if (currentPlaying < queueSize)
             {
-                // Reset the board to clear state
-                // resetFunc();
-                // playSong(queue[currentPlaying].letter, queue[currentPlaying].number);
-                Serial.print("current play: ");
-                Serial.println(currentPlaying);
-                // if (currentPlaying != 1)
-                //  currentPlaying++;
-                saveQueue();
-                delay(200);
-                // Request lightshow on next resume for this queued index
+                // Prepare next song via reset (required by board), request lightshow for that index
                 EEPROM.write(EEPROM_LIGHTSHOW_NEXT_ADDR, 1);
                 EEPROM.write(EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR, currentPlaying);
+                saveQueue();
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+                delay(200);
                 resetFunc();
             }
             else
@@ -469,7 +461,8 @@ void loop()
                 currentPlaying = 0;
                 saveQueue();
                 lightAllLEDs();
-                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+                delay(200);
                 resetFunc();
             }
         }
@@ -524,42 +517,19 @@ void loop()
                 Serial.println(currentPlaying);
                 Serial.println("Song done, moving to next in queue.");
                 Serial.println(queueSize);
-                if (currentPlaying == 3)
-                {
-                    // Queue finished
-                    Serial.println("max que all  leds on");
-                    queueSize = 0;
-                    currentPlaying = 0;
-                    saveQueue(); // Save reset values
-                    lightAllLEDs();
-                    EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
-                    delay(1000);
-                    resetFunc();
-                }
-                if (currentPlaying > queueSize)
-                {
-                    EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
-                    Serial.println("Queue finished, resetting.");
-                    delay(1000);
-                    resetFunc();
-                }
-                if (currentPlaying < (queueSize + 1))
+                if (currentPlaying < queueSize)
                 {
                     Serial.print("Playing next song in queue.. ");
                     Serial.println(queue[currentPlaying].letter);
                     Serial.print("Number: ");
                     Serial.println(queue[currentPlaying].number);
-                    // Reset the board to clear state
-                    // Request lightshow on next resume for this queued index
+                    // Request lightshow on next resume for this queued index, then reset
                     EEPROM.write(EEPROM_LIGHTSHOW_NEXT_ADDR, 1);
                     EEPROM.write(EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR, currentPlaying);
+                    saveQueue();
                     EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
                     delay(500);
                     resetFunc();
-                    playSong(queue[currentPlaying].letter, queue[currentPlaying].number, currentPlaying);
-                    currentPlaying++;
-                    saveQueue(); // Save after incrementing currentPlaying
-                    delay(500);  // brief delay to allow mp3 module to start
                 }
                 else
                 {
@@ -767,15 +737,15 @@ void handleNumberPress(int index)
             Serial.println("Selection mode complete (3 selections). Starting light show and starting playback.");
             // Start the light show (non-blocking)
             startLightShow();
-
-            // Immediately start playback of the first queued song so the lightshow and music run together.
+            // Board requires reset before playback to avoid freeze: request lightshow+play on next boot
             if (queueSize > 0 && currentPlaying == 0)
             {
-                play = true;
-                // Play first queued song directly without forcing a reset
-                playSong(queue[0].letter, queue[0].number, 0);
-                currentPlaying = 1; // mark that first song is now playing (1-based count of songs played)
+                EEPROM.write(EEPROM_LIGHTSHOW_NEXT_ADDR, 1);
+                EEPROM.write(EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR, 0);
                 saveQueue();
+                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+                delay(200);
+                resetFunc();
             }
         }
     }
