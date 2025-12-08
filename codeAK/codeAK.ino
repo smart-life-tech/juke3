@@ -760,6 +760,7 @@ void handleNumberPress(int index)
         EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 0);
         EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
         EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 1);
+        EEPROM.write(EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR, 0);
         EEPROM.write(EEPROM_LIGHTSHOW_NEXT_ADDR, 1); // lightshow needed for single selection
         saveQueue();                                 // Save currentPlaying after starting
         delay(500);                                  // brief delay to allow mp3 module to start
