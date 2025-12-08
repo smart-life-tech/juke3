@@ -751,7 +751,7 @@ void handleNumberPress(int index)
     }
 
     // If not in selection mode, and no song is playing, start playing immediately
-    if (!selectionModeEnabled && queueSize > 0 && currentPlaying == 0)
+    if (queueSize > 0 && currentPlaying == 0)
     {
         Serial.println("Starting playback from queue after selection.");
         play = true;
@@ -759,8 +759,10 @@ void handleNumberPress(int index)
         mp3Serial.end();
         EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 0);
         EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
-        saveQueue(); // Save currentPlaying after starting
-        delay(500);  // brief delay to allow mp3 module to start
+        EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 1);
+        EEPROM.write(EEPROM_LIGHTSHOW_NEXT_ADDR, 1); // lightshow needed for single selection
+        saveQueue();                                 // Save currentPlaying after starting
+        delay(500);                                  // brief delay to allow mp3 module to start
         resetFunc();
     }
 
