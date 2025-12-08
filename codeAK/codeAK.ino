@@ -719,6 +719,8 @@ void handleNumberPress(int index)
         selectionCount = queueSize; // track confirmed selections
         Serial.print("Queued song ");
         Serial.println(queueSize);
+        Serial.print("current playing: ");
+        Serial.println(currentPlaying);
         saveQueue(); // Save after adding to queue
 
         // If there was a pending letter, re-enable its LED now that number chosen
