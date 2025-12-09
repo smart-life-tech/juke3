@@ -753,7 +753,7 @@ void handleNumberPress(int index)
     }
 
     // If not in selection mode, and no song is playing, start playing immediately
-    if (queueSize > 0 && currentPlaying == 0)
+    if (queueSize >= 2 && currentPlaying == 0)
     {
         Serial.println("Starting playback from queue after selection.");
         play = true;
