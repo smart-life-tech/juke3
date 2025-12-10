@@ -264,6 +264,7 @@ void setup()
                     startLightShow();
                     playSong(queue[lsIndex].letter, queue[lsIndex].number, lsIndex);
                     play = true;
+                    // Increment currentPlaying to mark this song as having started
                     currentPlaying = lsIndex + 1;
                     saveQueue();
                     delay(500);
@@ -276,7 +277,8 @@ void setup()
                 delay(500);
                 resetFunc();
             }
-            if (queueSize == 3 || queueSize == 2 || queueSize == 1 && currentPlaying < queueSize)
+            // Only resume if there's a valid queued song that hasn't been played yet
+            if ((queueSize == 3 || queueSize == 2 || queueSize == 1) && currentPlaying < queueSize)
             {
                 Serial.println("Resuming playback from EEPROM.");
                 playSong(queue[currentPlaying].letter, queue[currentPlaying].number, currentPlaying);
