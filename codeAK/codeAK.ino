@@ -264,8 +264,8 @@ void setup()
                     startLightShow();
                     playSong(queue[lsIndex].letter, queue[lsIndex].number, lsIndex);
                     play = true;
-                    // Increment currentPlaying to mark this song as having started
-                    currentPlaying = lsIndex + 1;
+                    // Set currentPlaying to the next index so song-done logic advances correctly
+                    currentPlaying = lsIndex;
                     saveQueue();
                     delay(500);
                 }
@@ -522,12 +522,13 @@ void loop()
                 if (currentPlaying < queueSize)
                 {
                     Serial.print("Playing next song in queue.. ");
-                    Serial.println(queue[currentPlaying].letter);
-                    Serial.print("Number: ");
-                    Serial.println(queue[currentPlaying].number);
-                    // Request lightshow on next resume for this queued index, then reset
+                    Serial.print("Index: ");
+                    Serial.println(currentPlaying);
+                    // Request lightshow on next resume for the next queued index, then reset
                     EEPROM.write(EEPROM_LIGHTSHOW_NEXT_ADDR, 1);
                     EEPROM.write(EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR, currentPlaying);
+                    // Increment currentPlaying now so it's ready for the next song
+                    currentPlaying++;
                     saveQueue();
                     EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
                     delay(500);
