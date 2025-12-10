@@ -262,7 +262,7 @@ void setup()
                 {
                     // Start chaser and play the queued song immediately (they run together)
                     startLightShow();
-                    delay(100); // Brief delay to let lightshow begin before starting MP3
+                    delay(500); // Brief delay to let lightshow begin before starting MP3
                     playSong(queue[lsIndex].letter, queue[lsIndex].number, lsIndex);
                     play = true;
                     // Set currentPlaying to the next index so song-done logic advances correctly
