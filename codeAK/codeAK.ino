@@ -279,15 +279,15 @@ void setup()
                 resetFunc();
             }
             // Only resume if there's a valid queued song that hasn't been played yet
-            if ((queueSize == 3 || queueSize == 2 || queueSize == 1) && currentPlaying < queueSize)
-            {
-                Serial.println("Resuming playback from EEPROM.");
-                playSong(queue[currentPlaying].letter, queue[currentPlaying].number, currentPlaying);
-                play = true;
-                currentPlaying++;
-                saveQueue(); // Save after resuming
-                delay(500);  // brief delay to allow mp3 module to start
-            }
+            // if ((queueSize == 3 || queueSize == 2 || queueSize == 1) && currentPlaying < queueSize)
+            // {
+            //     Serial.println("Resuming playback from EEPROM.");
+            //     playSong(queue[currentPlaying].letter, queue[currentPlaying].number, currentPlaying);
+            //     play = true;
+            //     currentPlaying++;
+            //     saveQueue(); // Save after resuming
+            //     delay(500);  // brief delay to allow mp3 module to start
+            // }
         }
     }
     // queueSize = 0;
