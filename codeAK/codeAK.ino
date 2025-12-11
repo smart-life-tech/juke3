@@ -279,11 +279,11 @@ void setup()
                 resetFunc();
             }
             // Only resume if there's a valid queued song that hasn't been played yet
-            if ((queueSize == 3 || queueSize == 2 || queueSize == 1) && currentPlaying !=0)
-             {
-                 Serial.println("Resuming playback from EEPROM.");
-                 Serial.print("current playing:");
-                 Serial.println(currentPlaying);
+            if ((queueSize == 3 || queueSize == 2 || queueSize == 1) && currentPlaying != 0)
+            {
+                Serial.println("Resuming playback from EEPROM.");
+                Serial.print("current playing:");
+                Serial.println(currentPlaying);
                 playSong(queue[currentPlaying].letter, queue[currentPlaying].number, currentPlaying);
                 play = true;
                 currentPlaying++;
