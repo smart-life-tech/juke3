@@ -295,7 +295,7 @@ void setup()
     // queueSize = 0;
     // currentPlaying = 0;
 
-    Serial.println("Code AK Ready! v2.29");
+    Serial.println("Code AK Ready! v2.30");
 
     // Debug: print queue and playback state on startup
     Serial.print("DEBUG: queueSize=");
@@ -527,13 +527,16 @@ void loop()
                     Serial.print("Playing next song in queue.. ");
                     Serial.print("Index: ");
                     Serial.println(currentPlaying);
-                    // Request lightshow on next resume for the next queued index, then reset
-                    EEPROM.write(EEPROM_LIGHTSHOW_NEXT_ADDR, 1);
-                    EEPROM.write(EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR, currentPlaying);
+                    
                     // Increment currentPlaying now so it's ready for the next song
                     currentPlaying++;
                     saveQueue();
+                    // Request lightshow on next resume for the next queued index, then reset
+                    EEPROM.write(EEPROM_LIGHTSHOW_NEXT_ADDR, 1);
+                    EEPROM.write(EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR, currentPlaying);
                     EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+                    Serial.println("Song done, playing next: ");
+                    Serial.println(currentPlaying);
                     delay(500);
                     resetFunc();
                 }
