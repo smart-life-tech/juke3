@@ -262,11 +262,11 @@ void setup()
                 {
                     // Start chaser and play the queued song immediately (they run together)
                     startLightShow();
-                    delay(500); // Brief delay to let lightshow begin before starting MP3
+                    delay(150); // Brief delay to let lightshow begin before starting MP3
                     playSong(queue[lsIndex].letter, queue[lsIndex].number, lsIndex);
                     play = true;
-                    // Set currentPlaying to the next index so song-done logic advances correctly
-                    currentPlaying = lsIndex;
+                    // Set currentPlaying to 1-based count for LED display logic (playingIndex = currentPlaying - 1)
+                    currentPlaying = lsIndex + 1;
                     saveQueue();
                     delay(500);
                 }
@@ -533,7 +533,8 @@ void loop()
                     saveQueue();
                     // Request lightshow on next resume for the next queued index, then reset
                     EEPROM.write(EEPROM_LIGHTSHOW_NEXT_ADDR, 1);
-                    EEPROM.write(EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR, currentPlaying);
+                    // currentPlaying is 1-based after increment; store 0-based index for resume
+                    EEPROM.write(EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR, currentPlaying - 1);
                     EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
                     Serial.println("Song done, playing next: ");
                     Serial.println(currentPlaying);
