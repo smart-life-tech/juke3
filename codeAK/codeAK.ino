@@ -453,8 +453,9 @@ void loop()
             if (currentPlaying < queueSize)
             {
                 // Prepare next song via reset (required by board), request lightshow for that index
+                // currentPlaying is 1-based; store 0-based index for resume
                 EEPROM.write(EEPROM_LIGHTSHOW_NEXT_ADDR, 1);
-                EEPROM.write(EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR, currentPlaying);
+                EEPROM.write(EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR, currentPlaying - 1);
                 saveQueue();
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
                 delay(200);
@@ -763,7 +764,9 @@ void handleNumberPress(int index)
     }
 
     // If not in selection mode, and no song is playing, start playing immediately
-    if (queueSize >= 3 && currentPlaying == 0)
+    // NOTE: This path is for non-selection-mode queueing (e.g., individual song selections after selection mode)
+    // Do not execute if we just finished selection mode (handled above with resetFunc at line 762)
+    if (!selectionModeEnabled && queueSize >= 3 && currentPlaying == 0)
     {
         Serial.println("Starting playback from queue after selection.");
         play = true;
