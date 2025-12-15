@@ -279,16 +279,21 @@ void setup()
                 resetFunc();
             }
             // Only resume if there's a valid queued song that hasn't been played yet
-            if ((queueSize == 3 || queueSize == 2 || queueSize == 1) && currentPlaying != 0)
+            // and we haven't already started playback via lightshow-on-next
+            if (!play && (queueSize == 3 || queueSize == 2 || queueSize == 1) && currentPlaying != 0)
             {
                 Serial.println("Resuming playback from EEPROM.");
-                Serial.print("current playing:");
+                Serial.print("current playing (1-based): ");
                 Serial.println(currentPlaying);
-                playSong(queue[currentPlaying].letter, queue[currentPlaying].number, currentPlaying);
-                play = true;
-                currentPlaying++;
-                saveQueue(); // Save after resuming
-                delay(500);  // brief delay to allow mp3 module to start
+                int resumeIndex = currentPlaying - 1; // convert to 0-based for array access
+                if (resumeIndex >= 0 && resumeIndex < queueSize)
+                {
+                    playSong(queue[resumeIndex].letter, queue[resumeIndex].number, resumeIndex);
+                    play = true;
+                    currentPlaying++;
+                    saveQueue(); // Save after resuming
+                    delay(500);  // brief delay to allow mp3 module to start
+                }
             }
         }
     }
