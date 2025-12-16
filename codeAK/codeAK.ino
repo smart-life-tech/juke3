@@ -436,10 +436,11 @@ void loop()
             delay(500);
             if (currentPlaying >= 3)
             {
-                // Queue finished
+                // Queue finished (3 songs played)
                 Serial.println("max que all  leds on");
                 queueSize = 0;
                 currentPlaying = 0;
+                play = false;
                 saveQueue(); // Save reset values
                 // Re-enable selection mode on next boot
                 EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
@@ -450,6 +451,14 @@ void loop()
             }
             if (currentPlaying >= queueSize)
             {
+                // Queue finished (reached end early or edge case)
+                queueSize = 0;
+                currentPlaying = 0;
+                play = false;
+                saveQueue();
+                // Re-enable selection mode on next boot
+                EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
+                lightAllLEDs();
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
                 Serial.println("Queue finished, resetting.");
                 delay(1000);
@@ -457,8 +466,9 @@ void loop()
             }
             if (currentPlaying < queueSize)
             {
-                // Prepare next song via reset (required by board), request lightshow for that index
-                // currentPlaying is 1-based; store 0-based index for resume
+                // Advance to next song and prepare via reset (required by board)
+                currentPlaying++;
+                // currentPlaying is 1-based after increment; store 0-based index for resume
                 EEPROM.write(EEPROM_LIGHTSHOW_NEXT_ADDR, 1);
                 EEPROM.write(EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR, currentPlaying - 1);
                 saveQueue();
@@ -468,9 +478,13 @@ void loop()
             }
             else
             {
+                // Fallback: queue finished
                 queueSize = 0;
                 currentPlaying = 0;
+                play = false;
                 saveQueue();
+                // Re-enable selection mode on next boot
+                EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
                 lightAllLEDs();
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
                 delay(200);
@@ -553,6 +567,7 @@ void loop()
                     Serial.println("max que all  leds on");
                     queueSize = 0;
                     currentPlaying = 0;
+                    play = false;
                     saveQueue(); // Save reset values
                     // Re-enable selection mode on next boot
                     EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
