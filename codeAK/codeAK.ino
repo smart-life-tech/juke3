@@ -426,45 +426,15 @@ void loop()
     if (digitalRead(skipPin) == LOW && millis() - lastSkipDebounce > debounceDelay)
     {
         lastSkipDebounce = millis();
-        if (!continuousPlay && play && currentPlaying < queueSize + 1)
+        if (!continuousPlay && play && currentPlaying <= queueSize)
         {
             Serial.println("Skipping to next song now.");
             Serial.print("Current playing: ");
             Serial.println(currentPlaying);
             Serial.print("Queue size: ");
             Serial.println(queueSize);
-            // mp3.stop();
             delay(500);
-            if (currentPlaying >= 3)
-            {
-                // Queue finished (3 songs played)
-                Serial.println("max que all  leds on");
-                queueSize = 0;
-                currentPlaying = 0;
-                play = false;
-                saveQueue(); // Save reset values
-                // Re-enable selection mode on next boot
-                EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
-                lightAllLEDs();
-                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
-                delay(1000);
-                resetFunc();
-            }
-            if (currentPlaying >= queueSize)
-            {
-                // Queue finished (reached end early or edge case)
-                queueSize = 0;
-                currentPlaying = 0;
-                play = false;
-                saveQueue();
-                // Re-enable selection mode on next boot
-                EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
-                lightAllLEDs();
-                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
-                Serial.println("Queue finished, resetting.");
-                delay(1000);
-                resetFunc();
-            }
+            
             if (currentPlaying < queueSize)
             {
                 // Advance to next song and prepare via reset (required by board)
@@ -479,12 +449,12 @@ void loop()
             }
             else
             {
-                // Fallback: queue finished
+                // Last song or queue finished - reset to selection mode
+                Serial.println("Skip: Queue finished, resetting to selection mode.");
                 queueSize = 0;
                 currentPlaying = 0;
                 play = false;
                 saveQueue();
-                // Re-enable selection mode on next boot
                 EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
                 lightAllLEDs();
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
