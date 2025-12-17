@@ -196,7 +196,8 @@ void setup()
         // Hardware reset: clear EEPROM
         clearEEPROM();
         Serial.println("Hardware reset detected, clearing EEPROM.");
-        if (!mp3.begin(mp3Serial, true, true))
+        delay(500);
+        if (!mp3.begin(mp3Serial, false, false))
         {
             Serial.println("DFPlayer Mini not found!, proceeding regardless, no effect");
             // while (true)
@@ -573,6 +574,7 @@ void loop()
                     EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
                     lightAllLEDs();
                     EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+                    delay(500);
                     resetFunc();
                 }
             }
