@@ -446,7 +446,7 @@ void loop()
                 // Re-enable selection mode on next boot
                 EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
                 lightAllLEDs();
-                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
                 delay(1000);
                 resetFunc();
             }
@@ -460,7 +460,7 @@ void loop()
                 // Re-enable selection mode on next boot
                 EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
                 lightAllLEDs();
-                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
                 Serial.println("Queue finished, resetting.");
                 delay(1000);
                 resetFunc();
@@ -487,7 +487,7 @@ void loop()
                 // Re-enable selection mode on next boot
                 EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
                 lightAllLEDs();
-                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
                 delay(200);
                 resetFunc();
             }
@@ -573,7 +573,7 @@ void loop()
                     // Re-enable selection mode on next boot
                     EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
                     lightAllLEDs();
-                    EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+                    EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
                     delay(500);
                     resetFunc();
                 }
