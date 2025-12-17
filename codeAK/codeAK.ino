@@ -196,8 +196,8 @@ void setup()
         // Hardware reset: clear EEPROM
         clearEEPROM();
         Serial.println("Hardware reset detected, clearing EEPROM.");
-        delay(500);
-        if (!mp3.begin(mp3Serial, false, false))
+        delay(1000);
+        if (!mp3.begin(mp3Serial, true, true))
         {
             Serial.println("DFPlayer Mini not found!, proceeding regardless, no effect");
             // while (true)
@@ -301,7 +301,7 @@ void setup()
     // queueSize = 0;
     // currentPlaying = 0;
 
-    Serial.println("Code AK Ready! v2.32");
+    Serial.println("Code AK Ready! v2.33");
 
     // Debug: print queue and playback state on startup
     Serial.print("DEBUG: queueSize=");
@@ -457,8 +457,8 @@ void loop()
                 saveQueue();
                 EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
                 lightAllLEDs();
-                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
-                delay(200);
+                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+                delay(500);
                 resetFunc();
             }
         }
