@@ -301,7 +301,7 @@ void setup()
     // queueSize = 0;
     // currentPlaying = 0;
 
-    Serial.println("Code AK Ready! v2.33");
+    Serial.println("Code AK Ready! v2.34");
 
     // Debug: print queue and playback state on startup
     Serial.print("DEBUG: queueSize=");
