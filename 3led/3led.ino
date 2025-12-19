@@ -1,11 +1,31 @@
+// Include all libraries at the very top
 #include <SoftwareSerial.h>
 #include <DFRobotDFPlayerMini.h>
 #include <EEPROM.h>
 
+// Configuration defines
 #define NUM_LETTERS 10
 #define NUM_NUMBERS 10
 #define MAX_TRACKS 100
 #define MAX_QUEUE 3
+
+// Traffic Light pins (each LED has Red, Amber, Green)
+// Common anode: White = +, Colors = Ground to light
+#define LED1_RED A3
+#define LED1_AMBER A4
+#define LED1_GREEN A5
+#define LED2_RED A6
+#define LED2_AMBER A7
+#define LED2_GREEN A8
+#define LED3_RED A9
+#define LED3_AMBER A10
+#define LED3_GREEN A11
+
+// Traffic Light states
+enum TrafficState { STATE_RED, STATE_AMBER, STATE_GREEN };
+TrafficState trafficLED1 = STATE_RED;
+TrafficState trafficLED2 = STATE_RED;
+TrafficState trafficLED3 = STATE_RED;
 int currentLetter = -1;
 int currentNumber = -1;
 int lastPlayedLetter = -1;
@@ -70,8 +90,20 @@ struct Song
     int number;
 };
 
-// Forward declaration for playSong with optional queueIndex (0-based).
+// Forward declarations
 void playSong(int letterIndex, int numberIndex, int queueIndex = -1);
+void setTrafficLight(int ledNum, TrafficState state);
+void returnTrafficLightToRed(int queueIndex);
+void startLightShow();
+int getPressedKey(int *pins, int count);
+void showLed(int letterIndex, int numberIndex);
+void lightAllLEDs();
+void startContinuousPlay(int letter, int number);
+void handleLetterPress(int index);
+void handleNumberPress(int index);
+void playNextContinuous();
+void updateBuzzPopLeds();
+void startBuzzPopSequence();
 
 Song queue[MAX_QUEUE];
 int queueSize = 0;
@@ -172,6 +204,23 @@ void setup()
     digitalWrite(buzzLedPin, LOW);
     pinMode(popLedPin, OUTPUT);
     digitalWrite(popLedPin, LOW);
+
+    // Initialize Traffic Light LEDs
+    pinMode(LED1_RED, OUTPUT);
+    pinMode(LED1_AMBER, OUTPUT);
+    pinMode(LED1_GREEN, OUTPUT);
+    pinMode(LED2_RED, OUTPUT);
+    pinMode(LED2_AMBER, OUTPUT);
+    pinMode(LED2_GREEN, OUTPUT);
+    pinMode(LED3_RED, OUTPUT);
+    pinMode(LED3_AMBER, OUTPUT);
+    pinMode(LED3_GREEN, OUTPUT);
+    
+    // Set all traffic lights to RED (default state)
+    // Common anode: LOW = ON, HIGH = OFF
+    setTrafficLight(1, STATE_RED);
+    setTrafficLight(2, STATE_RED);
+    setTrafficLight(3, STATE_RED);
 
     // Check reset flag
     int resetFlag = EEPROM.read(EEPROM_RESET_FLAG_ADDR);
@@ -519,6 +568,11 @@ void loop()
                     Serial.print("Index: ");
                     Serial.println(currentPlaying);
                     
+                    // Return traffic light to RED for the song that just finished
+                    // currentPlaying is 1-based, so subtract 1 for 0-based queue index
+                    int finishedSongIndex = currentPlaying - 1;
+                    returnTrafficLightToRed(finishedSongIndex);
+                    
                     // Increment currentPlaying now so it's ready for the next song
                     currentPlaying++;
                     saveQueue();
@@ -536,6 +590,11 @@ void loop()
                 {
                     // Queue finished
                     Serial.println("max que all  leds on");
+                    
+                    // Return last traffic light to RED
+                    int finishedSongIndex = currentPlaying - 1;
+                    returnTrafficLightToRed(finishedSongIndex);
+                    
                     queueSize = 0;
                     currentPlaying = 0;
                     play = false;
@@ -543,6 +602,15 @@ void loop()
                     // Re-enable selection mode on next boot
                     EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
                     lightAllLEDs();
+                    
+                    // Reset all traffic lights to RED for next round
+                    setTrafficLight(1, STATE_RED);
+                    setTrafficLight(2, STATE_RED);
+                    setTrafficLight(3, STATE_RED);
+                    trafficLED1 = STATE_RED;
+                    trafficLED2 = STATE_RED;
+                    trafficLED3 = STATE_RED;
+                    
                     EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
                     delay(500);
                     resetFunc();
@@ -671,6 +739,19 @@ void handleLetterPress(int index)
     // Update activity time to override beckon
     lastActivityTime = millis();
 
+    // Traffic Light: Change corresponding LED from RED to AMBER based on letter
+    // A=LED1, B=LED2, C=LED3
+    if (index == 0) { // A
+        setTrafficLight(1, STATE_AMBER);
+        trafficLED1 = STATE_AMBER;
+    } else if (index == 1) { // B
+        setTrafficLight(2, STATE_AMBER);
+        trafficLED2 = STATE_AMBER;
+    } else if (index == 2) { // C
+        setTrafficLight(3, STATE_AMBER);
+        trafficLED3 = STATE_AMBER;
+    }
+
     // Selection-mode behavior: toggle pending letter LED off to indicate pending selection
     if (selectionModeEnabled)
     {
@@ -712,6 +793,19 @@ void handleNumberPress(int index)
     Serial.println(number);
 
     digitalWrite(numberLEDs[index], HIGH);
+
+    // Traffic Light: Change corresponding LED from AMBER to GREEN based on number
+    // 1=LED1, 2=LED2, 3=LED3
+    if (index == 0 && currentLetter == 0) { // 1 pressed after A
+        setTrafficLight(1, STATE_GREEN);
+        trafficLED1 = STATE_GREEN;
+    } else if (index == 1 && currentLetter == 1) { // 2 pressed after B
+        setTrafficLight(2, STATE_GREEN);
+        trafficLED2 = STATE_GREEN;
+    } else if (index == 2 && currentLetter == 2) { // 3 pressed after C
+        setTrafficLight(3, STATE_GREEN);
+        trafficLED3 = STATE_GREEN;
+    }
 
     // Add to queue
     if (queueSize < MAX_QUEUE)
@@ -954,4 +1048,76 @@ void playNextContinuous()
     EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
     delay(1000);
     resetFunc();
+}
+
+// Function to set traffic light LED state
+void setTrafficLight(int ledNum, TrafficState state)
+{
+    // Common anode: LOW = ON, HIGH = OFF
+    int redPin, amberPin, greenPin;
+    
+    if (ledNum == 1) {
+        redPin = LED1_RED;
+        amberPin = LED1_AMBER;
+        greenPin = LED1_GREEN;
+    } else if (ledNum == 2) {
+        redPin = LED2_RED;
+        amberPin = LED2_AMBER;
+        greenPin = LED2_GREEN;
+    } else if (ledNum == 3) {
+        redPin = LED3_RED;
+        amberPin = LED3_AMBER;
+        greenPin = LED3_GREEN;
+    } else {
+        return; // Invalid LED number
+    }
+    
+    // Turn all colors OFF first
+    digitalWrite(redPin, HIGH);
+    digitalWrite(amberPin, HIGH);
+    digitalWrite(greenPin, HIGH);
+    
+    // Turn ON the desired color
+    switch(state) {
+        case STATE_RED:
+            digitalWrite(redPin, LOW);
+            Serial.print("Traffic LED ");
+            Serial.print(ledNum);
+            Serial.println(" = RED");
+            break;
+        case STATE_AMBER:
+            digitalWrite(amberPin, LOW);
+            Serial.print("Traffic LED ");
+            Serial.print(ledNum);
+            Serial.println(" = AMBER");
+            break;
+        case STATE_GREEN:
+            digitalWrite(greenPin, LOW);
+            Serial.print("Traffic LED ");
+            Serial.print(ledNum);
+            Serial.println(" = GREEN");
+            break;
+    }
+}
+
+// Function to return traffic light to RED after song finishes
+void returnTrafficLightToRed(int queueIndex)
+{
+    // Determine which traffic light to reset based on the song that just finished
+    // queueIndex is 0-based: 0=first song (A1), 1=second song (B2), 2=third song (C3)
+    if (queueIndex >= 0 && queueIndex < MAX_QUEUE) {
+        int letterIndex = queue[queueIndex].letter;
+        
+        // Reset traffic light based on letter: A=LED1, B=LED2, C=LED3
+        if (letterIndex == 0) { // A
+            setTrafficLight(1, STATE_RED);
+            trafficLED1 = STATE_RED;
+        } else if (letterIndex == 1) { // B
+            setTrafficLight(2, STATE_RED);
+            trafficLED2 = STATE_RED;
+        } else if (letterIndex == 2) { // C
+            setTrafficLight(3, STATE_RED);
+            trafficLED3 = STATE_RED;
+        }
+    }
 }
