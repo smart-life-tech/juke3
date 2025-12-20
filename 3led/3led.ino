@@ -350,7 +350,7 @@ void setup()
     // queueSize = 0;
     // currentPlaying = 0;
 
-    Serial.println("Code AK Ready! v2.34");
+    Serial.println("Code 3 led Ready! 1");
 
     // Debug: print queue and playback state on startup
     Serial.print("DEBUG: queueSize=");
@@ -1109,20 +1109,40 @@ void returnTrafficLightToRed(int queueIndex)
 {
     // Determine which traffic light to reset based on the song that just finished
     // Traffic lights are mapped to specific song combinations: A1=LED1, B2=LED2, C3=LED3
+    Serial.print("DEBUG returnTrafficLightToRed called with queueIndex=");
+    Serial.println(queueIndex);
+    
     if (queueIndex >= 0 && queueIndex < MAX_QUEUE) {
         int letterIndex = queue[queueIndex].letter;
         int numberIndex = queue[queueIndex].number;
         
+        Serial.print("DEBUG letter=");
+        Serial.print(letters[letterIndex]);
+        Serial.print(" (index ");
+        Serial.print(letterIndex);
+        Serial.print("), number=");
+        Serial.print(numberIndex + 1);
+        Serial.print(" (index ");
+        Serial.print(numberIndex);
+        Serial.println(")");
+        
         // Reset traffic light based on letter+number combination
         if (letterIndex == 0 && numberIndex == 0) { // A1
+            Serial.println("DEBUG Returning LED 1 to RED (A1)");
             setTrafficLight(1, STATE_RED);
             trafficLED1 = STATE_RED;
         } else if (letterIndex == 1 && numberIndex == 1) { // B2
+            Serial.println("DEBUG Returning LED 2 to RED (B2)");
             setTrafficLight(2, STATE_RED);
             trafficLED2 = STATE_RED;
         } else if (letterIndex == 2 && numberIndex == 2) { // C3
+            Serial.println("DEBUG Returning LED 3 to RED (C3)");
             setTrafficLight(3, STATE_RED);
             trafficLED3 = STATE_RED;
+        } else {
+            Serial.println("DEBUG No matching traffic light for this song combination");
         }
+    } else {
+        Serial.println("DEBUG Invalid queueIndex");
     }
 }
