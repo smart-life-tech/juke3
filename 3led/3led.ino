@@ -133,6 +133,10 @@ const unsigned long debounceDelay = 50;
 #define EEPROM_LIGHTSHOW_NEXT_ADDR 19
 // EEPROM address to store the queued index (0-based) for which the light show should run
 #define EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR 20
+// EEPROM addresses to store traffic light states (0=RED, 1=AMBER, 2=GREEN)
+#define EEPROM_TRAFFIC_LED1_ADDR 21
+#define EEPROM_TRAFFIC_LED2_ADDR 22
+#define EEPROM_TRAFFIC_LED3_ADDR 23
 
 // Reset function
 void (*resetFunc)(void) = 0;
@@ -167,10 +171,31 @@ void loadQueue()
 
 void clearEEPROM()
 {
-    for (int i = 0; i < 21; i++)
+    for (int i = 0; i < 24; i++)
     {
         EEPROM.write(i, 0);
     }
+}
+
+void saveTrafficLightStates()
+{
+    EEPROM.write(EEPROM_TRAFFIC_LED1_ADDR, trafficLED1);
+    EEPROM.write(EEPROM_TRAFFIC_LED2_ADDR, trafficLED2);
+    EEPROM.write(EEPROM_TRAFFIC_LED3_ADDR, trafficLED3);
+    Serial.println("Traffic light states saved to EEPROM");
+}
+
+void loadTrafficLightStates()
+{
+    trafficLED1 = (TrafficState)EEPROM.read(EEPROM_TRAFFIC_LED1_ADDR);
+    trafficLED2 = (TrafficState)EEPROM.read(EEPROM_TRAFFIC_LED2_ADDR);
+    trafficLED3 = (TrafficState)EEPROM.read(EEPROM_TRAFFIC_LED3_ADDR);
+    
+    setTrafficLight(1, trafficLED1);
+    setTrafficLight(2, trafficLED2);
+    setTrafficLight(3, trafficLED3);
+    
+    Serial.println("Traffic light states restored from EEPROM");
 }
 
 void setup()
@@ -216,18 +241,14 @@ void setup()
     pinMode(LED3_AMBER, OUTPUT);
     pinMode(LED3_GREEN, OUTPUT);
     
-    // Set all traffic lights to RED (default state)
-    // Common anode: LOW = ON, HIGH = OFF
-    setTrafficLight(1, STATE_RED);
-    setTrafficLight(2, STATE_RED);
-    setTrafficLight(3, STATE_RED);
-
     // Check reset flag
     int resetFlag = EEPROM.read(EEPROM_RESET_FLAG_ADDR);
     if (resetFlag == 1)
     {
         Serial.println("Software reset detected, clearing flag.");
-        // Software reset: clear flag and proceed normally
+        // Software reset: restore traffic light states from EEPROM
+        loadTrafficLightStates();
+        // Clear flag and proceed normally
         EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
         Serial.println("Software reset detected, clearED flag.");
         if (!mp3.begin(mp3Serial, false, false))
@@ -242,9 +263,17 @@ void setup()
     }
     else
     {
-        // Hardware reset: clear EEPROM
+        // Hardware reset: clear EEPROM and set traffic lights to RED (default state)
         clearEEPROM();
         Serial.println("Hardware reset detected, clearing EEPROM.");
+        // Set all traffic lights to RED (default state)
+        // Common anode: LOW = ON, HIGH = OFF
+        setTrafficLight(1, STATE_RED);
+        setTrafficLight(2, STATE_RED);
+        setTrafficLight(3, STATE_RED);
+        trafficLED1 = STATE_RED;
+        trafficLED2 = STATE_RED;
+        trafficLED3 = STATE_RED;
         delay(1000);
         if (!mp3.begin(mp3Serial, true, true))
         {
@@ -748,12 +777,15 @@ void handleLetterPress(int index)
     if (index == 0) { // A
         setTrafficLight(1, STATE_AMBER);
         trafficLED1 = STATE_AMBER;
+        saveTrafficLightStates();
     } else if (index == 1) { // B
         setTrafficLight(2, STATE_AMBER);
         trafficLED2 = STATE_AMBER;
+        saveTrafficLightStates();
     } else if (index == 2) { // C
         setTrafficLight(3, STATE_AMBER);
         trafficLED3 = STATE_AMBER;
+        saveTrafficLightStates();
     }
 
     // Selection-mode behavior: toggle pending letter LED off to indicate pending selection
@@ -803,12 +835,15 @@ void handleNumberPress(int index)
     if (index == 0 && currentLetter == 0) { // 1 pressed after A
         setTrafficLight(1, STATE_GREEN);
         trafficLED1 = STATE_GREEN;
+        saveTrafficLightStates();
     } else if (index == 1 && currentLetter == 1) { // 2 pressed after B
         setTrafficLight(2, STATE_GREEN);
         trafficLED2 = STATE_GREEN;
+        saveTrafficLightStates();
     } else if (index == 2 && currentLetter == 2) { // 3 pressed after C
         setTrafficLight(3, STATE_GREEN);
         trafficLED3 = STATE_GREEN;
+        saveTrafficLightStates();
     }
 
     // Add to queue
@@ -1131,14 +1166,17 @@ void returnTrafficLightToRed(int queueIndex)
             Serial.println("DEBUG Returning LED 1 to RED (A1)");
             setTrafficLight(1, STATE_RED);
             trafficLED1 = STATE_RED;
+            saveTrafficLightStates();
         } else if (letterIndex == 1 && numberIndex == 1) { // B2
             Serial.println("DEBUG Returning LED 2 to RED (B2)");
             setTrafficLight(2, STATE_RED);
             trafficLED2 = STATE_RED;
+            saveTrafficLightStates();
         } else if (letterIndex == 2 && numberIndex == 2) { // C3
             Serial.println("DEBUG Returning LED 3 to RED (C3)");
             setTrafficLight(3, STATE_RED);
             trafficLED3 = STATE_RED;
+            saveTrafficLightStates();
         } else {
             Serial.println("DEBUG No matching traffic light for this song combination");
         }
