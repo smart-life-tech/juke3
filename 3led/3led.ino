@@ -486,6 +486,10 @@ void loop()
             
             if (currentPlaying < queueSize)
             {
+                // Return traffic light to RED for the song being skipped
+                int skippedSongIndex = currentPlaying - 1;
+                returnTrafficLightToRed(skippedSongIndex);
+                
                 // Advance to next song and prepare via reset (required by board)
                 currentPlaying++;
                 // currentPlaying is 1-based after increment; store 0-based index for resume
