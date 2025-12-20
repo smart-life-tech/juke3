@@ -1108,18 +1108,19 @@ void setTrafficLight(int ledNum, TrafficState state)
 void returnTrafficLightToRed(int queueIndex)
 {
     // Determine which traffic light to reset based on the song that just finished
-    // queueIndex is 0-based: 0=first song (A1), 1=second song (B2), 2=third song (C3)
+    // Traffic lights are mapped to specific song combinations: A1=LED1, B2=LED2, C3=LED3
     if (queueIndex >= 0 && queueIndex < MAX_QUEUE) {
         int letterIndex = queue[queueIndex].letter;
+        int numberIndex = queue[queueIndex].number;
         
-        // Reset traffic light based on letter: A=LED1, B=LED2, C=LED3
-        if (letterIndex == 0) { // A
+        // Reset traffic light based on letter+number combination
+        if (letterIndex == 0 && numberIndex == 0) { // A1
             setTrafficLight(1, STATE_RED);
             trafficLED1 = STATE_RED;
-        } else if (letterIndex == 1) { // B
+        } else if (letterIndex == 1 && numberIndex == 1) { // B2
             setTrafficLight(2, STATE_RED);
             trafficLED2 = STATE_RED;
-        } else if (letterIndex == 2) { // C
+        } else if (letterIndex == 2 && numberIndex == 2) { // C3
             setTrafficLight(3, STATE_RED);
             trafficLED3 = STATE_RED;
         }
