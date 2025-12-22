@@ -772,21 +772,19 @@ void handleLetterPress(int index)
     // Update activity time to override beckon
     lastActivityTime = millis();
 
-    // Traffic Light: Change corresponding LED from RED to AMBER based on letter
-    // A=LED1, B=LED2, C=LED3
-    if (index == 0) { // A
-        setTrafficLight(1, STATE_AMBER);
+    // Traffic Light: Change corresponding LED from RED to AMBER based on queue position
+    // Use modulo 3 to map any letter to one of the 3 traffic lights
+    int ledNum = (queueSize % 3) + 1;  // Maps to 1, 2, or 3
+    setTrafficLight(ledNum, STATE_AMBER);
+    
+    if (ledNum == 1) {
         trafficLED1 = STATE_AMBER;
-        saveTrafficLightStates();
-    } else if (index == 1) { // B
-        setTrafficLight(2, STATE_AMBER);
+    } else if (ledNum == 2) {
         trafficLED2 = STATE_AMBER;
-        saveTrafficLightStates();
-    } else if (index == 2) { // C
-        setTrafficLight(3, STATE_AMBER);
+    } else if (ledNum == 3) {
         trafficLED3 = STATE_AMBER;
-        saveTrafficLightStates();
     }
+    saveTrafficLightStates();
 
     // Selection-mode behavior: toggle pending letter LED off to indicate pending selection
     if (selectionModeEnabled)
@@ -830,21 +828,19 @@ void handleNumberPress(int index)
 
     digitalWrite(numberLEDs[index], HIGH);
 
-    // Traffic Light: Change corresponding LED from AMBER to GREEN based on number
-    // 1=LED1, 2=LED2, 3=LED3
-    if (index == 0 && currentLetter == 0) { // 1 pressed after A
-        setTrafficLight(1, STATE_GREEN);
+    // Traffic Light: Change corresponding LED from AMBER to GREEN
+    // Use modulo 3 to map to one of the 3 traffic lights based on queue position
+    int ledNum = (queueSize % 3) + 1;  // Maps to 1, 2, or 3
+    setTrafficLight(ledNum, STATE_GREEN);
+    
+    if (ledNum == 1) {
         trafficLED1 = STATE_GREEN;
-        saveTrafficLightStates();
-    } else if (index == 1 && currentLetter == 1) { // 2 pressed after B
-        setTrafficLight(2, STATE_GREEN);
+    } else if (ledNum == 2) {
         trafficLED2 = STATE_GREEN;
-        saveTrafficLightStates();
-    } else if (index == 2 && currentLetter == 2) { // 3 pressed after C
-        setTrafficLight(3, STATE_GREEN);
+    } else if (ledNum == 3) {
         trafficLED3 = STATE_GREEN;
-        saveTrafficLightStates();
     }
+    saveTrafficLightStates();
 
     // Add to queue
     if (queueSize < MAX_QUEUE)
@@ -1142,8 +1138,8 @@ void setTrafficLight(int ledNum, TrafficState state)
 // Function to return traffic light to RED after song finishes
 void returnTrafficLightToRed(int queueIndex)
 {
-    // Determine which traffic light to reset based on the song that just finished
-    // Traffic lights are mapped to specific song combinations: A1=LED1, B2=LED2, C3=LED3
+    // Determine which traffic light to reset based on queue position
+    // Use modulo 3 to map to one of the 3 traffic lights
     Serial.print("DEBUG returnTrafficLightToRed called with queueIndex=");
     Serial.println(queueIndex);
     
@@ -1161,25 +1157,23 @@ void returnTrafficLightToRed(int queueIndex)
         Serial.print(numberIndex);
         Serial.println(")");
         
-        // Reset traffic light based on letter+number combination
-        if (letterIndex == 0 && numberIndex == 0) { // A1
-            Serial.println("DEBUG Returning LED 1 to RED (A1)");
-            setTrafficLight(1, STATE_RED);
+        // Map queue position to traffic light using modulo 3
+        int ledNum = (queueIndex % 3) + 1;  // Maps to 1, 2, or 3
+        
+        Serial.print("DEBUG Returning LED ");
+        Serial.print(ledNum);
+        Serial.println(" to RED");
+        
+        setTrafficLight(ledNum, STATE_RED);
+        
+        if (ledNum == 1) {
             trafficLED1 = STATE_RED;
-            saveTrafficLightStates();
-        } else if (letterIndex == 1 && numberIndex == 1) { // B2
-            Serial.println("DEBUG Returning LED 2 to RED (B2)");
-            setTrafficLight(2, STATE_RED);
+        } else if (ledNum == 2) {
             trafficLED2 = STATE_RED;
-            saveTrafficLightStates();
-        } else if (letterIndex == 2 && numberIndex == 2) { // C3
-            Serial.println("DEBUG Returning LED 3 to RED (C3)");
-            setTrafficLight(3, STATE_RED);
+        } else if (ledNum == 3) {
             trafficLED3 = STATE_RED;
-            saveTrafficLightStates();
-        } else {
-            Serial.println("DEBUG No matching traffic light for this song combination");
         }
+        saveTrafficLightStates();
     } else {
         Serial.println("DEBUG Invalid queueIndex");
     }
