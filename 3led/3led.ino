@@ -939,6 +939,26 @@ void playSong(int letterIndex, int numberIndex, int queueIndex = -1)
             startLightShow();
         }
     }
+    
+    // Traffic Light: Change LED from GREEN to AMBER when song starts playing
+    if (queueIndex >= 0 && queueIndex < MAX_QUEUE) {
+        int ledNum = (queueIndex % 3) + 1;  // Maps to 1, 2, or 3
+        setTrafficLight(ledNum, STATE_AMBER);
+        
+        if (ledNum == 1) {
+            trafficLED1 = STATE_AMBER;
+        } else if (ledNum == 2) {
+            trafficLED2 = STATE_AMBER;
+        } else if (ledNum == 3) {
+            trafficLED3 = STATE_AMBER;
+        }
+        saveTrafficLightStates();
+        
+        Serial.print("Song playing: LED ");
+        Serial.print(ledNum);
+        Serial.println(" changed to AMBER");
+    }
+    
     // Store the currently playing song
     lastPlayedLetter = letterIndex;
     lastPlayedNumber = numberIndex;
