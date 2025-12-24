@@ -26,6 +26,12 @@ enum TrafficState { STATE_RED, STATE_AMBER, STATE_GREEN };
 TrafficState trafficLED1 = STATE_RED;
 TrafficState trafficLED2 = STATE_RED;
 TrafficState trafficLED3 = STATE_RED;
+// Blinking green traffic light state
+bool trafficBlinking1 = false;
+bool trafficBlinking2 = false;
+bool trafficBlinking3 = false;
+unsigned long trafficBlinkStart = 0;
+bool trafficBlinkOn = true;
 int currentLetter = -1;
 int currentNumber = -1;
 int lastPlayedLetter = -1;
@@ -568,6 +574,30 @@ void loop()
                 digitalWrite(numberLEDs[i], ledsOn ? HIGH : LOW);
         }
     }
+    
+    // Blink green traffic lights during play
+    if (trafficBlinking1 || trafficBlinking2 || trafficBlinking3)
+    {
+        if (millis() - trafficBlinkStart >= 500)  // 500ms blink interval
+        {
+            trafficBlinkStart = millis();
+            trafficBlinkOn = !trafficBlinkOn;
+            
+            // Update blinking traffic lights
+            if (trafficBlinking1)
+            {
+                digitalWrite(LED1_GREEN, trafficBlinkOn ? LOW : HIGH);
+            }
+            if (trafficBlinking2)
+            {
+                digitalWrite(LED2_GREEN, trafficBlinkOn ? LOW : HIGH);
+            }
+            if (trafficBlinking3)
+            {
+                digitalWrite(LED3_GREEN, trafficBlinkOn ? LOW : HIGH);
+            }
+        }
+    }
     else
     {
         // Update LED display only when actively playing and within valid bounds
@@ -940,23 +970,29 @@ void playSong(int letterIndex, int numberIndex, int queueIndex = -1)
         }
     }
     
-    // Traffic Light: Change LED from GREEN to AMBER when song starts playing
+    // Traffic Light: Change LED to blinking GREEN when song starts playing
     if (queueIndex >= 0 && queueIndex < MAX_QUEUE) {
         int ledNum = (queueIndex % 3) + 1;  // Maps to 1, 2, or 3
-        setTrafficLight(ledNum, STATE_AMBER);
+        setTrafficLight(ledNum, STATE_GREEN);
         
+        // Set blinking flags
+        trafficBlinkStart = millis();
+        trafficBlinkOn = true;
         if (ledNum == 1) {
-            trafficLED1 = STATE_AMBER;
+            trafficLED1 = STATE_GREEN;
+            trafficBlinking1 = true;
         } else if (ledNum == 2) {
-            trafficLED2 = STATE_AMBER;
+            trafficLED2 = STATE_GREEN;
+            trafficBlinking2 = true;
         } else if (ledNum == 3) {
-            trafficLED3 = STATE_AMBER;
+            trafficLED3 = STATE_GREEN;
+            trafficBlinking3 = true;
         }
         saveTrafficLightStates();
         
         Serial.print("Song playing: LED ");
         Serial.print(ledNum);
-        Serial.println(" changed to AMBER");
+        Serial.println(" changed to blinking GREEN");
     }
     
     // Store the currently playing song
@@ -1188,10 +1224,13 @@ void returnTrafficLightToRed(int queueIndex)
         
         if (ledNum == 1) {
             trafficLED1 = STATE_RED;
+            trafficBlinking1 = false;
         } else if (ledNum == 2) {
             trafficLED2 = STATE_RED;
+            trafficBlinking2 = false;
         } else if (ledNum == 3) {
             trafficLED3 = STATE_RED;
+            trafficBlinking3 = false;
         }
         saveTrafficLightStates();
     } else {
