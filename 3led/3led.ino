@@ -476,19 +476,46 @@ void loop()
         if (pressDuration > 1500)
         {
             Serial.println("Long letter press detected");
-            // Longpress: start continuous play from currently playing song
+            // Longpress: allow continuous play once a single selection exists
+            int seedLetter = -1;
+            int seedNumber = -1;
+
             if (play && lastPlayedLetter != -1 && lastPlayedNumber != -1)
             {
+                // Already playing: use the last played song as the seed
+                seedLetter = lastPlayedLetter;
+                seedNumber = lastPlayedNumber;
                 Serial.print("Starting continuous play from last played: ");
-                Serial.print(letters[lastPlayedLetter]);
-                Serial.println(lastPlayedNumber);
+            }
+            else if (!play && queueSize > 0)
+            {
+                // Not yet playing but we have at least one queued selection
+                seedLetter = queue[0].letter;
+                seedNumber = queue[0].number;
+                Serial.print("Starting continuous play from first queued: ");
+            }
+
+            if (seedLetter != -1 && seedNumber != -1)
+            {
+                int displayNumber = ((seedNumber + 1) % 10);
+                if (displayNumber == 0)
+                    displayNumber = 10;
+                Serial.print(letters[seedLetter]);
+                Serial.println(displayNumber);
                 delay(1000);
 
-                startContinuousPlay(lastPlayedLetter, lastPlayedNumber);
+                startContinuousPlay(seedLetter, seedNumber);
+                selectionModeEnabled = false;
+                EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 1);
+                if (pendingLetter != -1)
+                {
+                    digitalWrite(letterLEDs[pendingLetter], HIGH);
+                    pendingLetter = -1;
+                }
             }
             else
             {
-                Serial.println("Cannot start continuous play - no song playing");
+                Serial.println("Cannot start continuous play - no song ready");
             }
         }
         else if (pressDuration <= 1000 && millis() - lastLetterDebounce > debounceDelay)
@@ -1073,6 +1100,8 @@ void updateBuzzPopLeds()
 
 void startContinuousPlay(int letter, int number)
 {
+    bool wasPlaying = play;
+
     Serial.println("Starting continuous play from:");
     Serial.print("Letter: ");
     Serial.println(letters[letter]);
@@ -1085,6 +1114,16 @@ void startContinuousPlay(int letter, int number)
     contLetter = letter;
     contNumber = number;
     play = true;
+
+    // Exit selection mode as soon as continuous play is requested
+    selectionModeEnabled = false;
+    EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 1);
+    if (pendingLetter != -1)
+    {
+        digitalWrite(letterLEDs[pendingLetter], HIGH);
+        pendingLetter = -1;
+    }
+    selectionCount = 0;
 
     // Clear the queue when starting continuous play
     queueSize = 0;
@@ -1102,8 +1141,8 @@ void startContinuousPlay(int letter, int number)
     EEPROM.write(EEPROM_QUEUE_SIZE_ADDR, 0);
     EEPROM.write(EEPROM_CURRENT_PLAYING_ADDR, 0);
 
-    // Only reset if not already playing (to avoid restarting current song)
-    if (!play)
+    // Only reset if we were not already playing (to kick off playback immediately)
+    if (!wasPlaying)
     {
         // Reset to play the song
         EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
