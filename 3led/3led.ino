@@ -464,7 +464,8 @@ void loop()
     }
 
     // Handle letter press for longpress detection
-    if (letterPressed != -1 && !isLetterPressed)
+    // Block button processing when a song is playing (except continuous mode longpress)
+    if (letterPressed != -1 && !isLetterPressed && !play)
     {
         isLetterPressed = true;
         currentPressedLetter = letterPressed;
@@ -518,7 +519,7 @@ void loop()
                 Serial.println("Cannot start continuous play - no song ready");
             }
         }
-        else if (pressDuration <= 1000 && millis() - lastLetterDebounce > debounceDelay)
+        else if (pressDuration <= 1000 && millis() - lastLetterDebounce > debounceDelay && !play)
         {
             lastLetterDebounce = millis();
             handleLetterPress(currentPressedLetter);
@@ -527,7 +528,7 @@ void loop()
         currentPressedLetter = -1;
     }
 
-    if (numberPressed != -1 && millis() - lastNumberDebounce > debounceDelay)
+    if (numberPressed != -1 && millis() - lastNumberDebounce > debounceDelay && !play)
     {
         lastNumberDebounce = millis();
         handleNumberPress(numberPressed);
