@@ -95,7 +95,12 @@ struct Song
     int letter;
     int number;
 };
-
+const int inhibitPin = 52; // Pin connected to Nayax inhibit wire
+bool inhibitActive = false;
+const int interruptPin = A2; // Using pin 2 for interrupt (can be changed)
+int swipeCounter = 0;
+int missCounter = 0;
+bool swiped = false;
 // Forward declarations
 void playSong(int letterIndex, int numberIndex, int queueIndex = -1);
 void setTrafficLight(int ledNum, TrafficState state);
@@ -143,6 +148,10 @@ const unsigned long debounceDelay = 50;
 #define EEPROM_TRAFFIC_LED1_ADDR 21
 #define EEPROM_TRAFFIC_LED2_ADDR 22
 #define EEPROM_TRAFFIC_LED3_ADDR 23
+// EEPROM address to persist Nayax inhibit state (1 = inhibit active)
+#define EEPROM_INHIBIT_STATE_ADDR 24
+// EEPROM address to persist card swipe state (1 = swiped)
+#define EEPROM_SWIPED_FLAG_ADDR 25
 
 // Reset function
 void (*resetFunc)(void) = 0;
@@ -177,7 +186,8 @@ void loadQueue()
 
 void clearEEPROM()
 {
-    for (int i = 0; i < 24; i++)
+    // Clear all relevant EEPROM addresses on hardware reset
+    for (int i = 0; i < 26; i++)
     {
         EEPROM.write(i, 0);
     }
@@ -202,6 +212,23 @@ void loadTrafficLightStates()
     setTrafficLight(3, trafficLED3);
     
     Serial.println("Traffic light states restored from EEPROM");
+}
+
+// Add this function to control the inhibit
+void setInhibit(bool enable)
+{
+    if (enable)
+    {
+        digitalWrite(inhibitPin, HIGH); // Pull to 5v to activate inhibit
+        inhibitActive = true;
+        Serial.println("Nayax inhibit ACTIVATED - card swipes disabled");
+    }
+    else
+    {
+        digitalWrite(inhibitPin, LOW); // Release to gndV to disable inhibit
+        inhibitActive = false;
+        Serial.println("Nayax inhibit DEACTIVATED - card swipes enabled");
+    }
 }
 
 void setup()
@@ -236,6 +263,9 @@ void setup()
     pinMode(popLedPin, OUTPUT);
     digitalWrite(popLedPin, LOW);
 
+    // Initialize Nayax inhibit control pin
+    pinMode(inhibitPin, OUTPUT);
+
     // Initialize Traffic Light LEDs
     pinMode(LED1_RED, OUTPUT);
     pinMode(LED1_AMBER, OUTPUT);
@@ -246,7 +276,11 @@ void setup()
     pinMode(LED3_RED, OUTPUT);
     pinMode(LED3_AMBER, OUTPUT);
     pinMode(LED3_GREEN, OUTPUT);
-    
+    pinMode(interruptPin, INPUT);
+    // Initialize inhibit pin
+    pinMode(inhibitPin, OUTPUT);
+    digitalWrite(inhibitPin, LOW); // Start with inhibit disabled (0v)
+    Serial.println("inhibit started with disabled");
     // Check reset flag
     int resetFlag = EEPROM.read(EEPROM_RESET_FLAG_ADDR);
     if (resetFlag == 1)
@@ -290,6 +324,14 @@ void setup()
         }
         mp3.setTimeOut(50); // Set timeout to prevent hangs
         mp3.volume(30);     // Set volume
+    }
+
+    // Restore persisted inhibit/swipe states across software resets
+    {
+        int inhibitVal = EEPROM.read(EEPROM_INHIBIT_STATE_ADDR);
+        setInhibit(inhibitVal == 1);
+        int swipedVal = EEPROM.read(EEPROM_SWIPED_FLAG_ADDR);
+        swiped = (swipedVal == 1);
     }
 
     // Load persisted selection mode state (1 = enabled, 0 = disabled)
@@ -405,6 +447,42 @@ void setup()
 
 void loop()
 {
+     while (!swiped)
+    {
+        int pinValue = analogRead(interruptPin);
+        Serial.print("pin value = ");
+        Serial.println(pinValue);
+        delay(500);
+
+        if (pinValue <= 0)
+        {
+            swipeCounter++;
+            missCounter = 0; // reset misses since we got a valid read
+
+            if (swipeCounter >= 1)
+            {
+                Serial.println("card SWIPING OCCURRED now on pin");
+                Serial.print("pin value = ");
+                Serial.println(pinValue);
+                delay(500);
+                swiped = true;
+                EEPROM.write(EEPROM_SWIPED_FLAG_ADDR, 1);
+                break;
+            }
+        }
+        else
+        {
+            missCounter++;
+            if (missCounter >= 10)
+            {
+                // Serial.println("Too many invalid reads. Resetting swipeCounter.");
+                swipeCounter = 0;
+                missCounter = 0;
+            }
+        }
+    }
+    if (swiped)
+    {
     int letterPressed = getPressedKey(letterPins, NUM_LETTERS);
     int numberPressed = getPressedKey(numberPins, NUM_NUMBERS);
 
@@ -572,6 +650,11 @@ void loop()
                 play = false;
                 saveQueue();
                 EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
+                // Disable Nayax inhibit and clear swipe for next round
+                setInhibit(false);
+                EEPROM.write(EEPROM_INHIBIT_STATE_ADDR, 0);
+                EEPROM.write(EEPROM_SWIPED_FLAG_ADDR, 0);
+                swiped = false;
                 lightAllLEDs();
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
                 delay(500);
@@ -694,6 +777,12 @@ void loop()
                     EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
                     lightAllLEDs();
                     
+                    // Disable Nayax inhibit and clear swipe for next round
+                    setInhibit(false);
+                    EEPROM.write(EEPROM_INHIBIT_STATE_ADDR, 0);
+                    EEPROM.write(EEPROM_SWIPED_FLAG_ADDR, 0);
+                    swiped = false;
+
                     // Reset all traffic lights to RED for next round
                     setTrafficLight(1, STATE_RED);
                     setTrafficLight(2, STATE_RED);
@@ -765,6 +854,7 @@ void loop()
         delay(500);
         resetFunc();
     }
+}
 }
 
 void showLed(int letterIndex, int numberIndex)
@@ -985,6 +1075,9 @@ void playSong(int letterIndex, int numberIndex, int queueIndex = -1)
     Serial.print(queueIndex);
     Serial.print(", currentPlaying=");
     Serial.println(currentPlaying);
+    // Activate Nayax inhibit while any song is playing and persist
+    setInhibit(true);
+    EEPROM.write(EEPROM_INHIBIT_STATE_ADDR, 1);
     // Determine whether to trigger the 7s light show for this playback.
     // If `queueIndex` is provided (0-based index into the queued songs), trigger show
     // for the 2nd or 3rd queued song (indices 1 and 2).
@@ -1125,6 +1218,10 @@ void startContinuousPlay(int letter, int number)
         pendingLetter = -1;
     }
     selectionCount = 0;
+
+    // Activate Nayax inhibit and persist before reset so it survives
+    setInhibit(true);
+    EEPROM.write(EEPROM_INHIBIT_STATE_ADDR, 1);
 
     // Clear the queue when starting continuous play
     queueSize = 0;
