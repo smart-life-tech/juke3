@@ -314,6 +314,16 @@ void setup()
         trafficLED1 = STATE_RED;
         trafficLED2 = STATE_RED;
         trafficLED3 = STATE_RED;
+        
+        // Ensure variables are in initial state for hardware reset
+        play = false;
+        queueSize = 0;
+        currentPlaying = 0;
+        selectionCount = 0;
+        pendingLetter = -1;
+        continuousPlay = false;
+        beckonPlaying = false;
+        
         delay(1000);
         if (!mp3.begin(mp3Serial, true, true))
         {
@@ -329,9 +339,20 @@ void setup()
     // Restore persisted inhibit/swipe states across software resets
     {
         int inhibitVal = EEPROM.read(EEPROM_INHIBIT_STATE_ADDR);
-        setInhibit(inhibitVal == 1);
         int swipedVal = EEPROM.read(EEPROM_SWIPED_FLAG_ADDR);
         swiped = (swipedVal == 1);
+        
+        // Only restore inhibit if we're actually in a playing state
+        // Otherwise, clear inhibit to allow new card swipes
+        if (!play && queueSize == 0 && currentPlaying == 0) {
+            Serial.println("Not in play state - clearing inhibit regardless of EEPROM value");
+            setInhibit(false);
+            EEPROM.write(EEPROM_INHIBIT_STATE_ADDR, 0);
+        } else {
+            setInhibit(inhibitVal == 1);
+            Serial.print("Restored inhibit from EEPROM: ");
+            Serial.println(inhibitVal == 1 ? "ACTIVE" : "INACTIVE");
+        }
     }
 
     // Load persisted selection mode state (1 = enabled, 0 = disabled)
@@ -342,6 +363,12 @@ void setup()
         selectionModeEnabled = false;
     else
         selectionModeEnabled = true;
+    
+    Serial.print("Selection mode loaded: ");
+    Serial.print(selectionModeEnabled ? "ENABLED" : "DISABLED");
+    Serial.print(" (EEPROM value: ");
+    Serial.print(selModeVal);
+    Serial.println(")");
 
     // Check beckon flag
     int beckonFlag = EEPROM.read(EEPROM_BECKON_FLAG_ADDR);
@@ -433,7 +460,13 @@ void setup()
     Serial.print("DEBUG: queueSize=");
     Serial.print(queueSize);
     Serial.print(", currentPlaying=");
-    Serial.println(currentPlaying);
+    Serial.print(currentPlaying);
+    Serial.print(", play=");
+    Serial.print(play);
+    Serial.print(", selectionMode=");
+    Serial.print(selectionModeEnabled);
+    Serial.print(", continuousPlay=");
+    Serial.println(continuousPlay);
     for (int i = 0; i < queueSize; i++)
     {
         Serial.print("DEBUG: queue[");
@@ -467,6 +500,20 @@ void loop()
                 delay(500);
                 swiped = true;
                 EEPROM.write(EEPROM_SWIPED_FLAG_ADDR, 1);
+                
+                // Ensure selection mode is enabled after card swipe
+                selectionModeEnabled = true;
+                selectionCount = 0;
+                pendingLetter = -1;
+                play = false;
+                Serial.println("Selection mode ENABLED after card swipe");
+                Serial.print("DEBUG: play = ");
+                Serial.print(play);
+                Serial.print(", selectionModeEnabled = ");
+                Serial.print(selectionModeEnabled);
+                Serial.print(", queueSize = ");
+                Serial.println(queueSize);
+                
                 break;
             }
         }
@@ -485,6 +532,24 @@ void loop()
     {
     int letterPressed = getPressedKey(letterPins, NUM_LETTERS);
     int numberPressed = getPressedKey(numberPins, NUM_NUMBERS);
+    
+    // Debug: show button states
+    if (letterPressed != -1) {
+        Serial.print("DEBUG: Letter button pressed: ");
+        Serial.print(letters[letterPressed]);
+        Serial.print(", play=");
+        Serial.print(play);
+        Serial.print(", selectionMode=");
+        Serial.println(selectionModeEnabled);
+    }
+    if (numberPressed != -1) {
+        Serial.print("DEBUG: Number button pressed: ");
+        Serial.print(numberPressed);
+        Serial.print(", play=");
+        Serial.print(play);
+        Serial.print(", currentLetter=");
+        Serial.println(currentLetter);
+    }
 
     // If a light show is running, drive chaser frames and skip selection/playback updates
     if (lightShowRunning)
