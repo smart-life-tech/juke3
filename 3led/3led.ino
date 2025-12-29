@@ -89,6 +89,8 @@ SoftwareSerial mp3Serial(16, 17); // RX, TX
 DFRobotDFPlayerMini mp3;
 int oldPlay = -1;
 char letters[NUM_LETTERS] = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K'};
+// Debug flag to reduce noisy Serial output
+const bool DEBUG = false;
 
 struct Song
 {
@@ -101,6 +103,9 @@ const int interruptPin = A2; // Using pin 2 for interrupt (can be changed)
 int swipeCounter = 0;
 int missCounter = 0;
 bool swiped = false;
+// Lockout state: when a swipe occurs after long inactivity, play beckon immediately
+// and prevent selections until user resets the board.
+bool swipeLockoutActive = false;
 // Forward declarations
 void playSong(int letterIndex, int numberIndex, int queueIndex = -1);
 void setTrafficLight(int ledNum, TrafficState state);
@@ -483,8 +488,10 @@ void loop()
      while (!swiped)
     {
         int pinValue = analogRead(interruptPin);
-        Serial.print("pin value = ");
-        Serial.println(pinValue);
+        // if (DEBUG) {
+        //     Serial.print("pin value = ");
+        //     Serial.println(pinValue);
+        // }
         delay(500);
 
         if (pinValue <= 0)
@@ -495,26 +502,65 @@ void loop()
             if (swipeCounter >= 1)
             {
                 Serial.println("card SWIPING OCCURRED now on pin");
-                Serial.print("pin value = ");
-                Serial.println(pinValue);
+                if (DEBUG) {
+                    Serial.print("pin value = ");
+                    Serial.println(pinValue);
+                }
                 delay(500);
                 swiped = true;
                 EEPROM.write(EEPROM_SWIPED_FLAG_ADDR, 1);
                 
-                // Ensure selection mode is enabled after card swipe
-                selectionModeEnabled = true;
-                selectionCount = 0;
-                pendingLetter = -1;
-                play = false;
-                Serial.println("Selection mode ENABLED after card swipe");
-                Serial.print("DEBUG: play = ");
-                Serial.print(play);
-                Serial.print(", selectionModeEnabled = ");
-                Serial.print(selectionModeEnabled);
-                Serial.print(", queueSize = ");
-                Serial.println(queueSize);
-                
-                break;
+                // If inactivity exceeded the beckon interval, immediately play next beckon
+                bool inactivityExceeded = (millis() - lastActivityTime >= beckonInterval);
+                if (inactivityExceeded && !play && !continuousPlay)
+                {
+                    Serial.println("Swipe after inactivity: starting next beckon immediately and locking selections.");
+                    // Determine next beckon track from EEPROM_BECKON_NUMBER_PLAYING
+                    int bIndex = EEPROM.read(EEPROM_BECKON_NUMBER_PLAYING);
+                    if (bIndex > 254) {
+                        bIndex = 0;
+                        EEPROM.write(EEPROM_BECKON_NUMBER_PLAYING, 0);
+                    }
+                    int bLetter = bIndex / 10;
+                    int bNumber = bIndex % 10;
+                    // Advance beckon index for next time
+                    int nextIndex = (bIndex + 1) % 100;
+                    EEPROM.write(EEPROM_BECKON_NUMBER_PLAYING, nextIndex);
+
+                    // Start beckon playback now
+                    playSong(bLetter, bNumber);
+                    play = true;
+                    beckonPlaying = true;
+                    lastBeckonTime = millis();
+                    // Disable selection inputs until reset
+                    swipeLockoutActive = true;
+                    selectionModeEnabled = false;
+                    // Do not persist selection disabled; user reset restores normal behavior
+                    if (pendingLetter != -1) {
+                        digitalWrite(letterLEDs[pendingLetter], HIGH);
+                        pendingLetter = -1;
+                    }
+                    // Exit swipe wait loop
+                    break;
+                }
+                else
+                {
+                    // Normal behavior: enable selection mode after card swipe
+                    selectionModeEnabled = true;
+                    selectionCount = 0;
+                    pendingLetter = -1;
+                    play = false;
+                    Serial.println("Selection mode ENABLED after card swipe");
+                    if (DEBUG) {
+                        Serial.print("DEBUG: play = ");
+                        Serial.print(play);
+                        Serial.print(", selectionModeEnabled = ");
+                        Serial.print(selectionModeEnabled);
+                        Serial.print(", queueSize = ");
+                        Serial.println(queueSize);
+                    }
+                    break;
+                }
             }
         }
         else
@@ -608,7 +654,8 @@ void loop()
 
     // Handle letter press for longpress detection
     // Block button processing when a song is playing (except continuous mode longpress)
-    if (letterPressed != -1 && !isLetterPressed && !play)
+    // Block letter processing while lockout is active
+    if (letterPressed != -1 && !isLetterPressed && !play && !swipeLockoutActive)
     {
         isLetterPressed = true;
         currentPressedLetter = letterPressed;
@@ -662,7 +709,7 @@ void loop()
                 Serial.println("Cannot start continuous play - no song ready");
             }
         }
-        else if (pressDuration <= 1000 && millis() - lastLetterDebounce > debounceDelay && !play)
+        else if (pressDuration <= 1000 && millis() - lastLetterDebounce > debounceDelay && !play && !swipeLockoutActive)
         {
             lastLetterDebounce = millis();
             handleLetterPress(currentPressedLetter);
@@ -671,7 +718,8 @@ void loop()
         currentPressedLetter = -1;
     }
 
-    if (numberPressed != -1 && millis() - lastNumberDebounce > debounceDelay && !play)
+    // Block number processing while lockout is active
+    if (numberPressed != -1 && millis() - lastNumberDebounce > debounceDelay && !play && !swipeLockoutActive)
     {
         lastNumberDebounce = millis();
         handleNumberPress(numberPressed);
@@ -681,7 +729,7 @@ void loop()
     if (digitalRead(skipPin) == LOW && millis() - lastSkipDebounce > debounceDelay)
     {
         lastSkipDebounce = millis();
-        if (!continuousPlay && play && currentPlaying <= queueSize)
+        if (!swipeLockoutActive && !continuousPlay && play && currentPlaying <= queueSize)
         {
             Serial.println("Skipping to next song now.");
             Serial.print("Current playing: ");
@@ -726,7 +774,7 @@ void loop()
                 resetFunc();
             }
         }
-        else if (continuousPlay)
+        else if (!swipeLockoutActive && continuousPlay)
         {
             Serial.println("Skipping to next song in continuous mode.");
             playNextContinuous();
