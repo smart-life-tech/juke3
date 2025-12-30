@@ -459,7 +459,11 @@ void setup()
     // queueSize = 0;
     // currentPlaying = 0;
 
-    Serial.println("Code 3 led Ready! 1");
+    // Initialize activity timestamps to prevent false lockout on first swipe
+    lastActivityTime = millis();
+    lastBeckonTime = millis();
+
+    Serial.println("Code 3 led Ready! v1.5");
 
     // Debug: print queue and playback state on startup
     Serial.print("DEBUG: queueSize=");
@@ -487,6 +491,35 @@ void loop()
 {
      while (!swiped)
     {
+        // Check if it's time to play a beckon song (every 8 minutes while idle)
+        if (!play && !continuousPlay && digitalRead(busyPin) == HIGH && 
+            millis() - lastBeckonTime >= beckonInterval && 
+            millis() - lastActivityTime >= beckonInterval)
+        {
+            Serial.println("Beckon: Playing beckon song after 8 minutes idle.");
+            beckonIndex = EEPROM.read(EEPROM_BECKON_NUMBER_PLAYING);
+            if (beckonIndex > 254) {
+                beckonIndex = 0;
+                EEPROM.write(EEPROM_BECKON_NUMBER_PLAYING, 0);
+            }
+            int bLetter = beckonIndex / 10;
+            int bNumber = beckonIndex % 10;
+            
+            // Play this beckon track via reset
+            EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 1);
+            EEPROM.write(EEPROM_BECKON_LETTER_ADDR, bLetter);
+            EEPROM.write(EEPROM_BECKON_NUMBER_ADDR, bNumber);
+            EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+            
+            // Advance beckon index for next time
+            beckonIndex = (beckonIndex + 1) % 100;
+            EEPROM.write(EEPROM_BECKON_NUMBER_PLAYING, beckonIndex);
+            
+            lastBeckonTime = millis();
+            delay(500);
+            resetFunc();
+        }
+        
         int pinValue = analogRead(interruptPin);
         // if (DEBUG) {
         //     Serial.print("pin value = ");
