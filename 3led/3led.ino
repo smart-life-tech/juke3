@@ -107,7 +107,7 @@ bool swiped = false;
 // and prevent selections until user resets the board.
 bool swipeLockoutActive = false;
 // Forward declarations
-void playSong(int letterIndex, int numberIndex, int queueIndex = -1);
+void playSong(int letterIndex, int numberIndex, int queueIndex = -1, bool isBeckon = false);
 void setTrafficLight(int ledNum, TrafficState state);
 void returnTrafficLightToRed(int queueIndex);
 void startLightShow();
@@ -383,7 +383,8 @@ void setup()
         int beckonLetter = EEPROM.read(EEPROM_BECKON_LETTER_ADDR);
         int beckonNumber = EEPROM.read(EEPROM_BECKON_NUMBER_ADDR);
         Serial.println("Beckon reset detected, playing beckon song.");
-        playSong(beckonLetter, beckonNumber);
+        // Indicate this is a beckon playback so we do NOT enable Nayax inhibit
+        playSong(beckonLetter, beckonNumber, -1, true);
         beckonPlaying = true;
         play = true;
         EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 0);
@@ -560,11 +561,11 @@ void loop()
                     int nextIndex = (bIndex + 1) % 100;
                     EEPROM.write(EEPROM_BECKON_NUMBER_PLAYING, nextIndex);
 
-                    // Start beckon playback now
-                    playSong(bLetter, bNumber);
-                    play = true;
-                    beckonPlaying = true;
-                    lastBeckonTime = millis();
+                        // Start beckon playback now; mark as beckon so swipes are allowed
+                        playSong(bLetter, bNumber, -1, true);
+                        play = true;
+                        beckonPlaying = true;
+                        lastBeckonTime = millis();
                     // Disable selection inputs until reset
                     swipeLockoutActive = true;
                     selectionModeEnabled = false;
@@ -1214,16 +1215,24 @@ void startLightShow()
         digitalWrite(allLEDs[i], LOW);
 }
 
-void playSong(int letterIndex, int numberIndex, int queueIndex = -1)
+void playSong(int letterIndex, int numberIndex, int queueIndex = -1, bool isBeckon = false)
 {
     // Debug: print when playSong is called with index information
     Serial.print("DEBUG playSong called. queueIndex=");
     Serial.print(queueIndex);
     Serial.print(", currentPlaying=");
     Serial.println(currentPlaying);
-    // Activate Nayax inhibit while any song is playing and persist
-    setInhibit(true);
-    EEPROM.write(EEPROM_INHIBIT_STATE_ADDR, 1);
+    // For normal playback activate Nayax inhibit so card/swipes are blocked while playing.
+    // For beckon playback, keep inhibit disabled so swipes are allowed during the beckon song.
+    if (!isBeckon) {
+        setInhibit(true);
+        EEPROM.write(EEPROM_INHIBIT_STATE_ADDR, 1);
+    } else {
+        // Ensure inhibit is disabled for beckon playback to allow swipes
+        setInhibit(false);
+        EEPROM.write(EEPROM_INHIBIT_STATE_ADDR, 0);
+        Serial.println("Beckon playback: Nayax inhibit left DISABLED to allow swipes");
+    }
     // Determine whether to trigger the 7s light show for this playback.
     // If `queueIndex` is provided (0-based index into the queued songs), trigger show
     // for the 2nd or 3rd queued song (indices 1 and 2).
