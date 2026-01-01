@@ -566,15 +566,10 @@ void loop()
                         play = true;
                         beckonPlaying = true;
                         lastBeckonTime = millis();
-                    // Disable selection inputs until reset
-                    swipeLockoutActive = true;
-                    selectionModeEnabled = false;
-                    // Do not persist selection disabled; user reset restores normal behavior
-                    if (pendingLetter != -1) {
-                        digitalWrite(letterLEDs[pendingLetter], HIGH);
-                        pendingLetter = -1;
-                    }
-                    // Exit swipe wait loop
+                    // Allow selections during beckon playback; keep selection mode enabled
+                    selectionModeEnabled = true;
+                    swipeLockoutActive = false;
+                    // Exit swipe wait loop so selection input can proceed
                     break;
                 }
                 else
@@ -689,7 +684,7 @@ void loop()
     // Handle letter press for longpress detection
     // Block button processing when a song is playing (except continuous mode longpress)
     // Block letter processing while lockout is active
-    if (letterPressed != -1 && !isLetterPressed && !play && !swipeLockoutActive)
+    if (letterPressed != -1 && !isLetterPressed && (!play || beckonPlaying) && !swipeLockoutActive)
     {
         isLetterPressed = true;
         currentPressedLetter = letterPressed;
@@ -743,7 +738,7 @@ void loop()
                 Serial.println("Cannot start continuous play - no song ready");
             }
         }
-        else if (pressDuration <= 1000 && millis() - lastLetterDebounce > debounceDelay && !play && !swipeLockoutActive)
+        else if (pressDuration <= 1000 && millis() - lastLetterDebounce > debounceDelay && (!play || beckonPlaying) && !swipeLockoutActive)
         {
             lastLetterDebounce = millis();
             handleLetterPress(currentPressedLetter);
@@ -753,7 +748,7 @@ void loop()
     }
 
     // Block number processing while lockout is active
-    if (numberPressed != -1 && millis() - lastNumberDebounce > debounceDelay && !play && !swipeLockoutActive)
+    if (numberPressed != -1 && millis() - lastNumberDebounce > debounceDelay && (!play || beckonPlaying) && !swipeLockoutActive)
     {
         lastNumberDebounce = millis();
         handleNumberPress(numberPressed);
