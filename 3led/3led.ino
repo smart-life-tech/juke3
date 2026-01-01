@@ -454,7 +454,8 @@ void setup()
                 {
                     playSong(queue[resumeIndex].letter, queue[resumeIndex].number, resumeIndex);
                     play = true;
-                    currentPlaying++;
+                    // Do NOT increment currentPlaying here - it's already correct from EEPROM
+                    // and will be incremented when the song finishes
                     saveQueue(); // Save after resuming
                     delay(500);  // brief delay to allow mp3 module to start
                 }
@@ -762,7 +763,7 @@ void loop()
     if (digitalRead(skipPin) == LOW && millis() - lastSkipDebounce > debounceDelay)
     {
         lastSkipDebounce = millis();
-        if (!swipeLockoutActive && !continuousPlay && play && currentPlaying <= queueSize && !beckonPlaying)
+        if (!swipeLockoutActive && !continuousPlay && play && currentPlaying < queueSize && !beckonPlaying)
         {
             Serial.println("Skipping to next song now.");
             Serial.print("Current playing: ");
@@ -862,7 +863,7 @@ void loop()
         {
             // currentPlaying is 1-indexed during playback, so subtract 1 for array access
             int playingIndex = currentPlaying - 1;
-            if (playingIndex >= 0 && playingIndex < MAX_QUEUE)
+            if (playingIndex >= 0 && playingIndex < queueSize)
             {
                 showLed(queue[playingIndex].letter, queue[playingIndex].number);
             }
@@ -1016,8 +1017,8 @@ void showLed(int letterIndex, int numberIndex)
         return;
     }
 
-    // When queue is full and playing, show only the current song's LEDs
-    if (queueSize == 3 && play)
+    // When playing, show only the current song's LEDs
+    if (play && queueSize > 0)
     {
         oldPlay = currentPlaying;
         // Turn off all LEDs
@@ -1036,7 +1037,7 @@ void showLed(int letterIndex, int numberIndex)
     }
     else
     {
-        // Reset LEDs when not playing or queue not full
+        // Reset LEDs when not playing
         for (int i = 0; i < NUM_LETTERS; i++)
             digitalWrite(letterLEDs[i], HIGH);
         for (int i = 0; i < NUM_NUMBERS; i++)
