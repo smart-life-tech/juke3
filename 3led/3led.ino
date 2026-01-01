@@ -464,7 +464,7 @@ void setup()
     lastActivityTime = millis();
     lastBeckonTime = millis();
 
-    Serial.println("Code 3 led Ready! v1.5");
+    Serial.println("Code 3 led Ready! v1.59");
 
     // Debug: print queue and playback state on startup
     Serial.print("DEBUG: queueSize=");
@@ -758,7 +758,7 @@ void loop()
     if (digitalRead(skipPin) == LOW && millis() - lastSkipDebounce > debounceDelay)
     {
         lastSkipDebounce = millis();
-        if (!swipeLockoutActive && !continuousPlay && play && currentPlaying <= queueSize)
+        if (!swipeLockoutActive && !continuousPlay && play && currentPlaying <= queueSize && !beckonPlaying)
         {
             Serial.println("Skipping to next song now.");
             Serial.print("Current playing: ");
@@ -1166,6 +1166,8 @@ void handleNumberPress(int index)
                 EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 0);
                 //mp3.stop();
             }
+            // Clear beckonPlaying before reset so queued songs play normally
+            beckonPlaying = false;
             // Start the light show (non-blocking)
             startLightShow();
             // Board requires reset before playback to avoid freeze: request lightshow+play on next boot
