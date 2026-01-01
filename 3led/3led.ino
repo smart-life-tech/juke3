@@ -490,7 +490,7 @@ void setup()
 
 void loop()
 {
-     while (!swiped)
+     while (!swiped && !beckonPlaying)
     {
         // Check if it's time to play a beckon song (every 8 minutes while idle)
         if (!play && !continuousPlay && digitalRead(busyPin) == HIGH && 
@@ -1159,6 +1159,13 @@ void handleNumberPress(int index)
             // Persist selection mode disabled so it survives reset cycles between songs
             EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 1);
             Serial.println("Selection mode complete (3 selections). Starting light show and starting playback.");
+            // If a beckon was playing, stop it now and clear beckon state
+            if (beckonPlaying) {
+                Serial.println("Stopping beckon playback to start queued songs.");
+                beckonPlaying = false;
+                EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 0);
+                //mp3.stop();
+            }
             // Start the light show (non-blocking)
             startLightShow();
             // Board requires reset before playback to avoid freeze: request lightshow+play on next boot
@@ -1180,6 +1187,12 @@ void handleNumberPress(int index)
     if (!selectionModeEnabled && queueSize >= 3 && currentPlaying == 0)
     {
         Serial.println("Starting playback from queue after selection.");
+        // If a beckon was playing, stop it now
+        if (beckonPlaying) {
+            Serial.println("Stopping beckon playback to start queued songs.");
+            beckonPlaying = false;
+            //mp3.stop();
+        }
         play = true;
         mp3Serial.flush();
         mp3Serial.end();
