@@ -64,7 +64,7 @@ unsigned long lastBeckonTime = 0;
 unsigned long lastActivityTime = 0;
 int beckonIndex = 0;
 bool beckonPlaying = false;
-const unsigned long beckonInterval = 480000; // 8 minutes
+const unsigned long beckonInterval = 20000; // 8 minutes 480
 // Selection mode state
 bool selectionModeEnabled = true;
 int selectionCount = 0;
@@ -603,7 +603,7 @@ void loop()
             }
         }
     }
-    if (swiped)
+    if (swiped || beckonPlaying)
     {
     int letterPressed = getPressedKey(letterPins, NUM_LETTERS);
     int numberPressed = getPressedKey(numberPins, NUM_NUMBERS);
