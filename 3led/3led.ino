@@ -431,6 +431,10 @@ void setup()
                     delay(500);
                 }
             }
+            // After lightshow-on-next, ensure play is properly set for next check
+            if (currentPlaying == 0) {
+                play = false;
+            }
             if (currentPlaying > queueSize)
             {
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
@@ -1175,6 +1179,7 @@ void handleNumberPress(int index)
             {
                 EEPROM.write(EEPROM_LIGHTSHOW_NEXT_ADDR, 1);
                 EEPROM.write(EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR, 0);
+                EEPROM.write(EEPROM_CURRENT_PLAYING_ADDR, 0);  // Explicitly set currentPlaying to 0
                 saveQueue();
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
                 delay(200);
