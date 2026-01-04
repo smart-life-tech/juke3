@@ -431,10 +431,6 @@ void setup()
                     delay(500);
                 }
             }
-            // After lightshow-on-next, ensure play is properly set for next check
-            if (currentPlaying == 0) {
-                play = false;
-            }
             if (currentPlaying > queueSize)
             {
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
@@ -454,8 +450,7 @@ void setup()
                 {
                     playSong(queue[resumeIndex].letter, queue[resumeIndex].number, resumeIndex);
                     play = true;
-                    // Do NOT increment currentPlaying here - it's already correct from EEPROM
-                    // and will be incremented when the song finishes
+                    // currentPlaying stays at its current value - it will be incremented when song finishes
                     saveQueue(); // Save after resuming
                     delay(500);  // brief delay to allow mp3 module to start
                 }
@@ -763,7 +758,7 @@ void loop()
     if (digitalRead(skipPin) == LOW && millis() - lastSkipDebounce > debounceDelay)
     {
         lastSkipDebounce = millis();
-        if (!swipeLockoutActive && !continuousPlay && play && currentPlaying < queueSize && !beckonPlaying)
+        if (!swipeLockoutActive && !continuousPlay && play && currentPlaying <= queueSize)
         {
             Serial.println("Skipping to next song now.");
             Serial.print("Current playing: ");
@@ -813,6 +808,14 @@ void loop()
             Serial.println("Skipping to next song in continuous mode.");
             playNextContinuous();
         }
+        else if (beckonPlaying)
+        {
+            Serial.println("Skip during beckon: ending beckon playback.");
+            beckonPlaying = false;
+            play = false;
+            mp3.stop();
+            lightAllLEDs();
+        }
     }
 
     // Update buzz/pop LEDs
@@ -859,7 +862,7 @@ void loop()
     else
     {
         // Update LED display only when actively playing and within valid bounds
-        if (play && currentPlaying > 0 && currentPlaying <= queueSize)
+        if (play && !beckonPlaying && currentPlaying > 0 && currentPlaying <= queueSize)
         {
             // currentPlaying is 1-indexed during playback, so subtract 1 for array access
             int playingIndex = currentPlaying - 1;
@@ -877,11 +880,24 @@ void loop()
         //  Move to next song in queue
         if (donePlaying && play)
         {
-            if (!continuousPlay)
+            if (beckonPlaying)
+            {
+                // Beckon song finished - return to idle
+                Serial.println("Beckon song finished, returning to idle.");
+                beckonPlaying = false;
+                play = false;
+                lastBeckonTime = millis();
+                lightAllLEDs();
+            }
+            else if (!continuousPlay)
             {
                 Serial.println("Song done, current playing.");
                 Serial.println(currentPlaying);
                 Serial.println("Song done, moving to next in queue.");
+                Serial.println(queueSize);
+                Serial.print("DEBUG: currentPlaying=");
+                Serial.print(currentPlaying);
+                Serial.print(", queueSize=");
                 Serial.println(queueSize);
                 if (currentPlaying < queueSize)
                 {
@@ -896,6 +912,8 @@ void loop()
                     
                     // Increment currentPlaying now so it's ready for the next song
                     currentPlaying++;
+                    Serial.print("DEBUG: Incremented currentPlaying to ");
+                    Serial.println(currentPlaying);
                     saveQueue();
                     // Request lightshow on next resume for the next queued index, then reset
                     EEPROM.write(EEPROM_LIGHTSHOW_NEXT_ADDR, 1);
