@@ -421,6 +421,8 @@ void setup()
                 if (lsIndex >= 0 && lsIndex < MAX_QUEUE && lsIndex < queueSize)
                 {
                     // Start chaser and play the queued song immediately (they run together)
+                    // Ensure we are no longer in beckon mode before starting queued playback
+                    beckonPlaying = false;
                     startLightShow();
                     delay(150); // Brief delay to let lightshow begin before starting MP3
                     playSong(queue[lsIndex].letter, queue[lsIndex].number, lsIndex);
@@ -448,6 +450,8 @@ void setup()
                 int resumeIndex = currentPlaying - 1; // convert to 0-based for array access
                 if (resumeIndex >= 0 && resumeIndex < queueSize)
                 {
+                    // Ensure we are no longer in beckon mode before resuming queued playback
+                    beckonPlaying = false;
                     playSong(queue[resumeIndex].letter, queue[resumeIndex].number, resumeIndex);
                     play = true;
                     // currentPlaying stays at its current value - it will be incremented when song finishes
