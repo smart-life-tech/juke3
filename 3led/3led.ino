@@ -835,7 +835,7 @@ void loop()
             Serial.println("Skip during beckon: ending beckon playback.");
             beckonPlaying = false;
             play = false;
-            mp3.stop();
+            // Don't call mp3.stop() - will freeze hardware. Flag will stop playback on next reset.
             lightAllLEDs();
         }
     }
