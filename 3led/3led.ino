@@ -426,6 +426,24 @@ void setup()
                     startLightShow();
                     delay(150); // Brief delay to let lightshow begin before starting MP3
                     playSong(queue[lsIndex].letter, queue[lsIndex].number, lsIndex);
+                    
+                    // Set traffic light to blinking GREEN for this song
+                    int ledNum = (lsIndex % 3) + 1;
+                    setTrafficLight(ledNum, STATE_GREEN);
+                    trafficBlinkStart = millis();
+                    trafficBlinkOn = true;
+                    if (ledNum == 1) {
+                        trafficLED1 = STATE_GREEN;
+                        trafficBlinking1 = true;
+                    } else if (ledNum == 2) {
+                        trafficLED2 = STATE_GREEN;
+                        trafficBlinking2 = true;
+                    } else if (ledNum == 3) {
+                        trafficLED3 = STATE_GREEN;
+                        trafficBlinking3 = true;
+                    }
+                    saveTrafficLightStates();
+                    
                     play = true;
                     // Set currentPlaying to 1-based count for LED display logic (playingIndex = currentPlaying - 1)
                     currentPlaying = lsIndex + 1;
@@ -759,7 +777,7 @@ void loop()
     }
 
     // Check skip button
-    if (digitalRead(skipPin) == LOW && millis() - lastSkipDebounce > debounceDelay)
+    if (digitalRead(skipPin) == LOW && millis() - lastSkipDebounce > debounceDelay && !beckonPlaying)
     {
         lastSkipDebounce = millis();
         if (!swipeLockoutActive && !continuousPlay && play && currentPlaying <= queueSize)
@@ -873,6 +891,44 @@ void loop()
             if (playingIndex >= 0 && playingIndex < queueSize)
             {
                 showLed(queue[playingIndex].letter, queue[playingIndex].number);
+            }
+        }
+    }
+    
+    // Continue lightshow if it's running (non-blocking animation during playback)
+    if (lightShowRunning)
+    {
+        unsigned long now = millis();
+        if (now - lastLightShowStep >= lightShowStepDelay)
+        {
+            // turn all LEDs off
+            for (int i = 0; i < NUM_LETTERS + NUM_NUMBERS; i++)
+                digitalWrite(allLEDs[i], LOW);
+
+            // light the current index
+            digitalWrite(allLEDs[lightShowIndex], HIGH);
+
+            lightShowIndex = (lightShowIndex + 1) % (NUM_LETTERS + NUM_NUMBERS);
+            lastLightShowStep = now;
+        }
+
+        // end the show when time's up
+        if (millis() >= lightShowEnd)
+        {
+            lightShowRunning = false;
+            // restore LEDs for current song or default
+            if (play && currentPlaying > 0 && currentPlaying <= queueSize)
+            {
+                int playingIndex = currentPlaying - 1;
+                showLed(queue[playingIndex].letter, queue[playingIndex].number);
+            }
+            else if (lastPlayedLetter != -1 && lastPlayedNumber != -1)
+            {
+                showLed(lastPlayedLetter, lastPlayedNumber);
+            }
+            else
+            {
+                lightAllLEDs();
             }
         }
     }
@@ -1039,8 +1095,8 @@ void showLed(int letterIndex, int numberIndex)
         return;
     }
 
-    // When playing, show only the current song's LEDs
-    if (play && queueSize > 0)
+    // When playing queued songs (not beckon), show only the current song's LEDs
+    if (play && !beckonPlaying && currentPlaying > 0 && currentPlaying <= queueSize)
     {
         oldPlay = currentPlaying;
         // Turn off all LEDs
