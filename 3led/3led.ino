@@ -157,6 +157,8 @@ const unsigned long debounceDelay = 50;
 #define EEPROM_INHIBIT_STATE_ADDR 24
 // EEPROM address to persist card swipe state (1 = swiped)
 #define EEPROM_SWIPED_FLAG_ADDR 25
+// eeprom to save light running
+#define EEPROM_LIGHTSHOW_RUNNING_ADDR 26
 
 // Reset function
 void (*resetFunc)(void) = 0;
@@ -192,7 +194,7 @@ void loadQueue()
 void clearEEPROM()
 {
     // Clear all relevant EEPROM addresses on hardware reset
-    for (int i = 0; i < 26; i++)
+    for (int i = 0; i < 27; i++)
     {
         EEPROM.write(i, 0);
     }
@@ -285,7 +287,7 @@ void setup()
     // Initialize inhibit pin
     pinMode(inhibitPin, OUTPUT);
     digitalWrite(inhibitPin, LOW); // Start with inhibit disabled (0v)
-    Serial.println("inhibit started with disabled");
+    Serial.println("inhibit started with disabled initially");
     // Check reset flag
     int resetFlag = EEPROM.read(EEPROM_RESET_FLAG_ADDR);
     if (resetFlag == 1)
@@ -301,7 +303,7 @@ void setup()
             Serial.println("DFPlayer Mini not found!, proceeding regardless, no effect");
             // while (true)
             //     ;
-            // mp3.play(1);
+            
         }
         mp3.setTimeOut(50); // Set timeout to prevent hangs
         mp3.volume(30);     // Set volume
@@ -335,7 +337,7 @@ void setup()
             Serial.println("DFPlayer Mini not found!, proceeding regardless, no effect");
             // while (true)
             //     ;
-            // mp3.play(1);
+            
         }
         mp3.setTimeOut(50); // Set timeout to prevent hangs
         mp3.volume(30);     // Set volume
@@ -345,7 +347,7 @@ void setup()
     {
         int inhibitVal = EEPROM.read(EEPROM_INHIBIT_STATE_ADDR);
         int swipedVal = EEPROM.read(EEPROM_SWIPED_FLAG_ADDR);
-        swiped = (swipedVal == 1);
+       swiped  = (swipedVal == 1);
         
         // Only restore inhibit if we're actually in a playing state
         // Otherwise, clear inhibit to allow new card swipes
@@ -423,6 +425,7 @@ void setup()
                     // Start chaser and play the queued song immediately (they run together)
                     // Ensure we are no longer in beckon mode before starting queued playback
                     beckonPlaying = false;
+                    Serial.println("Starting lightshow-on-next playback.");
                     startLightShow();
                     delay(150); // Brief delay to let lightshow begin before starting MP3
                     playSong(queue[lsIndex].letter, queue[lsIndex].number, lsIndex);
@@ -508,6 +511,14 @@ void setup()
         Serial.print(queue[i].number + 1);
         Serial.println();
     }
+    Serial.print("swipwd state = ");
+    Serial.println(swiped ? "SWIPED" : "NOT SWIPED");
+    Serial.print("inhibit state = ");
+    Serial.println(inhibitActive ? "ACTIVE" : "INACTIVE");
+    Serial.print("bekon playing = ");
+    Serial.println(beckonPlaying ? "YES" : "NO");
+    swiped = EEPROM.read(EEPROM_SWIPED_FLAG_ADDR) == 1;
+    beckonPlaying = EEPROM.read(EEPROM_BECKON_FLAG_ADDR) == 1;
 }
 
 void loop()
@@ -649,6 +660,7 @@ void loop()
     }
 
     // If a light show is running, drive chaser frames and skip selection/playback updates
+    lightShowRunning = (EEPROM.read(EEPROM_LIGHTSHOW_RUNNING_ADDR) == 1);
     if (lightShowRunning)
     {
         unsigned long now = millis();
@@ -669,6 +681,8 @@ void loop()
         if (millis() >= lightShowEnd)
         {
             lightShowRunning = false;
+            Serial.println("Light show ended.");
+            EEPROM.write(EEPROM_LIGHTSHOW_RUNNING_ADDR, 0);
             // restore LEDs for current song or default
             if (play && currentPlaying > 0 && currentPlaying <= queueSize)
             {
@@ -916,6 +930,8 @@ void loop()
         if (millis() >= lightShowEnd)
         {
             lightShowRunning = false;
+            Serial.println("Light show ended.");
+            EEPROM.write(EEPROM_LIGHTSHOW_RUNNING_ADDR, 0);
             // restore LEDs for current song or default
             if (play && currentPlaying > 0 && currentPlaying <= queueSize)
             {
@@ -1301,6 +1317,7 @@ void startLightShow()
     // Initialize non-blocking light show (20-LED chaser) for 7 seconds
     Serial.println("Starting 7s light show (20-LED chaser)");
     lightShowRunning = true;
+    EEPROM.write(EEPROM_LIGHTSHOW_RUNNING_ADDR, 1);
     lightShowEnd = millis() + 7000;
     lightShowIndex = 0;
     lastLightShowStep = 0;
@@ -1321,6 +1338,7 @@ void playSong(int letterIndex, int numberIndex, int queueIndex = -1, bool isBeck
     if (!isBeckon) {
         setInhibit(true);
         EEPROM.write(EEPROM_INHIBIT_STATE_ADDR, 1);
+        Serial.println("Beckon playback: Nayax inhibit ENABLED to dis-allow swipes");
     } else {
         // Ensure inhibit is disabled for beckon playback to allow swipes
         setInhibit(false);
@@ -1379,14 +1397,14 @@ void playSong(int letterIndex, int numberIndex, int queueIndex = -1, bool isBeck
     Serial.print("Playing track: ");
     Serial.println(trackNumber);
     Serial.print("Playing song: ");
-    Serial.println(letters[letterIndex]);
+    Serial.print(letters[letterIndex]);
     Serial.println(number);
     Serial.print("current playing: ");
     Serial.println(currentPlaying);
     // delay(1000);
     mp3.play(trackNumber);
     Serial.print("Playing song: ");
-    Serial.println(letters[letterIndex]);
+    Serial.print(letters[letterIndex]);
     Serial.println(number);
     Serial.print("current playing: ");
     Serial.println(currentPlaying);
