@@ -159,6 +159,8 @@ const unsigned long debounceDelay = 50;
 #define EEPROM_SWIPED_FLAG_ADDR 25
 // eeprom to save light running
 #define EEPROM_LIGHTSHOW_RUNNING_ADDR 26
+// buzz state 
+#define EEPROM_BUZZ_STATE_ADDR 27
 
 // Reset function
 void (*resetFunc)(void) = 0;
@@ -194,7 +196,7 @@ void loadQueue()
 void clearEEPROM()
 {
     // Clear all relevant EEPROM addresses on hardware reset
-    for (int i = 0; i < 27; i++)
+    for (int i = 0; i < 28; i++)
     {
         EEPROM.write(i, 0);
     }
@@ -519,12 +521,13 @@ void setup()
     Serial.println(beckonPlaying ? "YES" : "NO");
     swiped = EEPROM.read(EEPROM_SWIPED_FLAG_ADDR) == 1;
     beckonPlaying = EEPROM.read(EEPROM_BECKON_FLAG_ADDR) == 1;
+    buzzLedOn = EEPROM.read(EEPROM_BUZZ_STATE_ADDR) == 1;
 }
 
 void loop()
 {
      while (!swiped && !beckonPlaying)
-    {
+    {updateBuzzPopLeds();
         // Check if it's time to play a beckon song (every 8 minutes while idle)
         if (!play && !continuousPlay && digitalRead(busyPin) == HIGH && 
             millis() - lastBeckonTime >= beckonInterval && 
@@ -849,6 +852,12 @@ void loop()
             Serial.println("Skip during beckon: ending beckon playback.");
             beckonPlaying = false;
             play = false;
+            // Reset buzz/pop LED state
+            buzzLedOn = false;
+            popLedOn = false;
+            EEPROM.write(EEPROM_BUZZ_STATE_ADDR, 0);
+            digitalWrite(buzzLedPin, LOW);
+            digitalWrite(popLedPin, LOW);
             // Don't call mp3.stop() - will freeze hardware. Flag will stop playback on next reset.
             lightAllLEDs();
         }
@@ -963,6 +972,12 @@ void loop()
                 beckonPlaying = false;
                 play = false;
                 lastBeckonTime = millis();
+                // Reset buzz/pop LED state
+                buzzLedOn = false;
+                popLedOn = false;
+                EEPROM.write(EEPROM_BUZZ_STATE_ADDR, 0);
+                digitalWrite(buzzLedPin, LOW);
+                digitalWrite(popLedPin, LOW);
                 lightAllLEDs();
             }
             else if (!continuousPlay)
@@ -1436,6 +1451,7 @@ void lightAllLEDs()
 void startBuzzPopSequence()
 {
     buzzLedOn = true;
+    EEPROM.write(EEPROM_BUZZ_STATE_ADDR, 1);
     buzzStartTime = millis();
     digitalWrite(buzzLedPin, HIGH);
 }
@@ -1445,6 +1461,7 @@ void updateBuzzPopLeds()
     if (buzzLedOn && millis() - buzzStartTime >= 7000)
     {
         buzzLedOn = false;
+        EEPROM.write(EEPROM_BUZZ_STATE_ADDR, 0);
         digitalWrite(buzzLedPin, LOW);
 
         popLedOn = true;
