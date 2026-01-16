@@ -491,7 +491,7 @@ void setup()
     lastActivityTime = millis();
     lastBeckonTime = millis();
 
-    Serial.println("Code 3 led Ready! v1.59");
+    Serial.println("Code 3 led Ready! v3.59");
 
     // Debug: print queue and playback state on startup
     Serial.print("DEBUG: queueSize=");
@@ -522,6 +522,10 @@ void setup()
     swiped = EEPROM.read(EEPROM_SWIPED_FLAG_ADDR) == 1;
     beckonPlaying = EEPROM.read(EEPROM_BECKON_FLAG_ADDR) == 1;
     buzzLedOn = EEPROM.read(EEPROM_BUZZ_STATE_ADDR) == 1;
+    Serial.print(" song playing? = ");
+    Serial.println(digitalRead(busyPin)? "YES" : "NO");
+    Serial.print("play = ") ;
+    Serial.println(play);
 }
 
 void loop()
@@ -992,6 +996,7 @@ void loop()
                 digitalWrite(buzzLedPin, LOW);
                 digitalWrite(popLedPin, LOW);
                 lightAllLEDs();
+               // resetFunc();
             }
             else if (!continuousPlay)
             {
