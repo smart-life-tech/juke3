@@ -526,6 +526,8 @@ void setup()
     Serial.println(digitalRead(busyPin)? "YES" : "NO");
     Serial.print("play = ") ;
     Serial.println(play);
+    Serial.print("continuous play = ");
+    Serial.println(continuousPlay);
 }
 
 void loop()
@@ -558,6 +560,8 @@ void loop()
             EEPROM.write(EEPROM_BECKON_NUMBER_PLAYING, beckonIndex);
             
             lastBeckonTime = millis();
+            lastActivityTime = millis();
+            Serial.println("Beckon: Triggering software reset to play beckon.");
             delay(500);
             resetFunc();
         }
