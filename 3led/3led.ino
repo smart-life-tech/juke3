@@ -526,8 +526,9 @@ void setup()
 
 void loop()
 {
-     while (!swiped && !beckonPlaying)
-    {updateBuzzPopLeds();
+    while (!swiped && !beckonPlaying)
+    {
+        updateBuzzPopLeds();
         // Check if it's time to play a beckon song (every 8 minutes while idle)
         if (!play && !continuousPlay && digitalRead(busyPin) == HIGH && 
             millis() - lastBeckonTime >= beckonInterval && 
@@ -579,6 +580,9 @@ void loop()
                 delay(500);
                 swiped = true;
                 EEPROM.write(EEPROM_SWIPED_FLAG_ADDR, 1);
+                // disble the beckon play as no more play for beckon
+                EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 0);
+                // Update inhibit state in EEPROM
                 
                 // If inactivity exceeded the beckon interval, immediately play next beckon
                 bool inactivityExceeded = (millis() - lastActivityTime >= beckonInterval);
@@ -615,6 +619,8 @@ void loop()
                     selectionCount = 0;
                     pendingLetter = -1;
                     play = false;
+                    // UPDATE: Refresh activity time to prevent beckon from triggering immediately after swipe
+                    lastActivityTime = millis();
                     Serial.println("Selection mode ENABLED after card swipe");
                     if (DEBUG) {
                         Serial.print("DEBUG: play = ");
@@ -720,6 +726,11 @@ void loop()
         return;
     }
 
+    // Clear swiped flag now that we've exited the polling loop and entered selection handling
+    // This prevents flag from persisting in EEPROM and blocking polling on next boot
+    //swiped = false;
+    //EEPROM.write(EEPROM_SWIPED_FLAG_ADDR, 0);
+    
     // Handle letter press for longpress detection
     // Block button processing when a song is playing (except continuous mode longpress)
     // Block letter processing while lockout is active
@@ -971,7 +982,9 @@ void loop()
                 Serial.println("Beckon song finished, returning to idle.");
                 beckonPlaying = false;
                 play = false;
-                lastBeckonTime = millis();
+                // Update activity time so next beckon can trigger after 5+ min of inactivity
+                // Don't update lastBeckonTime - that's when beckon was triggered, not finished
+                lastActivityTime = millis();
                 // Reset buzz/pop LED state
                 buzzLedOn = false;
                 popLedOn = false;
