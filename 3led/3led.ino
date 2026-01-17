@@ -236,7 +236,7 @@ void setInhibit(bool enable)
     {
         digitalWrite(inhibitPin, LOW); // Release to gndV to disable inhibit
         inhibitActive = false;
-        Serial.println("Nayax inhibit DEACTIVATED - card swipes enabled");
+        Serial.println("Nayax inhibit DEACTIVATED - card can be  used");
     }
 }
 
@@ -532,7 +532,7 @@ void setup()
 
 void loop()
 {
-    while (!swiped && !beckonPlaying)
+    while (!swiped )
     {
         updateBuzzPopLeds();
         // Check if it's time to play a beckon song (every 8 minutes while idle)
@@ -544,6 +544,7 @@ void loop()
             beckonIndex = EEPROM.read(EEPROM_BECKON_NUMBER_PLAYING);
             if (beckonIndex > 254) {
                 beckonIndex = 0;
+                Serial.println(" cleared beckon playlist");
                 EEPROM.write(EEPROM_BECKON_NUMBER_PLAYING, 0);
             }
             int bLetter = beckonIndex / 10;
@@ -562,7 +563,7 @@ void loop()
             lastBeckonTime = millis();
             lastActivityTime = millis();
             Serial.println("Beckon: Triggering software reset to play beckon.");
-            delay(500);
+            delay(1000);
             resetFunc();
         }
         
