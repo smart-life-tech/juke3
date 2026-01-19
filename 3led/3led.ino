@@ -22,7 +22,12 @@
 #define LED3_GREEN A11
 
 // Traffic Light states
-enum TrafficState { STATE_RED, STATE_AMBER, STATE_GREEN };
+enum TrafficState
+{
+    STATE_RED,
+    STATE_AMBER,
+    STATE_GREEN
+};
 TrafficState trafficLED1 = STATE_RED;
 TrafficState trafficLED2 = STATE_RED;
 TrafficState trafficLED3 = STATE_RED;
@@ -159,7 +164,7 @@ const unsigned long debounceDelay = 50;
 #define EEPROM_SWIPED_FLAG_ADDR 25
 // eeprom to save light running
 #define EEPROM_LIGHTSHOW_RUNNING_ADDR 26
-// buzz state 
+// buzz state
 #define EEPROM_BUZZ_STATE_ADDR 27
 
 // Reset function
@@ -215,11 +220,11 @@ void loadTrafficLightStates()
     trafficLED1 = (TrafficState)EEPROM.read(EEPROM_TRAFFIC_LED1_ADDR);
     trafficLED2 = (TrafficState)EEPROM.read(EEPROM_TRAFFIC_LED2_ADDR);
     trafficLED3 = (TrafficState)EEPROM.read(EEPROM_TRAFFIC_LED3_ADDR);
-    
+
     setTrafficLight(1, trafficLED1);
     setTrafficLight(2, trafficLED2);
     setTrafficLight(3, trafficLED3);
-    
+
     Serial.println("Traffic light states restored from EEPROM");
 }
 
@@ -305,7 +310,6 @@ void setup()
             Serial.println("DFPlayer Mini not found!, proceeding regardless, no effect");
             // while (true)
             //     ;
-            
         }
         mp3.setTimeOut(50); // Set timeout to prevent hangs
         mp3.volume(30);     // Set volume
@@ -323,7 +327,7 @@ void setup()
         trafficLED1 = STATE_RED;
         trafficLED2 = STATE_RED;
         trafficLED3 = STATE_RED;
-        
+
         // Ensure variables are in initial state for hardware reset
         play = false;
         queueSize = 0;
@@ -332,14 +336,13 @@ void setup()
         pendingLetter = -1;
         continuousPlay = false;
         beckonPlaying = false;
-        
+
         delay(1000);
         if (!mp3.begin(mp3Serial, true, true))
         {
             Serial.println("DFPlayer Mini not found!, proceeding regardless, no effect");
             // while (true)
             //     ;
-            
         }
         mp3.setTimeOut(50); // Set timeout to prevent hangs
         mp3.volume(30);     // Set volume
@@ -349,15 +352,18 @@ void setup()
     {
         int inhibitVal = EEPROM.read(EEPROM_INHIBIT_STATE_ADDR);
         int swipedVal = EEPROM.read(EEPROM_SWIPED_FLAG_ADDR);
-       swiped  = (swipedVal == 1);
-        
+        swiped = (swipedVal == 1);
+
         // Only restore inhibit if we're actually in a playing state
         // Otherwise, clear inhibit to allow new card swipes
-        if (!play && queueSize == 0 && currentPlaying == 0) {
+        if (!play && queueSize == 0 && currentPlaying == 0)
+        {
             Serial.println("Not in play state - clearing inhibit regardless of EEPROM value");
             setInhibit(false);
             EEPROM.write(EEPROM_INHIBIT_STATE_ADDR, 0);
-        } else {
+        }
+        else
+        {
             setInhibit(inhibitVal == 1);
             Serial.print("Restored inhibit from EEPROM: ");
             Serial.println(inhibitVal == 1 ? "ACTIVE" : "INACTIVE");
@@ -372,7 +378,7 @@ void setup()
         selectionModeEnabled = false;
     else
         selectionModeEnabled = true;
-    
+
     Serial.print("Selection mode loaded: ");
     Serial.print(selectionModeEnabled ? "ENABLED" : "DISABLED");
     Serial.print(" (EEPROM value: ");
@@ -431,24 +437,29 @@ void setup()
                     startLightShow();
                     delay(150); // Brief delay to let lightshow begin before starting MP3
                     playSong(queue[lsIndex].letter, queue[lsIndex].number, lsIndex);
-                    
+
                     // Set traffic light to blinking GREEN for this song
                     int ledNum = (lsIndex % 3) + 1;
                     setTrafficLight(ledNum, STATE_GREEN);
                     trafficBlinkStart = millis();
                     trafficBlinkOn = true;
-                    if (ledNum == 1) {
+                    if (ledNum == 1)
+                    {
                         trafficLED1 = STATE_GREEN;
                         trafficBlinking1 = true;
-                    } else if (ledNum == 2) {
+                    }
+                    else if (ledNum == 2)
+                    {
                         trafficLED2 = STATE_GREEN;
                         trafficBlinking2 = true;
-                    } else if (ledNum == 3) {
+                    }
+                    else if (ledNum == 3)
+                    {
                         trafficLED3 = STATE_GREEN;
                         trafficBlinking3 = true;
                     }
                     saveTrafficLightStates();
-                    
+
                     play = true;
                     // Set currentPlaying to 1-based count for LED display logic (playingIndex = currentPlaying - 1)
                     currentPlaying = lsIndex + 1;
@@ -523,8 +534,8 @@ void setup()
     beckonPlaying = EEPROM.read(EEPROM_BECKON_FLAG_ADDR) == 1;
     buzzLedOn = EEPROM.read(EEPROM_BUZZ_STATE_ADDR) == 1;
     Serial.print(" song playing? = ");
-    Serial.println(digitalRead(busyPin)? "YES" : "NO");
-    Serial.print("play = ") ;
+    Serial.println(digitalRead(busyPin) ? "YES" : "NO");
+    Serial.print("play = ");
     Serial.println(play);
     Serial.print("continuous play = ");
     Serial.println(continuousPlay);
@@ -532,41 +543,42 @@ void setup()
 
 void loop()
 {
-    while (!swiped )
+    while (!swiped)
     {
         updateBuzzPopLeds();
         // Check if it's time to play a beckon song (every 8 minutes while idle)
-        if (!play && !continuousPlay && digitalRead(busyPin) == HIGH && 
-            millis() - lastBeckonTime >= beckonInterval && 
+        if (!continuousPlay && digitalRead(busyPin) == HIGH &&
+            millis() - lastBeckonTime >= beckonInterval &&
             millis() - lastActivityTime >= beckonInterval)
         {
             Serial.println("Beckon: Playing beckon song after 8 minutes idle.");
             beckonIndex = EEPROM.read(EEPROM_BECKON_NUMBER_PLAYING);
-            if (beckonIndex > 254) {
+            if (beckonIndex > 254)
+            {
                 beckonIndex = 0;
                 Serial.println(" cleared beckon playlist");
                 EEPROM.write(EEPROM_BECKON_NUMBER_PLAYING, 0);
             }
             int bLetter = beckonIndex / 10;
             int bNumber = beckonIndex % 10;
-            
+
             // Play this beckon track via reset
             EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 1);
             EEPROM.write(EEPROM_BECKON_LETTER_ADDR, bLetter);
             EEPROM.write(EEPROM_BECKON_NUMBER_ADDR, bNumber);
             EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
-            
+
             // Advance beckon index for next time
             beckonIndex = (beckonIndex + 1) % 100;
             EEPROM.write(EEPROM_BECKON_NUMBER_PLAYING, beckonIndex);
-            
+
             lastBeckonTime = millis();
             lastActivityTime = millis();
             Serial.println("Beckon: Triggering software reset to play beckon.");
             delay(1000);
             resetFunc();
         }
-        
+
         int pinValue = analogRead(interruptPin);
         // if (DEBUG) {
         //     Serial.print("pin value = ");
@@ -582,7 +594,8 @@ void loop()
             if (swipeCounter >= 1)
             {
                 Serial.println("card SWIPING OCCURRED now on pin");
-                if (DEBUG) {
+                if (DEBUG)
+                {
                     Serial.print("pin value = ");
                     Serial.println(pinValue);
                 }
@@ -592,7 +605,7 @@ void loop()
                 // disble the beckon play as no more play for beckon
                 EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 0);
                 // Update inhibit state in EEPROM
-                
+
                 // If inactivity exceeded the beckon interval, immediately play next beckon
                 bool inactivityExceeded = (millis() - lastActivityTime >= beckonInterval);
                 if (inactivityExceeded && !play && !continuousPlay)
@@ -600,7 +613,8 @@ void loop()
                     Serial.println("Swipe after inactivity: starting next beckon immediately and locking selections.");
                     // Determine next beckon track from EEPROM_BECKON_NUMBER_PLAYING
                     int bIndex = EEPROM.read(EEPROM_BECKON_NUMBER_PLAYING);
-                    if (bIndex > 254) {
+                    if (bIndex > 254)
+                    {
                         bIndex = 0;
                         EEPROM.write(EEPROM_BECKON_NUMBER_PLAYING, 0);
                     }
@@ -610,11 +624,11 @@ void loop()
                     int nextIndex = (bIndex + 1) % 100;
                     EEPROM.write(EEPROM_BECKON_NUMBER_PLAYING, nextIndex);
 
-                        // Start beckon playback now; mark as beckon so swipes are allowed
-                        playSong(bLetter, bNumber, -1, true);
-                        play = true;
-                        beckonPlaying = true;
-                        lastBeckonTime = millis();
+                    // Start beckon playback now; mark as beckon so swipes are allowed
+                    playSong(bLetter, bNumber, -1, true);
+                    play = true;
+                    beckonPlaying = true;
+                    lastBeckonTime = millis();
                     // Allow selections during beckon playback; keep selection mode enabled
                     selectionModeEnabled = true;
                     swipeLockoutActive = false;
@@ -631,7 +645,8 @@ void loop()
                     // UPDATE: Refresh activity time to prevent beckon from triggering immediately after swipe
                     lastActivityTime = millis();
                     Serial.println("Selection mode ENABLED after card swipe");
-                    if (DEBUG) {
+                    if (DEBUG)
+                    {
                         Serial.print("DEBUG: play = ");
                         Serial.print(play);
                         Serial.print(", selectionModeEnabled = ");
@@ -656,484 +671,486 @@ void loop()
     }
     if (swiped || beckonPlaying)
     {
-    int letterPressed = getPressedKey(letterPins, NUM_LETTERS);
-    int numberPressed = getPressedKey(numberPins, NUM_NUMBERS);
-    
-    // Debug: show button states
-    if (letterPressed != -1) {
-        Serial.print("DEBUG: Letter button pressed: ");
-        Serial.print(letters[letterPressed]);
-        Serial.print(", play=");
-        Serial.print(play);
-        Serial.print(", selectionMode=");
-        Serial.println(selectionModeEnabled);
-    }
-    if (numberPressed != -1) {
-        Serial.print("DEBUG: Number button pressed: ");
-        Serial.print(numberPressed);
-        Serial.print(", play=");
-        Serial.print(play);
-        Serial.print(", currentLetter=");
-        Serial.println(currentLetter);
-    }
+        int letterPressed = getPressedKey(letterPins, NUM_LETTERS);
+        int numberPressed = getPressedKey(numberPins, NUM_NUMBERS);
 
-    // If a light show is running, drive chaser frames and skip selection/playback updates
-    lightShowRunning = (EEPROM.read(EEPROM_LIGHTSHOW_RUNNING_ADDR) == 1);
-    if (lightShowRunning)
-    {
-        unsigned long now = millis();
-        if (now - lastLightShowStep >= lightShowStepDelay)
+        // Debug: show button states
+        if (letterPressed != -1)
         {
-            // turn all LEDs off
-            for (int i = 0; i < NUM_LETTERS + NUM_NUMBERS; i++)
-                digitalWrite(allLEDs[i], LOW);
-
-            // light the current index
-            digitalWrite(allLEDs[lightShowIndex], HIGH);
-
-            lightShowIndex = (lightShowIndex + 1) % (NUM_LETTERS + NUM_NUMBERS);
-            lastLightShowStep = now;
+            Serial.print("DEBUG: Letter button pressed: ");
+            Serial.print(letters[letterPressed]);
+            Serial.print(", play=");
+            Serial.print(play);
+            Serial.print(", selectionMode=");
+            Serial.println(selectionModeEnabled);
+        }
+        if (numberPressed != -1)
+        {
+            Serial.print("DEBUG: Number button pressed: ");
+            Serial.print(numberPressed);
+            Serial.print(", play=");
+            Serial.print(play);
+            Serial.print(", currentLetter=");
+            Serial.println(currentLetter);
         }
 
-        // end the show when time's up
-        if (millis() >= lightShowEnd)
+        // If a light show is running, drive chaser frames and skip selection/playback updates
+        lightShowRunning = (EEPROM.read(EEPROM_LIGHTSHOW_RUNNING_ADDR) == 1);
+        if (lightShowRunning)
         {
-            lightShowRunning = false;
-            Serial.println("Light show ended.");
-            EEPROM.write(EEPROM_LIGHTSHOW_RUNNING_ADDR, 0);
-            // restore LEDs for current song or default
-            if (play && currentPlaying > 0 && currentPlaying <= queueSize)
+            unsigned long now = millis();
+            if (now - lastLightShowStep >= lightShowStepDelay)
             {
-                int playingIndex = currentPlaying - 1;
-                showLed(queue[playingIndex].letter, queue[playingIndex].number);
-            }
-            else if (lastPlayedLetter != -1 && lastPlayedNumber != -1)
-            {
-                showLed(lastPlayedLetter, lastPlayedNumber);
-            }
-            else
-            {
-                lightAllLEDs();
-            }
-            // If a playback-after-show was requested, start playback now
-            if (pendingPlayAfterShow && queueSize > 0 && currentPlaying == 0)
-            {
-                Serial.println("Light show finished — starting playback from queue (pending start).");
-                play = true;
-                mp3Serial.flush();
-                mp3Serial.end();
-                EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 0);
-                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
-                saveQueue();
-                pendingPlayAfterShow = false;
-                delay(200);
-                resetFunc();
-            }
-        }
+                // turn all LEDs off
+                for (int i = 0; i < NUM_LETTERS + NUM_NUMBERS; i++)
+                    digitalWrite(allLEDs[i], LOW);
 
-        // while the light show runs, do not process further selection events
-        return;
-    }
+                // light the current index
+                digitalWrite(allLEDs[lightShowIndex], HIGH);
 
-    // Clear swiped flag now that we've exited the polling loop and entered selection handling
-    // This prevents flag from persisting in EEPROM and blocking polling on next boot
-    //swiped = false;
-    //EEPROM.write(EEPROM_SWIPED_FLAG_ADDR, 0);
-    
-    // Handle letter press for longpress detection
-    // Block button processing when a song is playing (except continuous mode longpress)
-    // Block letter processing while lockout is active
-    if (letterPressed != -1 && !isLetterPressed && (!play || beckonPlaying) && !swipeLockoutActive)
-    {
-        isLetterPressed = true;
-        currentPressedLetter = letterPressed;
-        pressStartTime = millis();
-    }
-    else if (letterPressed == -1 && isLetterPressed)
-    {
-        unsigned long pressDuration = millis() - pressStartTime;
-        if (pressDuration > 1500)
-        {
-            Serial.println("Long letter press detected");
-            // Longpress: allow continuous play once a single selection exists
-            int seedLetter = -1;
-            int seedNumber = -1;
-
-            if (play && lastPlayedLetter != -1 && lastPlayedNumber != -1)
-            {
-                // Already playing: use the last played song as the seed
-                seedLetter = lastPlayedLetter;
-                seedNumber = lastPlayedNumber;
-                Serial.print("Starting continuous play from last played: ");
-            }
-            else if (!play && queueSize > 0)
-            {
-                // Not yet playing but we have at least one queued selection
-                seedLetter = queue[0].letter;
-                seedNumber = queue[0].number;
-                Serial.print("Starting continuous play from first queued: ");
+                lightShowIndex = (lightShowIndex + 1) % (NUM_LETTERS + NUM_NUMBERS);
+                lastLightShowStep = now;
             }
 
-            if (seedLetter != -1 && seedNumber != -1)
+            // end the show when time's up
+            if (millis() >= lightShowEnd)
             {
-                int displayNumber = ((seedNumber + 1) % 10);
-                if (displayNumber == 0)
-                    displayNumber = 10;
-                Serial.print(letters[seedLetter]);
-                Serial.println(displayNumber);
-                delay(1000);
-
-                startContinuousPlay(seedLetter, seedNumber);
-                selectionModeEnabled = false;
-                EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 1);
-                if (pendingLetter != -1)
+                lightShowRunning = false;
+                Serial.println("Light show ended.");
+                EEPROM.write(EEPROM_LIGHTSHOW_RUNNING_ADDR, 0);
+                // restore LEDs for current song or default
+                if (play && currentPlaying > 0 && currentPlaying <= queueSize)
                 {
-                    digitalWrite(letterLEDs[pendingLetter], HIGH);
-                    pendingLetter = -1;
+                    int playingIndex = currentPlaying - 1;
+                    showLed(queue[playingIndex].letter, queue[playingIndex].number);
+                }
+                else if (lastPlayedLetter != -1 && lastPlayedNumber != -1)
+                {
+                    showLed(lastPlayedLetter, lastPlayedNumber);
+                }
+                else
+                {
+                    lightAllLEDs();
+                }
+                // If a playback-after-show was requested, start playback now
+                if (pendingPlayAfterShow && queueSize > 0 && currentPlaying == 0)
+                {
+                    Serial.println("Light show finished — starting playback from queue (pending start).");
+                    play = true;
+                    mp3Serial.flush();
+                    mp3Serial.end();
+                    EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 0);
+                    EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+                    saveQueue();
+                    pendingPlayAfterShow = false;
+                    delay(200);
+                    resetFunc();
                 }
             }
-            else
-            {
-                Serial.println("Cannot start continuous play - no song ready");
-            }
-        }
-        else if (pressDuration <= 1000 && millis() - lastLetterDebounce > debounceDelay && (!play || beckonPlaying) && !swipeLockoutActive)
-        {
-            lastLetterDebounce = millis();
-            handleLetterPress(currentPressedLetter);
-        }
-        isLetterPressed = false;
-        currentPressedLetter = -1;
-    }
 
-    // Block number processing while lockout is active
-    if (numberPressed != -1 && millis() - lastNumberDebounce > debounceDelay && (!play || beckonPlaying) && !swipeLockoutActive)
-    {
-        lastNumberDebounce = millis();
-        handleNumberPress(numberPressed);
-    }
+            // while the light show runs, do not process further selection events
+            return;
+        }
 
-    // Check skip button
-    if (digitalRead(skipPin) == LOW && millis() - lastSkipDebounce > debounceDelay && !beckonPlaying)
-    {
-        lastSkipDebounce = millis();
-        if (!swipeLockoutActive && !continuousPlay && play && currentPlaying <= queueSize)
+        // Clear swiped flag now that we've exited the polling loop and entered selection handling
+        // This prevents flag from persisting in EEPROM and blocking polling on next boot
+        // swiped = false;
+        // EEPROM.write(EEPROM_SWIPED_FLAG_ADDR, 0);
+
+        // Handle letter press for longpress detection
+        // Block button processing when a song is playing (except continuous mode longpress)
+        // Block letter processing while lockout is active
+        if (letterPressed != -1 && !isLetterPressed && (!play || beckonPlaying) && !swipeLockoutActive)
         {
-            Serial.println("Skipping to next song now.");
-            Serial.print("Current playing: ");
-            Serial.println(currentPlaying);
-            Serial.print("Queue size: ");
-            Serial.println(queueSize);
-            delay(500);
-            
-            if (currentPlaying < queueSize)
+            isLetterPressed = true;
+            currentPressedLetter = letterPressed;
+            pressStartTime = millis();
+        }
+        else if (letterPressed == -1 && isLetterPressed)
+        {
+            unsigned long pressDuration = millis() - pressStartTime;
+            if (pressDuration > 1500)
             {
-                // Return traffic light to RED for the song being skipped
-                int skippedSongIndex = currentPlaying - 1;
-                returnTrafficLightToRed(skippedSongIndex);
-                
-                // Advance to next song and prepare via reset (required by board)
-                currentPlaying++;
-                // currentPlaying is 1-based after increment; store 0-based index for resume
-                EEPROM.write(EEPROM_LIGHTSHOW_NEXT_ADDR, 1);
-                EEPROM.write(EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR, currentPlaying - 1);
-                saveQueue();
-                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
-                delay(200);
-                resetFunc();
+                Serial.println("Long letter press detected");
+                // Longpress: allow continuous play once a single selection exists
+                int seedLetter = -1;
+                int seedNumber = -1;
+
+                if (play && lastPlayedLetter != -1 && lastPlayedNumber != -1)
+                {
+                    // Already playing: use the last played song as the seed
+                    seedLetter = lastPlayedLetter;
+                    seedNumber = lastPlayedNumber;
+                    Serial.print("Starting continuous play from last played: ");
+                }
+                else if (!play && queueSize > 0)
+                {
+                    // Not yet playing but we have at least one queued selection
+                    seedLetter = queue[0].letter;
+                    seedNumber = queue[0].number;
+                    Serial.print("Starting continuous play from first queued: ");
+                }
+
+                if (seedLetter != -1 && seedNumber != -1)
+                {
+                    int displayNumber = ((seedNumber + 1) % 10);
+                    if (displayNumber == 0)
+                        displayNumber = 10;
+                    Serial.print(letters[seedLetter]);
+                    Serial.println(displayNumber);
+                    delay(1000);
+
+                    startContinuousPlay(seedLetter, seedNumber);
+                    selectionModeEnabled = false;
+                    EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 1);
+                    if (pendingLetter != -1)
+                    {
+                        digitalWrite(letterLEDs[pendingLetter], HIGH);
+                        pendingLetter = -1;
+                    }
+                }
+                else
+                {
+                    Serial.println("Cannot start continuous play - no song ready");
+                }
             }
-            else
+            else if (pressDuration <= 1000 && millis() - lastLetterDebounce > debounceDelay && (!play || beckonPlaying) && !swipeLockoutActive)
             {
-                // Last song or queue finished - reset to selection mode
-                Serial.println("Skip: Queue finished, resetting to selection mode.");
-                queueSize = 0;
-                currentPlaying = 0;
-                play = false;
-                saveQueue();
-                EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
-                // Disable Nayax inhibit and clear swipe for next round
-                setInhibit(false);
-                EEPROM.write(EEPROM_INHIBIT_STATE_ADDR, 0);
-                EEPROM.write(EEPROM_SWIPED_FLAG_ADDR, 0);
-                swiped = false;
-                lightAllLEDs();
-                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+                lastLetterDebounce = millis();
+                handleLetterPress(currentPressedLetter);
+            }
+            isLetterPressed = false;
+            currentPressedLetter = -1;
+        }
+
+        // Block number processing while lockout is active
+        if (numberPressed != -1 && millis() - lastNumberDebounce > debounceDelay && (!play || beckonPlaying) && !swipeLockoutActive)
+        {
+            lastNumberDebounce = millis();
+            handleNumberPress(numberPressed);
+        }
+
+        // Check skip button
+        if (digitalRead(skipPin) == LOW && millis() - lastSkipDebounce > debounceDelay && !beckonPlaying)
+        {
+            lastSkipDebounce = millis();
+            if (!swipeLockoutActive && !continuousPlay && play && currentPlaying <= queueSize)
+            {
+                Serial.println("Skipping to next song now.");
+                Serial.print("Current playing: ");
+                Serial.println(currentPlaying);
+                Serial.print("Queue size: ");
+                Serial.println(queueSize);
                 delay(500);
-                resetFunc();
-            }
-        }
-        else if (!swipeLockoutActive && continuousPlay)
-        {
-            Serial.println("Skipping to next song in continuous mode.");
-            playNextContinuous();
-        }
-        else if (beckonPlaying)
-        {
-            Serial.println("Skip during beckon: ending beckon playback.");
-            beckonPlaying = false;
-            play = false;
-            // Reset buzz/pop LED state
-            buzzLedOn = false;
-            popLedOn = false;
-            EEPROM.write(EEPROM_BUZZ_STATE_ADDR, 0);
-            digitalWrite(buzzLedPin, LOW);
-            digitalWrite(popLedPin, LOW);
-            // Don't call mp3.stop() - will freeze hardware. Flag will stop playback on next reset.
-            lightAllLEDs();
-        }
-    }
 
-    // Update buzz/pop LEDs
-    updateBuzzPopLeds();
+                if (currentPlaying < queueSize)
+                {
+                    // Return traffic light to RED for the song being skipped
+                    int skippedSongIndex = currentPlaying - 1;
+                    returnTrafficLightToRed(skippedSongIndex);
 
-    // Blink all LEDs if in continuous play mode
-    if (continuousPlay)
-    {
-        if (millis() - blinkStart >= 1000)
-        {
-            // Serial.println("long letter pressed");
-            blinkStart = millis();
-            ledsOn = !ledsOn;
-            for (int i = 0; i < NUM_LETTERS; i++)
-                digitalWrite(letterLEDs[i], ledsOn ? HIGH : LOW);
-            for (int i = 0; i < NUM_NUMBERS; i++)
-                digitalWrite(numberLEDs[i], ledsOn ? HIGH : LOW);
-        }
-    }
-    
-    // Blink green traffic lights during play
-    if (trafficBlinking1 || trafficBlinking2 || trafficBlinking3)
-    {
-        if (millis() - trafficBlinkStart >= 500)  // 500ms blink interval
-        {
-            trafficBlinkStart = millis();
-            trafficBlinkOn = !trafficBlinkOn;
-            
-            // Update blinking traffic lights
-            if (trafficBlinking1)
-            {
-                digitalWrite(LED1_GREEN, trafficBlinkOn ? LOW : HIGH);
+                    // Advance to next song and prepare via reset (required by board)
+                    currentPlaying++;
+                    // currentPlaying is 1-based after increment; store 0-based index for resume
+                    EEPROM.write(EEPROM_LIGHTSHOW_NEXT_ADDR, 1);
+                    EEPROM.write(EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR, currentPlaying - 1);
+                    saveQueue();
+                    EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+                    delay(200);
+                    resetFunc();
+                }
+                else
+                {
+                    // Last song or queue finished - reset to selection mode
+                    Serial.println("Skip: Queue finished, resetting to selection mode.");
+                    queueSize = 0;
+                    currentPlaying = 0;
+                    play = false;
+                    saveQueue();
+                    EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
+                    // Disable Nayax inhibit and clear swipe for next round
+                    setInhibit(false);
+                    EEPROM.write(EEPROM_INHIBIT_STATE_ADDR, 0);
+                    EEPROM.write(EEPROM_SWIPED_FLAG_ADDR, 0);
+                    swiped = false;
+                    lightAllLEDs();
+                    EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+                    delay(500);
+                    resetFunc();
+                }
             }
-            if (trafficBlinking2)
+            else if (!swipeLockoutActive && continuousPlay)
             {
-                digitalWrite(LED2_GREEN, trafficBlinkOn ? LOW : HIGH);
+                Serial.println("Skipping to next song in continuous mode.");
+                playNextContinuous();
             }
-            if (trafficBlinking3)
+            else if (beckonPlaying)
             {
-                digitalWrite(LED3_GREEN, trafficBlinkOn ? LOW : HIGH);
-            }
-        }
-    }
-    else
-    {
-        // Update LED display only when actively playing and within valid bounds
-        if (play && !beckonPlaying && currentPlaying > 0 && currentPlaying <= queueSize)
-        {
-            // currentPlaying is 1-indexed during playback, so subtract 1 for array access
-            int playingIndex = currentPlaying - 1;
-            if (playingIndex >= 0 && playingIndex < queueSize)
-            {
-                showLed(queue[playingIndex].letter, queue[playingIndex].number);
-            }
-        }
-    }
-    
-    // Continue lightshow if it's running (non-blocking animation during playback)
-    if (lightShowRunning)
-    {
-        unsigned long now = millis();
-        if (now - lastLightShowStep >= lightShowStepDelay)
-        {
-            // turn all LEDs off
-            for (int i = 0; i < NUM_LETTERS + NUM_NUMBERS; i++)
-                digitalWrite(allLEDs[i], LOW);
-
-            // light the current index
-            digitalWrite(allLEDs[lightShowIndex], HIGH);
-
-            lightShowIndex = (lightShowIndex + 1) % (NUM_LETTERS + NUM_NUMBERS);
-            lastLightShowStep = now;
-        }
-
-        // end the show when time's up
-        if (millis() >= lightShowEnd)
-        {
-            lightShowRunning = false;
-            Serial.println("Light show ended.");
-            EEPROM.write(EEPROM_LIGHTSHOW_RUNNING_ADDR, 0);
-            // restore LEDs for current song or default
-            if (play && currentPlaying > 0 && currentPlaying <= queueSize)
-            {
-                int playingIndex = currentPlaying - 1;
-                showLed(queue[playingIndex].letter, queue[playingIndex].number);
-            }
-            else if (lastPlayedLetter != -1 && lastPlayedNumber != -1)
-            {
-                showLed(lastPlayedLetter, lastPlayedNumber);
-            }
-            else
-            {
-                lightAllLEDs();
-            }
-        }
-    }
-
-    // Check if song finished using busy pin
-    if (digitalRead(busyPin) == HIGH)
-    {
-        // Serial.println("Song finished");
-        //  Move to next song in queue
-        if (donePlaying && play)
-        {
-            if (beckonPlaying)
-            {
-                // Beckon song finished - return to idle
-                Serial.println("Beckon song finished, returning to idle.");
+                Serial.println("Skip during beckon: ending beckon playback.");
                 beckonPlaying = false;
                 play = false;
-                // Update activity time so next beckon can trigger after 5+ min of inactivity
-                // Don't update lastBeckonTime - that's when beckon was triggered, not finished
-                lastActivityTime = millis();
                 // Reset buzz/pop LED state
                 buzzLedOn = false;
                 popLedOn = false;
                 EEPROM.write(EEPROM_BUZZ_STATE_ADDR, 0);
                 digitalWrite(buzzLedPin, LOW);
                 digitalWrite(popLedPin, LOW);
+                // Don't call mp3.stop() - will freeze hardware. Flag will stop playback on next reset.
                 lightAllLEDs();
-               // resetFunc();
             }
-            else if (!continuousPlay)
+        }
+
+        // Update buzz/pop LEDs
+        updateBuzzPopLeds();
+
+        // Blink all LEDs if in continuous play mode
+        if (continuousPlay)
+        {
+            if (millis() - blinkStart >= 1000)
             {
-                Serial.println("Song done, current playing.");
-                Serial.println(currentPlaying);
-                Serial.println("Song done, moving to next in queue.");
-                Serial.println(queueSize);
-                Serial.print("DEBUG: currentPlaying=");
-                Serial.print(currentPlaying);
-                Serial.print(", queueSize=");
-                Serial.println(queueSize);
-                if (currentPlaying < queueSize)
+                // Serial.println("long letter pressed");
+                blinkStart = millis();
+                ledsOn = !ledsOn;
+                for (int i = 0; i < NUM_LETTERS; i++)
+                    digitalWrite(letterLEDs[i], ledsOn ? HIGH : LOW);
+                for (int i = 0; i < NUM_NUMBERS; i++)
+                    digitalWrite(numberLEDs[i], ledsOn ? HIGH : LOW);
+            }
+        }
+
+        // Blink green traffic lights during play
+        if (trafficBlinking1 || trafficBlinking2 || trafficBlinking3)
+        {
+            if (millis() - trafficBlinkStart >= 500) // 500ms blink interval
+            {
+                trafficBlinkStart = millis();
+                trafficBlinkOn = !trafficBlinkOn;
+
+                // Update blinking traffic lights
+                if (trafficBlinking1)
                 {
-                    Serial.print("Playing next song in queue.. ");
-                    Serial.print("Index: ");
-                    Serial.println(currentPlaying);
-                    
-                    // Return traffic light to RED for the song that just finished
-                    // currentPlaying is 1-based, so subtract 1 for 0-based queue index
-                    int finishedSongIndex = currentPlaying - 1;
-                    returnTrafficLightToRed(finishedSongIndex);
-                    
-                    // Increment currentPlaying now so it's ready for the next song
-                    currentPlaying++;
-                    Serial.print("DEBUG: Incremented currentPlaying to ");
-                    Serial.println(currentPlaying);
-                    saveQueue();
-                    // Request lightshow on next resume for the next queued index, then reset
-                    EEPROM.write(EEPROM_LIGHTSHOW_NEXT_ADDR, 1);
-                    // currentPlaying is 1-based after increment; store 0-based index for resume
-                    EEPROM.write(EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR, currentPlaying - 1);
-                    EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
-                    Serial.println("Song done, playing next: ");
-                    Serial.println(currentPlaying);
-                    delay(500);
-                    resetFunc();
+                    digitalWrite(LED1_GREEN, trafficBlinkOn ? LOW : HIGH);
+                }
+                if (trafficBlinking2)
+                {
+                    digitalWrite(LED2_GREEN, trafficBlinkOn ? LOW : HIGH);
+                }
+                if (trafficBlinking3)
+                {
+                    digitalWrite(LED3_GREEN, trafficBlinkOn ? LOW : HIGH);
+                }
+            }
+        }
+        else
+        {
+            // Update LED display only when actively playing and within valid bounds
+            if (play && !beckonPlaying && currentPlaying > 0 && currentPlaying <= queueSize)
+            {
+                // currentPlaying is 1-indexed during playback, so subtract 1 for array access
+                int playingIndex = currentPlaying - 1;
+                if (playingIndex >= 0 && playingIndex < queueSize)
+                {
+                    showLed(queue[playingIndex].letter, queue[playingIndex].number);
+                }
+            }
+        }
+
+        // Continue lightshow if it's running (non-blocking animation during playback)
+        if (lightShowRunning)
+        {
+            unsigned long now = millis();
+            if (now - lastLightShowStep >= lightShowStepDelay)
+            {
+                // turn all LEDs off
+                for (int i = 0; i < NUM_LETTERS + NUM_NUMBERS; i++)
+                    digitalWrite(allLEDs[i], LOW);
+
+                // light the current index
+                digitalWrite(allLEDs[lightShowIndex], HIGH);
+
+                lightShowIndex = (lightShowIndex + 1) % (NUM_LETTERS + NUM_NUMBERS);
+                lastLightShowStep = now;
+            }
+
+            // end the show when time's up
+            if (millis() >= lightShowEnd)
+            {
+                lightShowRunning = false;
+                Serial.println("Light show ended.");
+                EEPROM.write(EEPROM_LIGHTSHOW_RUNNING_ADDR, 0);
+                // restore LEDs for current song or default
+                if (play && currentPlaying > 0 && currentPlaying <= queueSize)
+                {
+                    int playingIndex = currentPlaying - 1;
+                    showLed(queue[playingIndex].letter, queue[playingIndex].number);
+                }
+                else if (lastPlayedLetter != -1 && lastPlayedNumber != -1)
+                {
+                    showLed(lastPlayedLetter, lastPlayedNumber);
                 }
                 else
                 {
-                    // Queue finished
-                    Serial.println("max que all  leds on");
-                    
-                    // Return last traffic light to RED
-                    int finishedSongIndex = currentPlaying - 1;
-                    returnTrafficLightToRed(finishedSongIndex);
-                    
-                    queueSize = 0;
-                    currentPlaying = 0;
-                    play = false;
-                    saveQueue(); // Save reset values
-                    // Re-enable selection mode on next boot
-                    EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
                     lightAllLEDs();
-                    
-                    // Disable Nayax inhibit and clear swipe for next round
-                    setInhibit(false);
-                    EEPROM.write(EEPROM_INHIBIT_STATE_ADDR, 0);
-                    EEPROM.write(EEPROM_SWIPED_FLAG_ADDR, 0);
-                    swiped = false;
-
-                    // Reset all traffic lights to RED for next round
-                    setTrafficLight(1, STATE_RED);
-                    setTrafficLight(2, STATE_RED);
-                    setTrafficLight(3, STATE_RED);
-                    trafficLED1 = STATE_RED;
-                    trafficLED2 = STATE_RED;
-                    trafficLED3 = STATE_RED;
-                    
-                    EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
-                    delay(500);
-                    resetFunc();
                 }
             }
-            else
-            {
-                // Continuous play: play next song
-                playNextContinuous();
-            }
-            donePlaying = false;
         }
-    }
-    else
-    {
-        donePlaying = true;
-        // Serial.println("Song playing");
-    }
 
-    // Watchdog for busyPin stuck HIGH
-    if (digitalRead(busyPin) == HIGH && currentPlaying >= queueSize && play)
-    {
-        if (busyWasLow)
+        // Check if song finished using busy pin
+        if (digitalRead(busyPin) == HIGH)
         {
-            busyHighStart = millis();
-            busyWasLow = false;
+            // Serial.println("Song finished");
+            //  Move to next song in queue
+            if (donePlaying && play)
+            {
+                if (beckonPlaying)
+                {
+                    // Beckon song finished - return to idle
+                    Serial.println("Beckon song finished, returning to idle.");
+                    beckonPlaying = false;
+                    play = false;
+                    // Update activity time so next beckon can trigger after 5+ min of inactivity
+                    // Don't update lastBeckonTime - that's when beckon was triggered, not finished
+                    lastActivityTime = millis();
+                    // Reset buzz/pop LED state
+                    buzzLedOn = false;
+                    popLedOn = false;
+                    EEPROM.write(EEPROM_BUZZ_STATE_ADDR, 0);
+                    digitalWrite(buzzLedPin, LOW);
+                    digitalWrite(popLedPin, LOW);
+                    lightAllLEDs();
+                    // resetFunc();
+                }
+                else if (!continuousPlay)
+                {
+                    Serial.println("Song done, current playing.");
+                    Serial.println(currentPlaying);
+                    Serial.println("Song done, moving to next in queue.");
+                    Serial.println(queueSize);
+                    Serial.print("DEBUG: currentPlaying=");
+                    Serial.print(currentPlaying);
+                    Serial.print(", queueSize=");
+                    Serial.println(queueSize);
+                    if (currentPlaying < queueSize)
+                    {
+                        Serial.print("Playing next song in queue.. ");
+                        Serial.print("Index: ");
+                        Serial.println(currentPlaying);
+
+                        // Return traffic light to RED for the song that just finished
+                        // currentPlaying is 1-based, so subtract 1 for 0-based queue index
+                        int finishedSongIndex = currentPlaying - 1;
+                        returnTrafficLightToRed(finishedSongIndex);
+
+                        // Increment currentPlaying now so it's ready for the next song
+                        currentPlaying++;
+                        Serial.print("DEBUG: Incremented currentPlaying to ");
+                        Serial.println(currentPlaying);
+                        saveQueue();
+                        // Request lightshow on next resume for the next queued index, then reset
+                        EEPROM.write(EEPROM_LIGHTSHOW_NEXT_ADDR, 1);
+                        // currentPlaying is 1-based after increment; store 0-based index for resume
+                        EEPROM.write(EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR, currentPlaying - 1);
+                        EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+                        Serial.println("Song done, playing next: ");
+                        Serial.println(currentPlaying);
+                        delay(500);
+                        resetFunc();
+                    }
+                    else
+                    {
+                        // Queue finished
+                        Serial.println("max que all  leds on");
+
+                        // Return last traffic light to RED
+                        int finishedSongIndex = currentPlaying - 1;
+                        returnTrafficLightToRed(finishedSongIndex);
+
+                        queueSize = 0;
+                        currentPlaying = 0;
+                        play = false;
+                        saveQueue(); // Save reset values
+                        // Re-enable selection mode on next boot
+                        EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 0);
+                        lightAllLEDs();
+
+                        // Disable Nayax inhibit and clear swipe for next round
+                        setInhibit(false);
+                        EEPROM.write(EEPROM_INHIBIT_STATE_ADDR, 0);
+                        EEPROM.write(EEPROM_SWIPED_FLAG_ADDR, 0);
+                        swiped = false;
+
+                        // Reset all traffic lights to RED for next round
+                        setTrafficLight(1, STATE_RED);
+                        setTrafficLight(2, STATE_RED);
+                        setTrafficLight(3, STATE_RED);
+                        trafficLED1 = STATE_RED;
+                        trafficLED2 = STATE_RED;
+                        trafficLED3 = STATE_RED;
+
+                        EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+                        delay(500);
+                        resetFunc();
+                    }
+                }
+                else
+                {
+                    // Continuous play: play next song
+                    playNextContinuous();
+                }
+                donePlaying = false;
+            }
         }
-        else if (millis() - busyHighStart >= 30000)
+        else
         {
-            Serial.println("Busy pin stuck HIGH for 30 seconds, resetting board.");
-            EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+            donePlaying = true;
+            // Serial.println("Song playing");
+        }
+
+        // Watchdog for busyPin stuck HIGH
+        if (digitalRead(busyPin) == HIGH && currentPlaying >= queueSize && play)
+        {
+            if (busyWasLow)
+            {
+                busyHighStart = millis();
+                busyWasLow = false;
+            }
+            else if (millis() - busyHighStart >= 30000)
+            {
+                Serial.println("Busy pin stuck HIGH for 30 seconds, resetting board.");
+                EEPROM.write(EEPROM_RESET_FLAG_ADDR, 0);
+                delay(500);
+                resetFunc();
+            }
+        }
+        else if (digitalRead(busyPin) == LOW)
+        {
+            busyWasLow = true;
+        }
+
+        // Beckon function: play a song every 8 minutes if no activity and not playing
+        if (!play && !continuousPlay && digitalRead(busyPin) == HIGH && millis() - lastBeckonTime >= beckonInterval && millis() - lastActivityTime >= beckonInterval)
+        {
+            Serial.println("Beckon: Saving beckon song to EEPROM and resetting.");
+            beckonIndex = EEPROM.read(EEPROM_BECKON_NUMBER_PLAYING);
+            Serial.print("beckon index = ");
+            Serial.println(beckonIndex);
+            if (beckonIndex > 254)
+                EEPROM.write(EEPROM_BECKON_NUMBER_PLAYING, 0);
+            int beckonLetter = beckonIndex / 10;
+            int beckonNumber = beckonIndex % 10;
+            EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 1);
+            EEPROM.write(EEPROM_BECKON_LETTER_ADDR, beckonLetter);
+            EEPROM.write(EEPROM_BECKON_NUMBER_ADDR, beckonNumber);
+            EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+            lastBeckonTime = millis();
+            beckonIndex = (beckonIndex + 1) % 100; // Cycle through all 100 songs
+            Serial.print("beckon index now = ");
+            Serial.println(beckonIndex);
+            EEPROM.write(EEPROM_BECKON_NUMBER_PLAYING, beckonIndex);
             delay(500);
             resetFunc();
         }
     }
-    else if (digitalRead(busyPin) == LOW)
-    {
-        busyWasLow = true;
-    }
-
-    // Beckon function: play a song every 8 minutes if no activity and not playing
-    if (!play && !continuousPlay && digitalRead(busyPin) == HIGH && millis() - lastBeckonTime >= beckonInterval && millis() - lastActivityTime >= beckonInterval)
-    {
-        Serial.println("Beckon: Saving beckon song to EEPROM and resetting.");
-        beckonIndex = EEPROM.read(EEPROM_BECKON_NUMBER_PLAYING);
-        Serial.print("beckon index = ");
-        Serial.println(beckonIndex);
-        if (beckonIndex > 254)
-            EEPROM.write(EEPROM_BECKON_NUMBER_PLAYING, 0);
-        int beckonLetter = beckonIndex / 10;
-        int beckonNumber = beckonIndex % 10;
-        EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 1);
-        EEPROM.write(EEPROM_BECKON_LETTER_ADDR, beckonLetter);
-        EEPROM.write(EEPROM_BECKON_NUMBER_ADDR, beckonNumber);
-        EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
-        lastBeckonTime = millis();
-        beckonIndex = (beckonIndex + 1) % 100; // Cycle through all 100 songs
-        Serial.print("beckon index now = ");
-        Serial.println(beckonIndex);
-        EEPROM.write(EEPROM_BECKON_NUMBER_PLAYING, beckonIndex);
-        delay(500);
-        resetFunc();
-    }
-}
 }
 
 void showLed(int letterIndex, int numberIndex)
@@ -1201,14 +1218,19 @@ void handleLetterPress(int index)
 
     // Traffic Light: Change corresponding LED from RED to AMBER based on queue position
     // Use modulo 3 to map any letter to one of the 3 traffic lights
-    int ledNum = (queueSize % 3) + 1;  // Maps to 1, 2, or 3
+    int ledNum = (queueSize % 3) + 1; // Maps to 1, 2, or 3
     setTrafficLight(ledNum, STATE_AMBER);
-    
-    if (ledNum == 1) {
+
+    if (ledNum == 1)
+    {
         trafficLED1 = STATE_AMBER;
-    } else if (ledNum == 2) {
+    }
+    else if (ledNum == 2)
+    {
         trafficLED2 = STATE_AMBER;
-    } else if (ledNum == 3) {
+    }
+    else if (ledNum == 3)
+    {
         trafficLED3 = STATE_AMBER;
     }
     saveTrafficLightStates();
@@ -1257,14 +1279,19 @@ void handleNumberPress(int index)
 
     // Traffic Light: Change corresponding LED from AMBER to GREEN
     // Use modulo 3 to map to one of the 3 traffic lights based on queue position
-    int ledNum = (queueSize % 3) + 1;  // Maps to 1, 2, or 3
+    int ledNum = (queueSize % 3) + 1; // Maps to 1, 2, or 3
     setTrafficLight(ledNum, STATE_GREEN);
-    
-    if (ledNum == 1) {
+
+    if (ledNum == 1)
+    {
         trafficLED1 = STATE_GREEN;
-    } else if (ledNum == 2) {
+    }
+    else if (ledNum == 2)
+    {
         trafficLED2 = STATE_GREEN;
-    } else if (ledNum == 3) {
+    }
+    else if (ledNum == 3)
+    {
         trafficLED3 = STATE_GREEN;
     }
     saveTrafficLightStates();
@@ -1297,11 +1324,12 @@ void handleNumberPress(int index)
             EEPROM.write(EEPROM_SELECTION_MODE_ADDR, 1);
             Serial.println("Selection mode complete (3 selections). Starting light show and starting playback.");
             // If a beckon was playing, stop it now and clear beckon state
-            if (beckonPlaying) {
+            if (beckonPlaying)
+            {
                 Serial.println("Stopping beckon playback to start queued songs.");
                 beckonPlaying = false;
                 EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 0);
-                //mp3.stop();
+                // mp3.stop();
             }
             // Clear beckonPlaying before reset so queued songs play normally
             beckonPlaying = false;
@@ -1312,7 +1340,7 @@ void handleNumberPress(int index)
             {
                 EEPROM.write(EEPROM_LIGHTSHOW_NEXT_ADDR, 1);
                 EEPROM.write(EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR, 0);
-                EEPROM.write(EEPROM_CURRENT_PLAYING_ADDR, 0);  // Explicitly set currentPlaying to 0
+                EEPROM.write(EEPROM_CURRENT_PLAYING_ADDR, 0); // Explicitly set currentPlaying to 0
                 saveQueue();
                 EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
                 delay(200);
@@ -1328,10 +1356,11 @@ void handleNumberPress(int index)
     {
         Serial.println("Starting playback from queue after selection.");
         // If a beckon was playing, stop it now
-        if (beckonPlaying) {
+        if (beckonPlaying)
+        {
             Serial.println("Stopping beckon playback to start queued songs.");
             beckonPlaying = false;
-            //mp3.stop();
+            // mp3.stop();
         }
         play = true;
         mp3Serial.flush();
@@ -1373,11 +1402,14 @@ void playSong(int letterIndex, int numberIndex, int queueIndex = -1, bool isBeck
     Serial.println(currentPlaying);
     // For normal playback activate Nayax inhibit so card/swipes are blocked while playing.
     // For beckon playback, keep inhibit disabled so swipes are allowed during the beckon song.
-    if (!isBeckon) {
+    if (!isBeckon)
+    {
         setInhibit(true);
         EEPROM.write(EEPROM_INHIBIT_STATE_ADDR, 1);
         Serial.println("Beckon playback: Nayax inhibit ENABLED to dis-allow swipes");
-    } else {
+    }
+    else
+    {
         // Ensure inhibit is disabled for beckon playback to allow swipes
         setInhibit(false);
         EEPROM.write(EEPROM_INHIBIT_STATE_ADDR, 0);
@@ -1395,32 +1427,38 @@ void playSong(int letterIndex, int numberIndex, int queueIndex = -1, bool isBeck
             startLightShow();
         }
     }
-    
+
     // Traffic Light: Change LED to blinking GREEN when song starts playing
-    if (queueIndex >= 0 && queueIndex < MAX_QUEUE) {
-        int ledNum = (queueIndex % 3) + 1;  // Maps to 1, 2, or 3
+    if (queueIndex >= 0 && queueIndex < MAX_QUEUE)
+    {
+        int ledNum = (queueIndex % 3) + 1; // Maps to 1, 2, or 3
         setTrafficLight(ledNum, STATE_GREEN);
-        
+
         // Set blinking flags
         trafficBlinkStart = millis();
         trafficBlinkOn = true;
-        if (ledNum == 1) {
+        if (ledNum == 1)
+        {
             trafficLED1 = STATE_GREEN;
             trafficBlinking1 = true;
-        } else if (ledNum == 2) {
+        }
+        else if (ledNum == 2)
+        {
             trafficLED2 = STATE_GREEN;
             trafficBlinking2 = true;
-        } else if (ledNum == 3) {
+        }
+        else if (ledNum == 3)
+        {
             trafficLED3 = STATE_GREEN;
             trafficBlinking3 = true;
         }
         saveTrafficLightStates();
-        
+
         Serial.print("Song playing: LED ");
         Serial.print(ledNum);
         Serial.println(" changed to blinking GREEN");
     }
-    
+
     // Store the currently playing song
     lastPlayedLetter = letterIndex;
     lastPlayedNumber = numberIndex;
@@ -1590,48 +1628,56 @@ void setTrafficLight(int ledNum, TrafficState state)
 {
     // Common anode: LOW = ON, HIGH = OFF
     int redPin, amberPin, greenPin;
-    
-    if (ledNum == 1) {
+
+    if (ledNum == 1)
+    {
         redPin = LED1_RED;
         amberPin = LED1_AMBER;
         greenPin = LED1_GREEN;
-    } else if (ledNum == 2) {
+    }
+    else if (ledNum == 2)
+    {
         redPin = LED2_RED;
         amberPin = LED2_AMBER;
         greenPin = LED2_GREEN;
-    } else if (ledNum == 3) {
+    }
+    else if (ledNum == 3)
+    {
         redPin = LED3_RED;
         amberPin = LED3_AMBER;
         greenPin = LED3_GREEN;
-    } else {
+    }
+    else
+    {
         return; // Invalid LED number
     }
-    
+
     // Turn all colors OFF first
     digitalWrite(redPin, HIGH);
     digitalWrite(amberPin, HIGH);
     digitalWrite(greenPin, HIGH);
-    
+
     // Turn ON the desired color
-    switch(state) {
-        case STATE_RED:
-            digitalWrite(redPin, LOW);
-            Serial.print("Traffic LED ");
-            Serial.print(ledNum);
-            Serial.println(" = RED");
-            break;
-        case STATE_AMBER:
-            digitalWrite(amberPin, LOW);
-            Serial.print("Traffic LED ");
-            Serial.print(ledNum);
-            Serial.println(" = AMBER");
-            break;
-        case STATE_GREEN:
-            digitalWrite(greenPin, LOW);
-            Serial.print("Traffic LED ");
-            Serial.print(ledNum);
-            Serial.println(" = GREEN");
-            break;
+    switch (state)
+    {
+    case STATE_RED:
+        digitalWrite(redPin, LOW);
+        Serial.print("Traffic LED ");
+        Serial.print(ledNum);
+        Serial.println(" = RED");
+        break;
+    case STATE_AMBER:
+        digitalWrite(amberPin, LOW);
+        Serial.print("Traffic LED ");
+        Serial.print(ledNum);
+        Serial.println(" = AMBER");
+        break;
+    case STATE_GREEN:
+        digitalWrite(greenPin, LOW);
+        Serial.print("Traffic LED ");
+        Serial.print(ledNum);
+        Serial.println(" = GREEN");
+        break;
     }
 }
 
@@ -1642,11 +1688,12 @@ void returnTrafficLightToRed(int queueIndex)
     // Use modulo 3 to map to one of the 3 traffic lights
     Serial.print("DEBUG returnTrafficLightToRed called with queueIndex=");
     Serial.println(queueIndex);
-    
-    if (queueIndex >= 0 && queueIndex < MAX_QUEUE) {
+
+    if (queueIndex >= 0 && queueIndex < MAX_QUEUE)
+    {
         int letterIndex = queue[queueIndex].letter;
         int numberIndex = queue[queueIndex].number;
-        
+
         Serial.print("DEBUG letter=");
         Serial.print(letters[letterIndex]);
         Serial.print(" (index ");
@@ -1656,28 +1703,35 @@ void returnTrafficLightToRed(int queueIndex)
         Serial.print(" (index ");
         Serial.print(numberIndex);
         Serial.println(")");
-        
+
         // Map queue position to traffic light using modulo 3
-        int ledNum = (queueIndex % 3) + 1;  // Maps to 1, 2, or 3
-        
+        int ledNum = (queueIndex % 3) + 1; // Maps to 1, 2, or 3
+
         Serial.print("DEBUG Returning LED ");
         Serial.print(ledNum);
         Serial.println(" to RED");
-        
+
         setTrafficLight(ledNum, STATE_RED);
-        
-        if (ledNum == 1) {
+
+        if (ledNum == 1)
+        {
             trafficLED1 = STATE_RED;
             trafficBlinking1 = false;
-        } else if (ledNum == 2) {
+        }
+        else if (ledNum == 2)
+        {
             trafficLED2 = STATE_RED;
             trafficBlinking2 = false;
-        } else if (ledNum == 3) {
+        }
+        else if (ledNum == 3)
+        {
             trafficLED3 = STATE_RED;
             trafficBlinking3 = false;
         }
         saveTrafficLightStates();
-    } else {
+    }
+    else
+    {
         Serial.println("DEBUG Invalid queueIndex");
     }
 }
