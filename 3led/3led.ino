@@ -502,7 +502,7 @@ void setup()
     lastActivityTime = millis();
     lastBeckonTime = millis();
 
-    Serial.println("Code 3 led Ready! v3.59");
+    Serial.println("Code 3 led Ready! v3.69");
 
     // Debug: print queue and playback state on startup
     Serial.print("DEBUG: queueSize=");
@@ -546,9 +546,10 @@ void loop()
     while (!swiped)
     {
         updateBuzzPopLeds();
+        if (digitalRead(busyPin) == LOW)
+            lastBeckonTime = millis();
         // Check if it's time to play a beckon song (every 8 minutes while idle)
-        if (!continuousPlay && digitalRead(busyPin) == HIGH &&
-            millis() - lastBeckonTime >= beckonInterval &&
+        if (!continuousPlay && digitalRead(busyPin) == HIGH && (millis() - lastBeckonTime >= beckonInterval) &&
             millis() - lastActivityTime >= beckonInterval)
         {
             Serial.println("Beckon: Playing beckon song after 8 minutes idle.");
