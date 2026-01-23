@@ -386,7 +386,17 @@ void setup()
     Serial.println(")");
 
     // Check beckon flag
-    int beckonFlag = EEPROM.read(EEPROM_BECKON_FLAG_ADDR);
+    int beckonFlag = 0;
+    if (swiped)
+    {
+        Serial.println("swiped loaded from eeprom as SWIPED, no need to play beckon");
+        beckonPlaying = false;
+    }
+    else
+    {
+        Serial.println("swiped loaded from eeprom as NOT SWIPED, beckon can be played");
+        beckonFlag = EEPROM.read(EEPROM_BECKON_FLAG_ADDR);
+    }
     if (beckonFlag == 1)
     {
         // Beckon reset: play beckon song and clear flag
@@ -532,6 +542,7 @@ void setup()
     Serial.println(beckonPlaying ? "YES" : "NO");
     swiped = EEPROM.read(EEPROM_SWIPED_FLAG_ADDR) == 1;
     beckonPlaying = EEPROM.read(EEPROM_BECKON_FLAG_ADDR) == 1;
+
     buzzLedOn = EEPROM.read(EEPROM_BUZZ_STATE_ADDR) == 1;
     Serial.print(" song playing? = ");
     Serial.println(digitalRead(busyPin) ? "YES" : "NO");
