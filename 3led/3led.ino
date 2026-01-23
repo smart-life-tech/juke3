@@ -502,7 +502,7 @@ void setup()
     lastActivityTime = millis();
     lastBeckonTime = millis();
 
-    Serial.println("Code 3 led Ready! v3.69");
+    Serial.println("Code 3 led Ready! v3.79");
 
     // Debug: print queue and playback state on startup
     Serial.print("DEBUG: queueSize=");
