@@ -502,7 +502,7 @@ void setup()
     lastActivityTime = millis();
     lastBeckonTime = millis();
 
-    Serial.println("Code 3 led Ready! v3.79");
+    Serial.println("Code 3 led Ready! v3.89");
 
     // Debug: print queue and playback state on startup
     Serial.print("DEBUG: queueSize=");
@@ -1129,29 +1129,29 @@ void loop()
         }
 
         // Beckon function: play a song every 8 minutes if no activity and not playing
-        // Skip beckon if user is actively making selections (selectionCount > 0)
-        if (!play && !continuousPlay && selectionCount == 0 && digitalRead(busyPin) == HIGH && millis() - lastBeckonTime >= beckonInterval && millis() - lastActivityTime >= beckonInterval)
-        {
-            Serial.println("Beckon: Saving beckon song to EEPROM and resetting.");
-            beckonIndex = EEPROM.read(EEPROM_BECKON_NUMBER_PLAYING);
-            Serial.print("beckon index = ");
-            Serial.println(beckonIndex);
-            if (beckonIndex > 254)
-                EEPROM.write(EEPROM_BECKON_NUMBER_PLAYING, 0);
-            int beckonLetter = beckonIndex / 10;
-            int beckonNumber = beckonIndex % 10;
-            EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 1);
-            EEPROM.write(EEPROM_BECKON_LETTER_ADDR, beckonLetter);
-            EEPROM.write(EEPROM_BECKON_NUMBER_ADDR, beckonNumber);
-            EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
-            lastBeckonTime = millis();
-            beckonIndex = (beckonIndex + 1) % 100; // Cycle through all 100 songs
-            Serial.print("beckon index now = ");
-            Serial.println(beckonIndex);
-            EEPROM.write(EEPROM_BECKON_NUMBER_PLAYING, beckonIndex);
-            delay(500);
-            resetFunc();
-        }
+        // Skip beckon whenever a card has been swiped or any selection is in progress
+        // if (!play && !continuousPlay && !beckonPlaying && !swiped && selectionCount == 0 && pendingLetter == -1 && currentLetter == -1 && digitalRead(busyPin) == HIGH && millis() - lastBeckonTime >= beckonInterval && millis() - lastActivityTime >= beckonInterval)
+        // {
+        //     Serial.println("Beckon: Saving beckon song to EEPROM and resetting.");
+        //     beckonIndex = EEPROM.read(EEPROM_BECKON_NUMBER_PLAYING);
+        //     Serial.print("beckon index = ");
+        //     Serial.println(beckonIndex);
+        //     if (beckonIndex > 254)
+        //         EEPROM.write(EEPROM_BECKON_NUMBER_PLAYING, 0);
+        //     int beckonLetter = beckonIndex / 10;
+        //     int beckonNumber = beckonIndex % 10;
+        //     EEPROM.write(EEPROM_BECKON_FLAG_ADDR, 1);
+        //     EEPROM.write(EEPROM_BECKON_LETTER_ADDR, beckonLetter);
+        //     EEPROM.write(EEPROM_BECKON_NUMBER_ADDR, beckonNumber);
+        //     EEPROM.write(EEPROM_RESET_FLAG_ADDR, 1);
+        //     lastBeckonTime = millis();
+        //     beckonIndex = (beckonIndex + 1) % 100; // Cycle through all 100 songs
+        //     Serial.print("beckon index now = ");
+        //     Serial.println(beckonIndex);
+        //     EEPROM.write(EEPROM_BECKON_NUMBER_PLAYING, beckonIndex);
+        //     delay(500);
+        //     resetFunc();
+        // }
     }
 }
 
