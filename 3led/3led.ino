@@ -1129,7 +1129,8 @@ void loop()
         }
 
         // Beckon function: play a song every 8 minutes if no activity and not playing
-        if (!play && !continuousPlay && digitalRead(busyPin) == HIGH && millis() - lastBeckonTime >= beckonInterval && millis() - lastActivityTime >= beckonInterval)
+        // Skip beckon if user is actively making selections (selectionCount > 0)
+        if (!play && !continuousPlay && selectionCount == 0 && digitalRead(busyPin) == HIGH && millis() - lastBeckonTime >= beckonInterval && millis() - lastActivityTime >= beckonInterval)
         {
             Serial.println("Beckon: Saving beckon song to EEPROM and resetting.");
             beckonIndex = EEPROM.read(EEPROM_BECKON_NUMBER_PLAYING);
