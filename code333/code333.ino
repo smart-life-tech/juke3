@@ -101,6 +101,17 @@ const int resetPin = 51;                                            // Pin for r
 const int abcdPins[4] = {47, 48, 49, 50};                           // Pins for A, B, C, D
 static unsigned long resetTimer = 0;
 unsigned long resetInterval = 30000;
+// EEPROM addresses for light show
+#define EEPROM_LIGHTSHOW_RUNNING_ADDR 30
+#define EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR 31
+// Light show state
+bool lightShowRunning = false;
+unsigned long lightShowEnd = 0;
+int lightShowIndex = 0;
+unsigned long lastLightShowStep = 0;
+const unsigned long lightShowStepDelay = 80;
+// Build array of all LED pins for chaser
+int allLEDs[NUM_LEDS_GROUP1 + NUM_LEDS_GROUP2 + NUM_LEDS_GROUP3];
 bool hasSongStarted = false;
 const int inhibitPin = 52; // Pin connected to Nayax inhibit wire
 bool inhibitActive = false;
@@ -226,6 +237,20 @@ void updateBuzzPopLeds()
         popLedOn = false;
         digitalWrite(popLedPin, LOW);
     }
+}
+
+void startLightShow()
+{
+    // Initialize non-blocking light show (20-LED chaser) for 7 seconds
+    Serial.println("Starting 7s light show (chaser animation)");
+    lightShowRunning = true;
+    EEPROM.write(EEPROM_LIGHTSHOW_RUNNING_ADDR, 1);
+    lightShowEnd = millis() + 7000;
+    lightShowIndex = 0;
+    lastLightShowStep = 0;
+    // ensure all LEDs are off to start
+    for (int i = 0; i < NUM_LEDS_GROUP1 + NUM_LEDS_GROUP2 + NUM_LEDS_GROUP3; i++)
+        digitalWrite(allLEDs[i], LOW);
 }
 
 String convertToUpperCase(String input)
@@ -652,6 +677,35 @@ void playTheList()
         }
         checkReset();
         playSequence();
+        
+        // Handle chaser animation if running
+        lightShowRunning = (EEPROM.read(EEPROM_LIGHTSHOW_RUNNING_ADDR) == 1);
+        if (lightShowRunning)
+        {
+            unsigned long now = millis();
+            if (now - lastLightShowStep >= lightShowStepDelay)
+            {
+                // turn all LEDs off
+                for (int i = 0; i < NUM_LEDS_GROUP1 + NUM_LEDS_GROUP2 + NUM_LEDS_GROUP3; i++)
+                    digitalWrite(allLEDs[i], LOW);
+
+                // light the current index
+                digitalWrite(allLEDs[lightShowIndex], HIGH);
+
+                lightShowIndex = (lightShowIndex + 1) % (NUM_LEDS_GROUP1 + NUM_LEDS_GROUP2 + NUM_LEDS_GROUP3);
+                lastLightShowStep = now;
+            }
+
+            // end the show when time's up
+            if (millis() >= lightShowEnd)
+            {
+                lightShowRunning = false;
+                Serial.println("Light show ended.");
+                EEPROM.write(EEPROM_LIGHTSHOW_RUNNING_ADDR, 0);
+                // restore LEDs for current song display
+                lightUpLEDs(lastPlayed);
+            }
+        }
     }
 }
 
@@ -965,14 +1019,17 @@ void setup()
     for (int i = 0; i < NUM_LEDS_GROUP1; i++)
     {
         pinMode(LED_PIN_GROUP1 + i, OUTPUT);
+        allLEDs[i] = LED_PIN_GROUP1 + i;
     }
     for (int i = 0; i < NUM_LEDS_GROUP2; i++)
     {
         pinMode(LED_PIN_GROUP2 + i, OUTPUT);
+        allLEDs[NUM_LEDS_GROUP1 + i] = LED_PIN_GROUP2 + i;
     }
     for (int i = 0; i < NUM_LEDS_GROUP3; i++)
     {
         pinMode(LED_PIN_GROUP3 + i, OUTPUT);
+        allLEDs[NUM_LEDS_GROUP1 + NUM_LEDS_GROUP2 + i] = LED_PIN_GROUP3 + i;
     }
     for (int i = 0; i < 3; i++)
     {
