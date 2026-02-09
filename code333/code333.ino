@@ -1,6 +1,7 @@
 #include "SoftwareSerial.h"
 #include "DFRobotDFPlayerMini.h"
 #include <Wire.h>
+#include <EEPROM.h>
 //=================================================================
 int musicCount = 0;
 int swipeCounter = 0;
