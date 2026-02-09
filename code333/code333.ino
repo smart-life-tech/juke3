@@ -615,6 +615,15 @@ void playTheList()
                     lightUpLEDs(sequenceList[playIndex]);
                     Serial.print(" playing the list: ");
                     Serial.println(sequenceList[playIndex]);
+                    
+                    // Trigger light show for 2nd or 3rd song (playIndex 1 or 2)
+                    if (playIndex == 1 || playIndex == 2)
+                    {
+                        Serial.print("Triggering light show for song index: ");
+                        Serial.println(playIndex);
+                        startLightShow();
+                    }
+                    
                     myDFPlayer.play(sequenceList[playIndex]);
                     startBuzzPopSequence();
                     lastPlayed = sequenceList[playIndex];
@@ -680,7 +689,6 @@ void playTheList()
         playSequence();
         
         // Handle chaser animation if running
-        lightShowRunning = (EEPROM.read(EEPROM_LIGHTSHOW_RUNNING_ADDR) == 1);
         if (lightShowRunning)
         {
             unsigned long now = millis();
