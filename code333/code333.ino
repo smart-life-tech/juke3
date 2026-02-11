@@ -615,15 +615,13 @@ void playTheList()
                     lightUpLEDs(sequenceList[playIndex]);
                     Serial.print(" playing the list: ");
                     Serial.println(sequenceList[playIndex]);
-                    
+
                     // Trigger light show for 2nd or 3rd song (playIndex 1 or 2)
-                    if (playIndex == 1 || playIndex == 2)
-                    {
-                        Serial.print("Triggering light show for song index: ");
-                        Serial.println(playIndex);
-                        startLightShow();
-                    }
-                    
+
+                    Serial.print("Triggering light show for song index: ");
+                    Serial.println(playIndex);
+                    startLightShow();
+
                     myDFPlayer.play(sequenceList[playIndex]);
                     startBuzzPopSequence();
                     lastPlayed = sequenceList[playIndex];
@@ -687,7 +685,7 @@ void playTheList()
         }
         checkReset();
         playSequence();
-        
+
         // Handle chaser animation if running
         if (lightShowRunning)
         {
@@ -1105,8 +1103,8 @@ void loop()
     if (swiped)
     {
         checking = true;
-        //digitalWrite(inhibitPin, HIGH);
-        // key = keypad.getKey();
+        // digitalWrite(inhibitPin, HIGH);
+        //  key = keypad.getKey();
         key = getKeypadInput();
         if (key == 'C' && sequenceLength > 1 && keypadLong)
         {
