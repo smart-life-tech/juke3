@@ -110,7 +110,7 @@ bool lightShowRunning = false;
 unsigned long lightShowEnd = 0;
 int lightShowIndex = 0;
 unsigned long lastLightShowStep = 0;
-const unsigned long lightShowStepDelay = 80;
+const unsigned long lightShowStepDelay = 20;
 // Build array of all LED pins for chaser
 int allLEDs[NUM_LEDS_GROUP1 + NUM_LEDS_GROUP2 + NUM_LEDS_GROUP3];
 bool hasSongStarted = false;
@@ -685,33 +685,33 @@ void playTheList()
         }
         checkReset();
         playSequence();
+    }
 
-        // Handle chaser animation if running
-        if (lightShowRunning)
+    // Handle chaser animation if running — runs every loop call, NOT gated by 500ms timer
+    if (lightShowRunning)
+    {
+        unsigned long now = millis();
+        if (now - lastLightShowStep >= lightShowStepDelay)
         {
-            unsigned long now = millis();
-            if (now - lastLightShowStep >= lightShowStepDelay)
-            {
-                // turn all LEDs off
-                for (int i = 0; i < NUM_LEDS_GROUP1 + NUM_LEDS_GROUP2 + NUM_LEDS_GROUP3; i++)
-                    digitalWrite(allLEDs[i], LOW);
+            // turn all LEDs off
+            for (int i = 0; i < NUM_LEDS_GROUP1 + NUM_LEDS_GROUP2 + NUM_LEDS_GROUP3; i++)
+                digitalWrite(allLEDs[i], LOW);
 
-                // light the current index
-                digitalWrite(allLEDs[lightShowIndex], HIGH);
+            // light the current index
+            digitalWrite(allLEDs[lightShowIndex], HIGH);
 
-                lightShowIndex = (lightShowIndex + 1) % (NUM_LEDS_GROUP1 + NUM_LEDS_GROUP2 + NUM_LEDS_GROUP3);
-                lastLightShowStep = now;
-            }
+            lightShowIndex = (lightShowIndex + 1) % (NUM_LEDS_GROUP1 + NUM_LEDS_GROUP2 + NUM_LEDS_GROUP3);
+            lastLightShowStep = now;
+        }
 
-            // end the show when time's up
-            if (millis() >= lightShowEnd)
-            {
-                lightShowRunning = false;
-                Serial.println("Light show ended.");
-                EEPROM.write(EEPROM_LIGHTSHOW_RUNNING_ADDR, 0);
-                // restore LEDs for current song display
-                lightUpLEDs(lastPlayed);
-            }
+        // end the show when time's up
+        if (millis() >= lightShowEnd)
+        {
+            lightShowRunning = false;
+            Serial.println("Light show ended.");
+            EEPROM.write(EEPROM_LIGHTSHOW_RUNNING_ADDR, 0);
+            // restore LEDs for current song display
+            lightUpLEDs(lastPlayed);
         }
     }
 }
