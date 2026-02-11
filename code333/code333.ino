@@ -110,7 +110,7 @@ bool lightShowRunning = false;
 unsigned long lightShowEnd = 0;
 int lightShowIndex = 0;
 unsigned long lastLightShowStep = 0;
-const unsigned long lightShowStepDelay = 20;
+const unsigned long lightShowStepDelay = 80;
 // Build array of all LED pins for chaser
 int allLEDs[NUM_LEDS_GROUP1 + NUM_LEDS_GROUP2 + NUM_LEDS_GROUP3];
 bool hasSongStarted = false;
