@@ -626,7 +626,7 @@ void playTheList()
                     startBuzzPopSequence();
                     lastPlayed = sequenceList[playIndex];
                     playIndex++; // next track
-                    lastPlayed++;
+                   // lastPlayed++;
                     // Reset the reset timer
                     resetTimer = millis();
                     if (playIndex > sequenceLength) // last track?
