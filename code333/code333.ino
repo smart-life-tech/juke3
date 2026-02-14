@@ -105,6 +105,9 @@ unsigned long resetInterval = 30000;
 // EEPROM addresses for light show
 #define EEPROM_LIGHTSHOW_RUNNING_ADDR 30
 #define EEPROM_LIGHTSHOW_QUEUE_INDEX_ADDR 31
+// EEPROM addresses for beckon/swipe persistence
+#define EEPROM_BECKON_INDEX_ADDR 32
+#define EEPROM_SWIPED_FLAG_ADDR 33
 // Light show state
 bool lightShowRunning = false;
 unsigned long lightShowEnd = 0;
@@ -116,6 +119,12 @@ int allLEDs[NUM_LEDS_GROUP1 + NUM_LEDS_GROUP2 + NUM_LEDS_GROUP3];
 bool hasSongStarted = false;
 const int inhibitPin = 52; // Pin connected to Nayax inhibit wire
 bool inhibitActive = false;
+// Beckon state
+const unsigned long beckonInterval = 480000; // 8 minutes
+unsigned long lastBeckonTime = 0;
+unsigned long lastActivityTime = 0;
+int beckonIndex = 0;
+bool beckonPlaying = false;
 
 void songSelectionTrigger()
 {
@@ -252,6 +261,39 @@ void startLightShow()
     // ensure all LEDs are off to start
     for (int i = 0; i < NUM_LEDS_GROUP1 + NUM_LEDS_GROUP2 + NUM_LEDS_GROUP3; i++)
         digitalWrite(allLEDs[i], LOW);
+}
+
+int beckonIndexToTrack(int index)
+{
+    int letter = index / 10;
+    int number = index % 10;
+    int displayNumber = number + 1;
+    int trackNumber = (letter * 10) + displayNumber; // 1..100
+    if (trackNumber < 1)
+        trackNumber = 1;
+    if (trackNumber > 100)
+        trackNumber = 100;
+    return trackNumber;
+}
+
+void playBeckonTrack()
+{
+    int trackNumber = beckonIndexToTrack(beckonIndex);
+    Serial.print(F("Beckon: playing track index "));
+    Serial.print(beckonIndex);
+    Serial.print(F(" -> track "));
+    Serial.println(trackNumber);
+
+    setInhibit(false); // allow swipes during beckon
+    myDFPlayer.play(trackNumber);
+    startBuzzPopSequence();
+
+    beckonPlaying = true;
+    lastBeckonTime = millis();
+    lastActivityTime = millis();
+
+    beckonIndex = (beckonIndex + 1) % 100;
+    EEPROM.write(EEPROM_BECKON_INDEX_ADDR, beckonIndex);
 }
 
 String convertToUpperCase(String input)
@@ -401,6 +443,9 @@ void checkReset()
             {
                 digitalWrite(LED_PIN_GROUP3 + i, LOW);
             }
+            // Clear swipe state to allow beckon after reset
+            swiped = false;
+            EEPROM.write(EEPROM_SWIPED_FLAG_ADDR, 0);
             asm volatile("jmp 0x0000");
         }
     }
@@ -1063,12 +1108,38 @@ void setup()
     digitalWrite(popLedPin, LOW); // Ensure pop LED is off initially
     // myDFPlayer.play(100);         // play the 100 track at start to check
     digitalWrite(inhibitPin, LOW); // Start with inhibit disabled (0v)
+
+    int savedBeckonIndex = EEPROM.read(EEPROM_BECKON_INDEX_ADDR);
+    if (savedBeckonIndex < 0 || savedBeckonIndex > 99)
+        savedBeckonIndex = 0;
+    beckonIndex = savedBeckonIndex;
+    swiped = (EEPROM.read(EEPROM_SWIPED_FLAG_ADDR) == 1);
+    beckonPlaying = false;
+    lastActivityTime = millis();
+    lastBeckonTime = millis();
 }
 
 void loop()
 {
     while (!swiped)
     {
+        updateBuzzPopLeds();
+        if (digitalRead(busyPin) == LOW)
+            lastBeckonTime = millis();
+        if (beckonPlaying && digitalRead(busyPin) == HIGH)
+        {
+            Serial.println(F("Beckon finished, returning to idle."));
+            beckonPlaying = false;
+            lastActivityTime = millis();
+        }
+        if (!beckonPlaying && digitalRead(busyPin) == HIGH &&
+            (millis() - lastBeckonTime >= beckonInterval) &&
+            (millis() - lastActivityTime >= beckonInterval))
+        {
+            Serial.println(F("Beckon: idle interval reached, playing beckon track."));
+            playBeckonTrack();
+        }
+
         int pinValue = analogRead(interruptPin);
         Serial.print("pin value = ");
         Serial.println(pinValue);
@@ -1086,6 +1157,15 @@ void loop()
                 Serial.println(pinValue);
                 delay(500);
                 swiped = true;
+                EEPROM.write(EEPROM_SWIPED_FLAG_ADDR, 1);
+                bool inactivityExceeded = (millis() - lastActivityTime >= beckonInterval);
+                if (inactivityExceeded && digitalRead(busyPin) == HIGH && !playList && sequenceLength == 0)
+                {
+                    Serial.println(F("Swipe after inactivity: playing beckon immediately."));
+                    playBeckonTrack();
+                    break;
+                }
+                lastActivityTime = millis();
                 break;
             }
         }
@@ -1123,8 +1203,14 @@ void loop()
         if (key && !keypadLong)
         {
             isPressing = false; // Reset if another key is pressed
+            lastActivityTime = millis();
             Serial.print(F(" key code = "));
             Serial.println(key);
+            if (beckonPlaying)
+            {
+                myDFPlayer.stop();
+                beckonPlaying = false;
+            }
             if (key == 'Z')
             {
                 handleLongPress();
@@ -1146,5 +1232,12 @@ void loop()
         playTheList();
         updateBuzzPopLeds();
         continuePlayingLong();
+
+        if (beckonPlaying && digitalRead(busyPin) == 1)
+        {
+            Serial.println(F("Beckon finished, returning to idle."));
+            beckonPlaying = false;
+            lastActivityTime = millis();
+        }
     }
 }
