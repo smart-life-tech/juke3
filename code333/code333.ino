@@ -2,7 +2,7 @@
 #include "DFRobotDFPlayerMini.h"
 #include <Wire.h>
 #include <EEPROM.h>
-//=================================================================
+//====================================================================
 int musicCount = 0;
 int swipeCounter = 0;
 int missCounter = 0;
@@ -11,7 +11,7 @@ const int interruptPin = A2; // Using pin 2 for interrupt (can be changed)
 volatile bool triggerSongSelection = false;
 unsigned long lastInterruptTime = 0;
 const unsigned long debounceTime = 200; // Debounce for buttons time in milliseconds
-//===================================================================
+//=====================================================================
 const int buzzLedPin = 13; // LED pin for buzz
 const int popLedPin = 14;  // LED pin for pop
 #define NUM_LEDS_GROUP1 2
