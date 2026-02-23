@@ -44,6 +44,8 @@ char keys[ROWS][COLS] =
         {'7', '8', '9', 'C'},
         {'*', '0', '#', 'D'}};
 const byte busyPin = 10;
+// DFPlayer BUSY pin is typically LOW while playing, HIGH when idle.
+const bool busyPinLowWhenPlaying = true;
 const byte ssRXPin = 11;
 const byte ssTXPin = 12;
 byte playIndex = 0;
@@ -90,6 +92,21 @@ int randomNumber[200] = {};
 bool longPressed = false;
 bool lastState[] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 int playingIndex = 0;
+
+bool isBusyPinIdleState(int state)
+{
+    return busyPinLowWhenPlaying ? (state == HIGH) : (state == LOW);
+}
+
+bool isPlayerIdle()
+{
+    return isBusyPinIdleState(digitalRead(busyPin));
+}
+
+bool isPlayerPlaying()
+{
+    return !isPlayerIdle();
+}
 
 const char longD = 'Z'; // char returned if long press on 'D'
 // const unsigned int longPressDuration = 3000;
@@ -431,10 +448,10 @@ void addToSequenceList(int trackNumber)
 
 void checkReset()
 {
-    if (digitalRead(busyPin) == 0)
+    if (isPlayerPlaying())
         resetTimer = millis();
     // Check if 30 seconds have passed since the last song ended
-    if (musicCount <= 0 && digitalRead(busyPin) == 1 && hasSongStarted)
+    if (musicCount <= 0 && isPlayerIdle() && hasSongStarted)
     {
         if (millis() - resetTimer > resetInterval)
         {
@@ -471,7 +488,7 @@ void checkReset()
 // Function to play the sequence
 void playSequence()
 {
-    if (digitalRead(busyPin) == 1 && (playIndex == 4 || done_playing))
+    if (isPlayerIdle() && (playIndex == 4 || done_playing))
     { // has it gone from low to high?, meaning the track finished
         asm volatile("jmp 0x0000");
     }
@@ -526,8 +543,8 @@ void skipSeq()
 
 void continuePlaying(int play)
 {
-    bool busyPinState = digitalRead(busyPin);             // read the busy pin
-    if (busyPinState == 1 && playIndex == play && cancel) // has it gone from low to high?, meaning the track finished
+    bool busyPinState = digitalRead(busyPin);                               // read the busy pin
+    if (isBusyPinIdleState(busyPinState) && playIndex == play && cancel)    // has it gone to idle, meaning the track finished
     {
 
         Serial.print("play number after skip  = ");
@@ -588,7 +605,7 @@ void continuePlayingLong()
 
         bool busyPinState = digitalRead(busyPin); // read the busy pin
         digitalWrite(A15, HIGH);
-        if (digitalRead(busyPin) == 1) // has it gone from low to high?, meaning the track finished
+        if (isBusyPinIdleState(busyPinState)) // has it gone to idle?, meaning the track finished
         {
             Serial.println("song not selected starting a new song now");
             String trackString = String(lastPlayed); // Convert track number to a string
@@ -663,7 +680,7 @@ void playTheList()
         bool busyPinState = digitalRead(busyPin);                           // read the busy pin
         if (busyPinState != lastBusyPinState && playIndex < sequenceLength) // has it changed?
         {
-            if (busyPinState == 1 && !keypadLong) // has it gone from low to high?, meaning the track finished
+            if (isBusyPinIdleState(busyPinState) && !keypadLong) // has it gone to idle?, meaning the track finished
             {
                 lastPlayed = sequenceList[playIndex];
                 if ((lastPlayed >= 100 && lastPlayed < 180) || (lastPlayed >= 180 && lastPlayed < 298))
@@ -1141,15 +1158,15 @@ void loop()
     while (!swiped)
     {
         updateBuzzPopLeds();
-        if (digitalRead(busyPin) == LOW)
+        if (isPlayerPlaying())
             lastBeckonTime = millis();
-        if (beckonPlaying && digitalRead(busyPin) == HIGH)
+        if (beckonPlaying && isPlayerIdle())
         {
             Serial.println(F("Beckon finished, returning to idle."));
             beckonPlaying = false;
             lastActivityTime = millis();
         }
-        if (!beckonPlaying && digitalRead(busyPin) == HIGH &&
+        if (!beckonPlaying && isPlayerIdle() &&
             (millis() - lastBeckonTime >= beckonInterval) &&
             (millis() - lastActivityTime >= beckonInterval))
         {
@@ -1176,7 +1193,7 @@ void loop()
                 swiped = true;
                 EEPROM.write(EEPROM_SWIPED_FLAG_ADDR, 1);
                 bool inactivityExceeded = (millis() - lastActivityTime >= beckonInterval);
-                if (inactivityExceeded && digitalRead(busyPin) == HIGH && !playList && sequenceLength == 0)
+                if (inactivityExceeded && isPlayerIdle() && !playList && sequenceLength == 0)
                 {
                     Serial.println(F("Swipe after inactivity: playing beckon immediately."));
                     playBeckonTrack();
@@ -1250,7 +1267,7 @@ void loop()
         updateBuzzPopLeds();
         continuePlayingLong();
 
-        if (beckonPlaying && digitalRead(busyPin) == 1)
+        if (beckonPlaying && isPlayerIdle())
         {
             Serial.println(F("Beckon finished, returning to idle."));
             beckonPlaying = false;
