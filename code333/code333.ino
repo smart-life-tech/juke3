@@ -46,6 +46,8 @@ char keys[ROWS][COLS] =
 const byte busyPin = 10;
 // DFPlayer BUSY pin is typically LOW while playing, HIGH when idle.
 const bool busyPinLowWhenPlaying = true;
+// If true, clear persisted swipe state on boot so beckon can run when idle.
+const bool clearSwipedOnBoot = true;
 const byte ssRXPin = 11;
 const byte ssTXPin = 12;
 byte playIndex = 0;
@@ -1095,12 +1097,12 @@ void setup()
     myDFPlayer.begin(mp3ss);
     myDFPlayer.volume(25);
     // myDFPlayer.play(3);
-    pinMode(busyPin, INPUT);
+    pinMode(busyPin, INPUT_PULLUP);
     pinMode(interruptPin, INPUT);
     // Initialize inhibit pin
     pinMode(inhibitPin, OUTPUT);
     digitalWrite(inhibitPin, LOW); // Start with inhibit disabled (0v)
-    Serial.println("inhibit started with disabled");
+    Serial.println("inhibit started with disabled v1.6");
     //  Set LED pins as OUTPUT
     for (int i = 0; i < NUM_LEDS_GROUP1; i++)
     {
@@ -1147,7 +1149,15 @@ void setup()
     if (savedBeckonIndex < 0 || savedBeckonIndex >= beckonTrackCount)
         savedBeckonIndex = 0;
     beckonIndex = savedBeckonIndex;
-    swiped = (EEPROM.read(EEPROM_SWIPED_FLAG_ADDR) == 1);
+    if (clearSwipedOnBoot)
+    {
+        swiped = false;
+        EEPROM.write(EEPROM_SWIPED_FLAG_ADDR, 0);
+    }
+    else
+    {
+        swiped = (EEPROM.read(EEPROM_SWIPED_FLAG_ADDR) == 1);
+    }
     beckonPlaying = false;
     lastActivityTime = millis();
     lastBeckonTime = millis();

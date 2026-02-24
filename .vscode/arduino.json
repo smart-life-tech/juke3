@@ -2,5 +2,6 @@
     "board": "arduino:avr:mega",
     "sketch": "code333\\code333.ino",
     "configuration": "cpu=atmega2560",
-    "port": "COM10"
+    "port": "COM19",
+    "output": "output"
 }
