@@ -8,6 +8,8 @@ int swipeCounter = 0;
 int missCounter = 0;
 bool swiped = false;
 const int interruptPin = A2; // Using pin 2 for interrupt (can be changed)
+const int swipeDetectThreshold = 0;
+const byte swipeConsecutiveReadsRequired = 2;
 volatile bool triggerSongSelection = false;
 unsigned long lastInterruptTime = 0;
 const unsigned long debounceTime = 200; // Debounce for buttons time in milliseconds
@@ -167,6 +169,18 @@ const int beckonTracks[] = {
     290, 291, 292, 293, 294, 295, 296, 297
 };
 const int beckonTrackCount = sizeof(beckonTracks) / sizeof(beckonTracks[0]);
+
+int readFilteredInterruptPin()
+{
+    long total = 0;
+    const byte sampleCount = 5;
+    for (byte i = 0; i < sampleCount; i++)
+    {
+        total += analogRead(interruptPin);
+        delay(2);
+    }
+    return total / sampleCount;
+}
 
 void songSelectionTrigger()
 {
@@ -1184,22 +1198,24 @@ void loop()
             playBeckonTrack();
         }
 
-        int pinValue = analogRead(interruptPin);
-        Serial.print("pin value = ");
+        int pinValue = readFilteredInterruptPin();
+        Serial.print("pin value avg = ");
         Serial.println(pinValue);
-        delay(500);
+        delay(100);
 
-        if (pinValue <= 0)
+        if (pinValue <= swipeDetectThreshold)
         {
             swipeCounter++;
             missCounter = 0; // reset misses since we got a valid read
+            Serial.print("Swipe candidate count: ");
+            Serial.println(swipeCounter);
 
-            if (swipeCounter >= 1)
+            if (swipeCounter >= swipeConsecutiveReadsRequired)
             {
                 Serial.println("card SWIPING OCCURRED now on pin");
                 Serial.print("pin value = ");
                 Serial.println(pinValue);
-                delay(500);
+                delay(100);
                 swiped = true;
                 EEPROM.write(EEPROM_SWIPED_FLAG_ADDR, 1);
                 bool inactivityExceeded = (millis() - lastActivityTime >= beckonInterval);
@@ -1215,6 +1231,11 @@ void loop()
         }
         else
         {
+            if (swipeCounter > 0)
+            {
+                Serial.println("Swipe candidate reset due to non-low sample");
+            }
+            swipeCounter = 0;
             missCounter++;
             if (missCounter >= 10)
             {
